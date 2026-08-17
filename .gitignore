@@ -1,0 +1,28 @@
+# Dart / Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub/
+.packages
+build/
+coverage/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Android local state and signing secrets
+android/.gradle/
+android/local.properties
+android/key.properties
+android/**/gradle-wrapper.jar
+android/gradlew
+android/gradlew.bat
+*.jks
+*.keystore
+
+# Logs
+*.log

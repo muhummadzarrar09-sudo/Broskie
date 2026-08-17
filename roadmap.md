@@ -1,37 +1,58 @@
-# Broskie Official Project Roadmap
+# Broskie Project Roadmap
 
-## Phase 1: Mechanics (COMPLETED)
-- [x] Momentum & Friction Movement
-- [x] Stomp & Power-up Logic (3 Variants: Classic, Juggernaut, Shockwave)
-- [x] Dialogue UI & Interactable Lore System
-- [x] Parkour System (Auto-Vault, Kong, Double Kong)
-- [x] 'DELETED' Failure Vibe UI
-- [x] Enemy Unlock System
+This roadmap reports only integrated, playable work as complete.
 
-## Phase 2: World 1 - The Grey Zone (8 Sub-Levels)
-- [x] Level 1-1 to 1-3 Data
-- [x] Level 1-4 to 1-7 Data (Gimmicks: Stealth, Laser Speedrun, Pre-Boss)
-- [x] Level 1-8: BOSS - The Foreman (3 Phases + Daze Logic)
+## Vertical Slice — The Grey Zone
 
-## Phase 3: World 2 - Neon Slums
-- [x] Theme: Dynamic Cyberpunk (Propaganda Signs)
-- [x] Enemy: The Glitch, Cyber-Dogs, Security Drones
-- [x] BOSS: The Data-Broker (Spider Mech + Proxy Fake-out)
+- [x] Correct Flame `World` and fixed-resolution camera architecture
+- [x] Programmatic player, city, platform, collectible and enemy visuals
+- [x] Momentum movement, acceleration, friction and running
+- [x] Stable axis-separated platform collisions with movement substeps
+- [x] Coyote time and jump buffering
+- [x] Keyboard and multi-touch controls
+- [x] Health, damage, knockback, fall respawn and checkpoints
+- [x] Cash collectibles and functional Volt-Cola power-up
+- [x] Corporate-cube patrol and stomp behavior
+- [x] The Foreman boss with three speed phases and a real death path
+- [x] Locked exit, level completion, pause, restart and game-over flows
+- [x] Responsive and accessible HUD overlays
+- [x] Unit/game tests and CI quality gates
 
-## Phase 4: World 3 - Stock Exchange
-- [ ] Theme: Digital Trading Floor (Gold Tickers & Falling Statues)
-- [ ] Weapon: Vinyl Boomerangs (Boomerang Logic)
-- [ ] Adaptive Difficulty: Random Boss Glitches (Adaptive Logic)
-- [ ] Mobile UI: Graffiti Tag Style Buttons
+## Production Art and Audio
 
-## Phase 3: The Rest of Neo-City (Worlds 2-7)
-- [ ] World 2: Neon Slums (Glitch Unlocked)
-- [ ] World 3: Stock Exchange (Bull Unlocked)
-- [ ] World 4: Cloud Server (Hater Cloud Unlocked)
-- [ ] World 5: Frozen Assets (Auditor Unlocked)
-- [ ] World 6: Deep Web (Cyber-Shark Unlocked)
-- [ ] World 7: Penthouse (Shadow Broskie Unlocked)
+- [ ] Establish one canonical Broskie model and palette
+- [ ] Create transparent, lossless idle/run/jump/hurt sprite sheets
+- [ ] Slice a consistent 32-pixel environment tileset
+- [ ] Create production sprites and effects for cubes, Volt-Cola and Foreman
+- [ ] Compose and license music/SFX
+- [ ] Add audio settings, subtitles and reduced-motion options
 
-## Phase 4: Backend & APK
-- [ ] Firebase Auth & Saves (Logged for later)
-- [ ] APK Release Build
+## Content Pipeline
+
+- [ ] Define a versioned level schema with validation and useful errors
+- [ ] Build a level authoring/export tool
+- [ ] Add eight polished Grey Zone levels
+- [ ] Add narrative dialogue after the overlay is connected and tested
+- [ ] Add save/progression only after progression design is stable
+
+## Future Worlds
+
+- [ ] World 2: Neon Slums / Data Broker
+- [ ] World 3: Stock Exchange / Wall Street Bull
+- [ ] World 4: Cloud Server / Hater Cloud
+- [ ] World 5: Frozen Assets / Auditor
+- [ ] World 6: Deep Web
+- [ ] World 7: Penthouse / Lord Static
+
+No future world is considered started merely because a class name or concept image exists.
+
+## Release
+
+- [x] Unique Android application ID
+- [x] Android API 36 target
+- [x] Release configuration does not use debug signing
+- [x] Guarded App Bundle build script
+- [ ] Create and securely back up the upload keystore
+- [ ] Physical-device matrix testing
+- [ ] Internal Play track and closed testing
+- [ ] Store listing, privacy declarations and final accessibility review

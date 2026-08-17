@@ -1,39 +1,52 @@
-# build_broskie.ps1
-# This script sets up the environment and builds the Broskie APK using 2026 standards.
+param(
+    [ValidateSet("bundle", "apk")]
+    [string]$Target = "bundle"
+)
 
-# 1. Setup Environment Paths
-$env:PATH = "C:\Windows\System32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;$env:PATH"  
-$env:JAVA_HOME = "$env:USERPROFILE\.jdks\jdk-17"  
-$env:PATH = "$env:JAVA_HOME\bin;$env:USERPROFILE\flutter\bin;$env:LOCALAPPDATA\Android\Sdk\cmdline-tools\latest\bin;$env:LOCALAPPDATA\Android\Sdk\platform-tools;$env:PATH"  
-$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"  
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
-# 2. Dynamic Path Setup
-$currentDir = $PSScriptRoot
-$sdk = $env:ANDROID_HOME -replace "\\","\\"
-$fl = "$env:USERPROFILE\flutter" -replace "\\","\\"
+function Invoke-Checked {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Label,
+        [Parameter(Mandatory = $true)]
+        [scriptblock]$Command
+    )
 
-# 3. Generate local.properties
-$localPropsContent = "sdk.dir=$sdk`nflutter.sdk=$fl`nflutter.buildMode=release`nflutter.versionName=1.0.0`nflutter.versionCode=1"
-$localPropsPath = Join-Path $currentDir "android\local.properties"
-if (!(Test-Path (Join-Path $currentDir "android"))) { New-Item -ItemType Directory -Path (Join-Path $currentDir "android") -Force | Out-Null }
-$localPropsContent | Set-Content $localPropsPath
-
-# 4. Build Process
-Set-Location $currentDir
-Write-Host "--- FETCHING DEPENDENCIES ---" -ForegroundColor Cyan
-flutter pub get  
-
-Write-Host "--- GENERATING CODE (Riverpod MAX EFFICIENCY) ---" -ForegroundColor Cyan
-dart run build_runner build --delete-conflicting-outputs
-
-Write-Host "--- BUILDING APK ---" -ForegroundColor Cyan
-flutter build apk --release --android-skip-build-dependency-validation
-
-# 5. Final Check
-$apk = Join-Path $currentDir "build\app\outputs\flutter-apk\app-release.apk"
-if (Test-Path $apk) { 
-    Write-Host "SUCCESS! Broskie APK is ready at: $apk" -ForegroundColor Green
-    Start-Process explorer.exe (Split-Path $apk) 
-} else { 
-    Write-Host "BUILD FAILED. Please check the logs above." -ForegroundColor Red 
+    Write-Host "--- $Label ---" -ForegroundColor Cyan
+    & $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Label failed with exit code $LASTEXITCODE."
+    }
 }
+
+$projectRoot = $PSScriptRoot
+Set-Location $projectRoot
+
+if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
+    throw "Flutter is not on PATH. Install Flutter 3.41+ and run flutter doctor first."
+}
+
+if ($Target -eq "bundle" -and -not (Test-Path "android/key.properties")) {
+    throw "A release bundle requires android/key.properties and a private upload keystore. See README.md."
+}
+
+Invoke-Checked "FETCHING LOCKED DEPENDENCIES" { flutter pub get --enforce-lockfile }
+Invoke-Checked "CHECKING FORMATTING" { dart format --output=none --set-exit-if-changed lib test }
+Invoke-Checked "STATIC ANALYSIS" { flutter analyze }
+Invoke-Checked "RUNNING TESTS" { flutter test }
+
+if ($Target -eq "bundle") {
+    Invoke-Checked "BUILDING SIGNED APP BUNDLE" { flutter build appbundle --release }
+    $artifact = Join-Path $projectRoot "build/app/outputs/bundle/release/app-release.aab"
+} else {
+    Invoke-Checked "BUILDING QA APK" { flutter build apk --release }
+    $artifact = Join-Path $projectRoot "build/app/outputs/flutter-apk/app-release.apk"
+}
+
+if (-not (Test-Path $artifact)) {
+    throw "Build finished without the expected artifact: $artifact"
+}
+
+Write-Host "SUCCESS: $artifact" -ForegroundColor Green
