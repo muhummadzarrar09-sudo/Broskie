@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+import 'package:flame/input.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -520,6 +521,10 @@ class BroskieGame extends FlameGame
   void setTouchLeft(bool pressed) => input.setTouchLeft(pressed);
   void setTouchRight(bool pressed) => input.setTouchRight(pressed);
   void jump() => input.queueJump();
+
+  void spawnVoltCola(Vector2 position) {
+    world.add(VoltCola(position: position));
+  }
 
   void collectCash(int amount) {
     if (amount <= 0 || !isPlaying) {
