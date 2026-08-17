@@ -93,7 +93,7 @@ class SolidSurface extends PositionComponent
     final bounds = Rect.fromLTWH(0, 0, width, height);
     canvas.drawRect(bounds, Paint()..color = baseColor);
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, width, math.min(6, height)),
+      Rect.fromLTWH(0, 0, width, math.min(6.0, height)),
       Paint()..color = topColor,
     );
 
@@ -140,10 +140,7 @@ class MysteryBlock extends SolidSurface {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    textPainter.paint(
-      canvas,
-      Offset((width - textPainter.width) / 2, 7),
-    );
+    textPainter.paint(canvas, Offset((width - textPainter.width) / 2, 7));
   }
 }
 
@@ -301,9 +298,7 @@ class LevelExit extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final color = unlocked
-        ? const Color(0xFF42FFB3)
-        : const Color(0xFFFF3E72);
+    final color = unlocked ? const Color(0xFF42FFB3) : const Color(0xFFFF3E72);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(0, 0, width, height),
@@ -341,9 +336,6 @@ class LevelExit extends PositionComponent
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    painter.paint(
-      canvas,
-      Offset((width - painter.width) / 2, 16),
-    );
+    painter.paint(canvas, Offset((width - painter.width) / 2, 16));
   }
 }

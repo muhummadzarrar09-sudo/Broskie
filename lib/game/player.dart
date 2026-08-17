@@ -9,10 +9,7 @@ import 'broskie_game.dart';
 import 'components/world_components.dart';
 
 class Player extends PositionComponent
-    with
-        KeyboardHandler,
-        CollisionCallbacks,
-        HasGameReference<BroskieGame> {
+    with KeyboardHandler, CollisionCallbacks, HasGameReference<BroskieGame> {
   Player({required super.position})
     : super(size: Vector2(42, 58), priority: 10) {
     add(RectangleHitbox());
@@ -76,12 +73,12 @@ class Player extends PositionComponent
 
     final frameDt = math.min(dt, 1 / 30);
     previousBottom = bottom;
-    _invulnerabilityTimer = math.max(0, _invulnerabilityTimer - frameDt);
+    _invulnerabilityTimer = math.max(0.0, _invulnerabilityTimer - frameDt);
 
     if (game.input.takeJump()) {
       _jumpBufferTimer = 0.12;
     } else {
-      _jumpBufferTimer = math.max(0, _jumpBufferTimer - frameDt);
+      _jumpBufferTimer = math.max(0.0, _jumpBufferTimer - frameDt);
     }
 
     if (isGrounded) {
@@ -99,11 +96,7 @@ class Player extends PositionComponent
         : (game.input.isRunning ? runSpeed : walkSpeed);
     final targetX = direction * maxSpeed;
     final changeRate = direction == 0 ? groundFriction : acceleration;
-    velocity.x = _moveTowards(
-      velocity.x,
-      targetX,
-      changeRate * frameDt,
-    );
+    velocity.x = _moveTowards(velocity.x, targetX, changeRate * frameDt);
 
     if (_jumpBufferTimer > 0 && _coyoteTimer > 0) {
       velocity.y = -jumpSpeed;
@@ -126,8 +119,8 @@ class Player extends PositionComponent
       _moveVertical(velocity.y * stepDt);
     }
 
-    x = x.clamp(0.0, game.levelWidth - width);
-    if (y > game.logicalHeight + 160 && !_fallHandled) {
+    x = x.clamp(0.0, BroskieGame.levelWidth - width).toDouble();
+    if (y > BroskieGame.logicalHeight + 160 && !_fallHandled) {
       _fallHandled = true;
       game.playerFell();
     }
@@ -201,7 +194,7 @@ class Player extends PositionComponent
       game.damagePlayer();
       _invulnerabilityTimer = 1.5;
     }
-    velocity.setValues(-sourceDirection * 330, -360);
+    velocity.setValues(-sourceDirection * 330.0, -360);
   }
 
   void bounce() {
@@ -241,13 +234,13 @@ class Player extends PositionComponent
 
     canvas.drawRect(const Rect.fromLTWH(10, 8, 24, 18), skin);
     canvas.drawRect(const Rect.fromLTWH(6, 4, 30, 8), cap);
-    canvas.drawRect(
-      Rect.fromLTWH(facing > 0 ? 31 : 2, 9, 9, 4),
-      cap,
-    );
+    canvas.drawRect(Rect.fromLTWH(facing > 0 ? 31 : 2, 9, 9, 4), cap);
     canvas.drawRect(const Rect.fromLTWH(11, 13, 24, 6), dark);
     canvas.drawRect(const Rect.fromLTWH(7, 26, 28, 21), jacket);
-    canvas.drawRect(const Rect.fromLTWH(16, 26, 8, 21), Paint()..color = Colors.white);
+    canvas.drawRect(
+      const Rect.fromLTWH(16, 26, 8, 21),
+      Paint()..color = Colors.white,
+    );
     canvas.drawRect(const Rect.fromLTWH(8, 47, 11, 8), dark);
     canvas.drawRect(const Rect.fromLTWH(25, 47, 10, 8), dark);
     canvas.drawRect(const Rect.fromLTWH(5, 54, 16, 4), shoe);

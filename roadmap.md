@@ -16,7 +16,8 @@ This roadmap reports only integrated, playable work as complete.
 - [x] The Foreman boss with three speed phases and a real death path
 - [x] Locked exit, level completion, pause, restart and game-over flows
 - [x] Responsive and accessible HUD overlays
-- [x] Unit/game tests and CI quality gates
+- [x] Unit and Flame game tests
+- [ ] Hosted CI workflow (blocked by current GitHub App workflow permission)
 
 ## Production Art and Audio
 

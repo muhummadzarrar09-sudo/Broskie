@@ -71,10 +71,9 @@ class BroskieGame extends FlameGame
       return;
     }
 
-    final cameraX = player.center.x.clamp(
-      logicalWidth / 2,
-      levelWidth - logicalWidth / 2,
-    );
+    final cameraX = player.center.x
+        .clamp(logicalWidth / 2, levelWidth - logicalWidth / 2)
+        .toDouble();
     camera.viewfinder.position.setValues(cameraX, logicalHeight / 2);
 
     if (player.x > 2450 && !_bossEncounterStarted) {
@@ -109,22 +108,13 @@ class BroskieGame extends FlameGame
     }
 
     addSurface(
-      SolidSurface(
-        position: Vector2(0, groundY),
-        size: Vector2(820, 80),
-      ),
+      SolidSurface(position: Vector2(0, groundY), size: Vector2(820, 80)),
     );
     addSurface(
-      SolidSurface(
-        position: Vector2(900, groundY),
-        size: Vector2(780, 80),
-      ),
+      SolidSurface(position: Vector2(900, groundY), size: Vector2(780, 80)),
     );
     addSurface(
-      SolidSurface(
-        position: Vector2(1760, groundY),
-        size: Vector2(670, 80),
-      ),
+      SolidSurface(position: Vector2(1760, groundY), size: Vector2(670, 80)),
     );
     addSurface(
       SolidSurface(
@@ -136,17 +126,11 @@ class BroskieGame extends FlameGame
     );
 
     addSurface(
-      SolidSurface(
-        position: Vector2(300, 398),
-        size: Vector2(145, 20),
-      ),
+      SolidSurface(position: Vector2(300, 398), size: Vector2(145, 20)),
     );
     addSurface(MysteryBlock(position: Vector2(575, 340)));
     addSurface(
-      SolidSurface(
-        position: Vector2(760, 405),
-        size: Vector2(115, 20),
-      ),
+      SolidSurface(position: Vector2(760, 405), size: Vector2(115, 20)),
     );
     addSurface(
       SolidSurface(
@@ -163,22 +147,13 @@ class BroskieGame extends FlameGame
       ),
     );
     addSurface(
-      SolidSurface(
-        position: Vector2(1640, 410),
-        size: Vector2(155, 20),
-      ),
+      SolidSurface(position: Vector2(1640, 410), size: Vector2(155, 20)),
     );
     addSurface(
-      SolidSurface(
-        position: Vector2(1990, 375),
-        size: Vector2(180, 20),
-      ),
+      SolidSurface(position: Vector2(1990, 375), size: Vector2(180, 20)),
     );
     addSurface(
-      SolidSurface(
-        position: Vector2(2280, 410),
-        size: Vector2(175, 20),
-      ),
+      SolidSurface(position: Vector2(2280, 410), size: Vector2(175, 20)),
     );
 
     bossGate = BossGate(position: Vector2(3400, groundY - 190));
@@ -293,7 +268,7 @@ class BroskieGame extends FlameGame
     phase = GamePhase.complete;
     input.reset();
     publishHud();
-    overlays.add(completeOverlay);
+    overlays.add(completeOverlay, priority: 10);
     pauseEngine();
   }
 
@@ -304,7 +279,7 @@ class BroskieGame extends FlameGame
     phase = GamePhase.gameOver;
     input.reset();
     publishHud();
-    overlays.add(gameOverOverlay);
+    overlays.add(gameOverOverlay, priority: 10);
     pauseEngine();
   }
 
@@ -313,7 +288,7 @@ class BroskieGame extends FlameGame
       phase = GamePhase.paused;
       input.reset();
       publishHud();
-      overlays.add(pauseOverlay);
+      overlays.add(pauseOverlay, priority: 10);
       pauseEngine();
     } else if (phase == GamePhase.paused) {
       overlays.remove(pauseOverlay);
@@ -355,7 +330,7 @@ class BroskieGame extends FlameGame
 
   void publishHud() {
     final progress = player.isMounted
-        ? (player.x / (levelWidth - player.width)).clamp(0.0, 1.0)
+        ? (player.x / (levelWidth - player.width)).clamp(0.0, 1.0).toDouble()
         : 0.0;
     hud.value = GameHudState(
       health: health,

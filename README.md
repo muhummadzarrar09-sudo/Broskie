@@ -41,6 +41,7 @@ The Android build is locked to landscape and uses an immersive fullscreen presen
 
 ```bash
 flutter pub get
+# Commit the generated pubspec.lock for reproducible application builds.
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test

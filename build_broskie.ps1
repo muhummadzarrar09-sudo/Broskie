@@ -32,6 +32,10 @@ if ($Target -eq "bundle" -and -not (Test-Path "android/key.properties")) {
     throw "A release bundle requires android/key.properties and a private upload keystore. See README.md."
 }
 
+if (-not (Test-Path "pubspec.lock")) {
+    throw "pubspec.lock is missing. Run flutter pub get once, review it, and commit it before releasing."
+}
+
 Invoke-Checked "FETCHING LOCKED DEPENDENCIES" { flutter pub get --enforce-lockfile }
 Invoke-Checked "CHECKING FORMATTING" { dart format --output=none --set-exit-if-changed lib test }
 Invoke-Checked "STATIC ANALYSIS" { flutter analyze }

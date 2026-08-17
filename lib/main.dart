@@ -52,9 +52,8 @@ class _BroskieAppState extends State<BroskieApp> {
               onResume: game.togglePause,
               onRestart: game.restartUnawaited,
             ),
-            BroskieGame.gameOverOverlay: (context, game) => GameOverOverlay(
-              onRestart: game.restartUnawaited,
-            ),
+            BroskieGame.gameOverOverlay: (context, game) =>
+                GameOverOverlay(onRestart: game.restartUnawaited),
             BroskieGame.completeOverlay: (context, game) =>
                 ValueListenableBuilder<GameHudState>(
                   valueListenable: game.hud,

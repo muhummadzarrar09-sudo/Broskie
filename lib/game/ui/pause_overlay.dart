@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class PauseOverlay extends StatelessWidget {
-  const PauseOverlay({super.key, required this.onResume, required this.onRestart});
+  const PauseOverlay({
+    super.key,
+    required this.onResume,
+    required this.onRestart,
+  });
 
   final VoidCallback onResume;
   final VoidCallback onRestart;

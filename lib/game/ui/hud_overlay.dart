@@ -286,7 +286,12 @@ class _HoldButtonState extends State<_HoldButton> {
             border: Border.all(color: widget.accent, width: _pressed ? 4 : 2),
             borderRadius: BorderRadius.circular(20),
             boxShadow: _pressed
-                ? [BoxShadow(color: widget.accent.withValues(alpha: 0.5), blurRadius: 14)]
+                ? [
+                    BoxShadow(
+                      color: widget.accent.withValues(alpha: 0.5),
+                      blurRadius: 14,
+                    ),
+                  ]
                 : null,
           ),
           child: Icon(widget.icon, color: widget.accent, size: 46),

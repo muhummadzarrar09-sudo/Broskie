@@ -36,15 +36,20 @@ class TheForeman extends PositionComponent
     return ForemanPhase.chilling;
   }
 
-  double get speed => switch (phase) {
-    ForemanPhase.chilling => 105,
-    ForemanPhase.mad => 175,
-    ForemanPhase.berserk => 265,
-  };
+  double get speed {
+    switch (phase) {
+      case ForemanPhase.chilling:
+        return 105;
+      case ForemanPhase.mad:
+        return 175;
+      case ForemanPhase.berserk:
+        return 265;
+    }
+  }
 
   @override
   void update(double dt) {
-    _hurtCooldown = (_hurtCooldown - dt).clamp(0.0, 1.0);
+    _hurtCooldown = (_hurtCooldown - dt).clamp(0.0, 1.0).toDouble();
     if (game.isPlaying && !defeated) {
       x += direction * speed * dt;
       if (x <= arenaLeft) {
@@ -59,10 +64,7 @@ class TheForeman extends PositionComponent
   }
 
   @override
-  void onCollision(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
     if (defeated || _hurtCooldown > 0 || other is! Player) {
       return;
@@ -92,11 +94,15 @@ class TheForeman extends PositionComponent
       return;
     }
 
-    final machine = switch (phase) {
-      ForemanPhase.chilling => const Color(0xFFF3A61D),
-      ForemanPhase.mad => const Color(0xFFFF7029),
-      ForemanPhase.berserk => const Color(0xFFFF345F),
-    };
+    final Color machine;
+    switch (phase) {
+      case ForemanPhase.chilling:
+        machine = const Color(0xFFF3A61D);
+      case ForemanPhase.mad:
+        machine = const Color(0xFFFF7029);
+      case ForemanPhase.berserk:
+        machine = const Color(0xFFFF345F);
+    }
     final metal = Paint()..color = const Color(0xFF263448);
     final body = Paint()..color = machine;
     final dark = Paint()..color = const Color(0xFF121520);
