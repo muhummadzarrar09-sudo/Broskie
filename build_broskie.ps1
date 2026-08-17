@@ -45,8 +45,16 @@ if ($Target -eq "bundle") {
     Invoke-Checked "BUILDING SIGNED APP BUNDLE" { flutter build appbundle --release }
     $artifact = Join-Path $projectRoot "build/app/outputs/bundle/release/app-release.aab"
 } else {
-    Invoke-Checked "BUILDING QA APK" { flutter build apk --release }
-    $artifact = Join-Path $projectRoot "build/app/outputs/flutter-apk/app-release.apk"
+    # Debug APKs are signed automatically by Android's debug keystore, making
+    # them directly installable for local QA without weakening release signing.
+    Invoke-Checked "BUILDING INSTALLABLE DEBUG APK" { flutter build apk --debug }
+    $sourceArtifact = Join-Path $projectRoot "build/app/outputs/flutter-apk/app-debug.apk"
+    if (-not (Test-Path $sourceArtifact)) {
+        throw "Build finished without the expected artifact: $sourceArtifact"
+    }
+
+    $artifact = Join-Path $projectRoot "build/app/outputs/flutter-apk/BROSKIE.apk"
+    Copy-Item -LiteralPath $sourceArtifact -Destination $artifact -Force
 }
 
 if (-not (Test-Path $artifact)) {

@@ -83,11 +83,13 @@ On Windows, the guarded release pipeline runs dependency, formatting, analysis a
 ./build_broskie.ps1 -Target bundle
 ```
 
-For a directly installable QA artifact:
+For a directly installable, debug-signed QA artifact:
 
 ```powershell
 ./build_broskie.ps1 -Target apk
 ```
+
+This writes `build/app/outputs/flutter-apk/BROSKIE.apk`. The APK target deliberately uses debug mode so it installs without a private release key; Play Store bundles still use guarded release signing.
 
 ## Architecture
 
