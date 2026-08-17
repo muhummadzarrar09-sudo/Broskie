@@ -87,13 +87,15 @@ class Player extends PositionComponent
       _coyoteTimer = math.max(0.0, _coyoteTimer - frameDt);
     }
 
-    final direction = game.input.horizontalDirection;
+    final rawDirection = game.input.horizontalDirection;
+    final direction = game.controlsInverted ? -rawDirection : rawDirection;
     if (direction != 0) {
       facing = direction;
     }
-    final maxSpeed = powered
+    final baseSpeed = powered
         ? voltSpeed
         : (game.input.isRunning ? runSpeed : walkSpeed);
+    final maxSpeed = baseSpeed + game.flow * 0.35;
     final targetX = direction * maxSpeed;
     final changeRate = direction == 0 ? groundFriction : acceleration;
     velocity.x = _moveTowards(velocity.x, targetX, changeRate * frameDt);
@@ -119,7 +121,7 @@ class Player extends PositionComponent
       _moveVertical(velocity.y * stepDt);
     }
 
-    x = x.clamp(0.0, BroskieGame.levelWidth - width).toDouble();
+    x = x.clamp(0.0, game.levelWidth - width).toDouble();
     if (y > BroskieGame.logicalHeight + 160 && !_fallHandled) {
       _fallHandled = true;
       game.playerFell();

@@ -1,51 +1,62 @@
 # Broskie Project Roadmap
 
-This roadmap reports only integrated, playable work as complete.
+This roadmap reports only integrated code as complete. Runtime certification on a Flutter-enabled machine remains required before release.
 
-## Vertical Slice — The Grey Zone
+## Compact Campaign
 
+- [x] Main menu, continue/new run and stage select
+- [x] Four distinct campaign stages with unique geometry and palettes
+- [x] Stage briefings, reactive broadcasts and a complete ending
+- [x] SharedPreferences progression, settings and best-rank persistence
+- [x] C/B/A/S stage result system
 - [x] Correct Flame `World` and fixed-resolution camera architecture
-- [x] Programmatic player, city, platform, collectible and enemy visuals
+- [x] Programmatic player, city, platform, collectible, hazard and enemy visuals
 - [x] Momentum movement, acceleration, friction and running
 - [x] Stable axis-separated platform collisions with movement substeps
 - [x] Coyote time and jump buffering
 - [x] Keyboard and multi-touch controls
 - [x] Health, damage, knockback, fall respawn and checkpoints
-- [x] Cash collectibles and functional Volt-Cola power-up
+- [x] Cash collectibles, propaganda terminals and functional Volt-Cola
+- [x] Flow meter with four gameplay states and speed scaling
 - [x] Corporate-cube patrol and stomp behavior
+- [x] Data spikes, control-hack zones and projectile attacks
 - [x] The Foreman boss with three speed phases and a real death path
-- [x] Locked exit, level completion, pause, restart and game-over flows
+- [x] Data Broker final boss with escalating attacks and control inversion
+- [x] Locked exits, stage completion, pause, restart and game-over flows
 - [x] Responsive and accessible HUD overlays
-- [x] Unit and Flame game tests
+- [x] Haptics, touch-control and reduced-effects settings
+- [x] Input, persistence and Flame game tests
+- [ ] Run `flutter analyze` and `flutter test` on Flutter 3.41+
 - [ ] Hosted CI workflow (blocked by current GitHub App workflow permission)
+- [ ] Commit the generated `pubspec.lock`
 
 ## Production Art and Audio
 
 - [ ] Establish one canonical Broskie model and palette
 - [ ] Create transparent, lossless idle/run/jump/hurt sprite sheets
 - [ ] Slice a consistent 32-pixel environment tileset
-- [ ] Create production sprites and effects for cubes, Volt-Cola and Foreman
+- [ ] Create production sprites and effects for cubes, Volt-Cola and both bosses
 - [ ] Compose and license music/SFX
-- [ ] Add audio settings, subtitles and reduced-motion options
+- [ ] Add volume settings, subtitles and reduced-motion tuning
 
-## Content Pipeline
+## Campaign Polish
 
-- [ ] Define a versioned level schema with validation and useful errors
-- [ ] Build a level authoring/export tool
-- [ ] Add eight polished Grey Zone levels
-- [ ] Add narrative dialogue after the overlay is connected and tested
-- [ ] Add save/progression only after progression design is stable
+- [ ] Physical-device playtesting and movement tuning
+- [ ] Add contextual tutorial prompts to Stage 1
+- [ ] Balance stage target times and boss damage windows
+- [ ] Add controller input and remapping
+- [ ] Add golden tests for major overlays
+- [ ] Add save migration/versioning before changing the progression schema
 
-## Future Worlds
+## Future Expansion
 
-- [ ] World 2: Neon Slums / Data Broker
-- [ ] World 3: Stock Exchange / Wall Street Bull
-- [ ] World 4: Cloud Server / Hater Cloud
-- [ ] World 5: Frozen Assets / Auditor
-- [ ] World 6: Deep Web
-- [ ] World 7: Penthouse / Lord Static
+- [ ] Wall Street Bull bonus encounter
+- [ ] Frozen Assets / Auditor expansion
+- [ ] Deep Web challenge stage
+- [ ] Lord Static post-game boss
+- [ ] Ghost runs and daily policy modifiers
 
-No future world is considered started merely because a class name or concept image exists.
+Future content is not considered started merely because a class name or concept image exists.
 
 ## Release
 

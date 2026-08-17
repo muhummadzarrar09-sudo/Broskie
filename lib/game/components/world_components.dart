@@ -8,31 +8,43 @@ import '../broskie_game.dart';
 import '../player.dart';
 
 class NeonCityBackdrop extends PositionComponent {
-  NeonCityBackdrop({required Vector2 levelSize})
-    : super(size: levelSize, priority: -100);
+  NeonCityBackdrop({
+    required Vector2 levelSize,
+    required this.skyTop,
+    required this.skyBottom,
+    required this.accent,
+    required this.reducedEffects,
+  }) : super(size: levelSize, priority: -100);
+
+  final Color skyTop;
+  final Color skyBottom;
+  final Color accent;
+  final bool reducedEffects;
 
   @override
   void render(Canvas canvas) {
     final bounds = Rect.fromLTWH(0, 0, size.x, size.y);
     final sky = Paint()
-      ..shader = const LinearGradient(
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0xFF080B1F), Color(0xFF241244), Color(0xFF071923)],
+        colors: [skyTop, skyBottom, const Color(0xFF071923)],
       ).createShader(bounds);
     canvas.drawRect(bounds, sky);
 
-    final moonPaint = Paint()..color = const Color(0x3347F9FF);
-    canvas.drawCircle(const Offset(700, 105), 72, moonPaint);
-    canvas.drawCircle(
-      const Offset(700, 105),
-      48,
-      Paint()..color = const Color(0x665FFBFF),
-    );
+    if (!reducedEffects) {
+      final moonPaint = Paint()..color = accent.withValues(alpha: 0.2);
+      canvas.drawCircle(const Offset(700, 105), 72, moonPaint);
+      canvas.drawCircle(
+        const Offset(700, 105),
+        48,
+        Paint()..color = accent.withValues(alpha: 0.38),
+      );
+    }
 
     final farPaint = Paint()..color = const Color(0xFF111B35);
     final nearPaint = Paint()..color = const Color(0xFF17263D);
-    final windowPaint = Paint()..color = const Color(0x9956F7FF);
+    final windowPaint = Paint()..color = accent.withValues(alpha: 0.6);
     for (var i = 0; i < 60; i++) {
       final x = i * 64.0;
       final wave = math.sin(i * 1.7) * 35;
@@ -60,7 +72,7 @@ class NeonCityBackdrop extends PositionComponent {
     }
 
     final gridPaint = Paint()
-      ..color = const Color(0x1839F6FF)
+      ..color = accent.withValues(alpha: reducedEffects ? 0.04 : 0.1)
       ..strokeWidth = 1;
     for (double x = 0; x < size.x; x += 64) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.y), gridPaint);

@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../models/campaign_progress.dart';
+import '../models/game_hud_state.dart';
+
 class LevelCompleteOverlay extends StatelessWidget {
   const LevelCompleteOverlay({
     super.key,
-    required this.cash,
-    required this.enemiesStomped,
+    required this.result,
+    required this.finalStage,
+    required this.onNext,
     required this.onReplay,
+    required this.onMenu,
   });
 
-  final int cash;
-  final int enemiesStomped;
+  final StageResult result;
+  final bool finalStage;
+  final VoidCallback onNext;
   final VoidCallback onReplay;
+  final VoidCallback onMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +27,7 @@ class LevelCompleteOverlay extends StatelessWidget {
         child: Center(
           child: Semantics(
             namesRoute: true,
-            label: 'Level complete',
+            label: 'Stage complete with rank ${result.rank.label}',
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: ConstrainedBox(
@@ -42,45 +49,61 @@ class LevelCompleteOverlay extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.bolt,
-                          color: Color(0xFFFFC12E),
-                          size: 56,
-                        ),
-                        const Text(
-                          'SYSTEM LIBERATED',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFFFFC12E),
-                            fontSize: 30,
+                        Text(
+                          result.rank.label,
+                          style: const TextStyle(
+                            color: Color(0xFFFFEC3D),
+                            fontSize: 68,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(height: 8),
                         const Text(
-                          'BROSKIE COOKED THE MONOPOLY.',
+                          'STAGE LIBERATED',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFFFC12E),
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(height: 22),
+                        const SizedBox(height: 20),
                         _ResultRow(
                           label: 'CASH EXTRACTED',
-                          value: '\$$cash',
+                          value: '\$${result.cash}',
                           color: const Color(0xFF6CFF83),
                         ),
                         _ResultRow(
                           label: 'OPPS STOMPED',
-                          value: '$enemiesStomped',
+                          value: '${result.enemiesDefeated}',
                           color: const Color(0xFFFF5474),
+                        ),
+                        _ResultRow(
+                          label: 'RUN TIME',
+                          value: _clock(result.elapsedSeconds),
+                          color: const Color(0xFF47F8FF),
                         ),
                         const SizedBox(height: 24),
                         FilledButton.icon(
-                          onPressed: onReplay,
-                          icon: const Icon(Icons.replay),
-                          label: const Text('RUN IT BACK'),
+                          onPressed: onNext,
+                          icon: Icon(
+                            finalStage ? Icons.flag : Icons.arrow_forward,
+                          ),
+                          label: Text(
+                            finalStage ? 'FINISH THE STORY' : 'NEXT STAGE',
+                          ),
+                        ),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          children: [
+                            TextButton(
+                              onPressed: onReplay,
+                              child: const Text('REPLAY'),
+                            ),
+                            TextButton(
+                              onPressed: onMenu,
+                              child: const Text('MENU'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -92,6 +115,11 @@ class LevelCompleteOverlay extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _clock(int seconds) {
+    final minutes = seconds ~/ 60;
+    return '$minutes:${(seconds % 60).toString().padLeft(2, '0')}';
   }
 }
 

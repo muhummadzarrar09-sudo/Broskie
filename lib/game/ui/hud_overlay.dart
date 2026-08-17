@@ -25,7 +25,36 @@ class BroskieHud extends StatelessWidget {
                 alignment: Alignment.topCenter,
                 child: _StatusBar(state: state, onPause: game.togglePause),
               ),
-              if (state.phase == GamePhase.playing)
+              if (state.broadcast != null)
+                Positioned(
+                  top: state.bossActive ? 126 : 106,
+                  left: 90,
+                  right: 90,
+                  child: IgnorePointer(
+                    child: Semantics(
+                      liveRegion: true,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: const Color(0xDD11172A),
+                          border: Border.all(color: const Color(0xFFFF3EC8)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Text(
+                            state.broadcast!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Color(0xFFFFF36A),
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              if (state.phase == GamePhase.playing && game.showTouchControls)
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: _TouchControls(game: game),
@@ -43,6 +72,12 @@ class _StatusBar extends StatelessWidget {
 
   final GameHudState state;
   final VoidCallback onPause;
+
+  String _clock(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainder = (seconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$remainder';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +116,19 @@ class _StatusBar extends StatelessWidget {
                     color: Color(0xFF6CFF83),
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _HudChip(
+                semanticLabel:
+                    'Stage ${state.stageNumber}, ${state.stageTitle}, ${state.elapsedSeconds} seconds',
+                child: Text(
+                  '${state.stageNumber}/4  ${state.stageTitle}  ${_clock(state.elapsedSeconds)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -127,6 +175,43 @@ class _StatusBar extends StatelessWidget {
               semanticsValue: '${(state.progress * 100).round()} percent',
             ),
           ),
+          const SizedBox(height: 5),
+          Row(
+            children: [
+              SizedBox(
+                width: 108,
+                child: Text(
+                  'FLOW: ${state.flowLabel}',
+                  style: const TextStyle(
+                    color: Color(0xFFFFEC3D),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: LinearProgressIndicator(
+                  minHeight: 5,
+                  value: state.flow / 100,
+                  color: const Color(0xFFFFEC3D),
+                  backgroundColor: const Color(0x6611172A),
+                  semanticsLabel: 'Flow meter',
+                  semanticsValue: state.flowLabel,
+                ),
+              ),
+              if (state.controlsInverted)
+                const Padding(
+                  padding: EdgeInsets.only(left: 12),
+                  child: Text(
+                    '⚠ CONTROLS HACKED',
+                    style: TextStyle(
+                      color: Color(0xFFFF3EC8),
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           if (state.bossActive) ...[
             const SizedBox(height: 9),
             Semantics(
@@ -135,10 +220,12 @@ class _StatusBar extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'THE FOREMAN',
+                  Text(
+                    state.stageNumber == 4 ? 'DATA BROKER' : 'THE FOREMAN',
                     style: TextStyle(
-                      color: Color(0xFFFFB329),
+                      color: state.stageNumber == 4
+                          ? const Color(0xFF55FF8A)
+                          : const Color(0xFFFFB329),
                       fontWeight: FontWeight.w900,
                       letterSpacing: 2,
                     ),
@@ -217,7 +304,9 @@ class _TouchControls extends StatelessWidget {
           accent: const Color(0xFFFF3EC8),
           onChanged: (pressed) {
             if (pressed) {
-              HapticFeedback.lightImpact();
+              if (game.hapticsEnabled) {
+                unawaited(HapticFeedback.lightImpact());
+              }
               game.jump();
             }
           },

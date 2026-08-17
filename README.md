@@ -1,23 +1,39 @@
 # Broskie
 
-A neon-soaked 2D platformer vertical slice built with Flutter and Flame.
+A compact neon-soaked 2D platformer campaign built with Flutter and Flame.
 
-Broskie runs through Neo-City, stomps corporate cubes, drinks Volt-Cola, and fights **The Foreman** to unlock the exit. The current repository intentionally focuses on one complete, testable level instead of pretending that seven unfinished worlds are done.
+Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums, defeats **The Foreman**, and attacks the **Data Broker** inside the Monopoly Core. The campaign has a beginning, progression, two boss encounters and a real ending—without pretending that dozens of placeholder levels are complete.
 
-## What is playable
+## Campaign
 
-- One 3,660-pixel side-scrolling level with gaps, platforms and checkpoints
+1. **The Grey Zone — Unauthorized Individuality**
+   Movement onboarding, alternate platform lines, corporate cubes and the first propaganda hijack.
+2. **The Factory — Management Is Watching**
+   Industrial traversal, denser patrols and a three-speed Foreman boss fight.
+3. **Neon Slums — Terms and Conditions Apply**
+   Data spikes, control-hack zones, rebel terminals and a longer technical route.
+4. **Monopoly Core — Going Live**
+   Combined hazards and the ten-hit Data Broker fight with projectiles, control inversion and escalating speed.
+
+## Features
+
+- Main menu, continue/new run, stage select, settings, credits and ending
+- Saved campaign unlocks, best ranks and accessibility preferences
+- Four 3,000–4,600-pixel side-scrolling stages
 - Responsive fixed-resolution camera using Flame's `World` correctly
-- Momentum movement, running, coyote time and jump buffering
+- Momentum movement, running, coyote time, jump buffering and movement substeps
 - Keyboard and multi-touch controls
-- Three health points, damage knockback, fall respawns and invulnerability frames
-- Cash-chip collectibles
-- A mystery block that releases a functional Volt-Cola speed/power state
-- Three patrolling corporate-cube enemies with stomp behavior
-- A three-speed, six-hit Foreman boss fight
-- Locked exit, boss reward, game-over, pause, restart and completion flows
-- Responsive HUD with semantic labels
-- Programmatic pixel rendering, so the game has no missing runtime art dependency
+- Health, knockback, fall respawns, checkpoints and invulnerability frames
+- Cash chips, hackable propaganda terminals and functional Volt-Cola power
+- **Flow system** with CHILL, COOKING, LOCKED IN and UNGOVERNABLE states
+- Patrolling corporate-cube enemies and stomp combos
+- Foreman and Data Broker boss encounters
+- Data spikes, hack zones and Data Broker pulse attacks
+- Stage briefings, reactive broadcasts, pause/restart and game-over flows
+- C/B/A/S stage ranks based on health, time and peak Flow
+- Responsive HUD with semantic labels and optional touch controls
+- Haptic and reduced-effects preferences
+- Cohesive programmatic pixel rendering with no missing runtime art dependency
 
 ## Controls
 
@@ -25,7 +41,7 @@ Broskie runs through Neo-City, stomps corporate cubes, drinks Volt-Cola, and fig
 | --- | --- | --- |
 | Move | A/D or arrow keys | Left/right buttons |
 | Jump | Space, W or up arrow | Jump button |
-| Run | Shift | Volt-Cola increases touch movement speed |
+| Run | Shift | Volt-Cola and Flow increase movement speed |
 | Pause | HUD pause button | HUD pause button |
 
 The Android build is locked to landscape and uses an immersive fullscreen presentation.
@@ -73,35 +89,38 @@ For a directly installable QA artifact:
 ./build_broskie.ps1 -Target apk
 ```
 
-The bundle path is `build/app/outputs/bundle/release/app-release.aab`.
-
 ## Architecture
 
 ```text
 GameWidget overlays
-├── HUD + multi-touch controls
-├── Pause
-├── Game over
-└── Level complete
+├── Main menu / stage select
+├── Stage briefing / HUD / touch controls
+├── Settings / pause / game over / results
+└── Ending / credits
 
 BroskieGame
+├── CampaignRepository → SharedPreferences
+├── Stage catalog + campaign/rank state
 └── Flame World (camera renders this tree)
-    ├── NeonCityBackdrop
+    ├── Themed NeonCityBackdrop
     ├── SolidSurface / MysteryBlock / BossGate
-    ├── CashChip / VoltCola / LevelExit
+    ├── CashChip / VoltCola / PropagandaTerminal / LevelExit
+    ├── DataSpike / HackZone / DataPulse
     ├── GrumpyBrick enemies
-    ├── TheForeman
+    ├── TheForeman / DataBrokerBoss
     └── Player
 ```
 
-Gameplay is deterministic and asset-independent. Input state is isolated in `InputController`; HUD state is published through a typed `ValueNotifier`; collision surfaces are tracked explicitly for stable axis-separated platform physics.
+Input is isolated in `InputController`; campaign and HUD state are exposed through typed `ValueNotifier`s; collision surfaces are tracked explicitly for stable axis-separated platform physics. `CampaignRepository` has both device-backed and in-memory implementations so persistence can be tested without plugins.
 
 ## Concept art
 
-`assets/images/` contains 1408×768 JPEG concept boards. They are deliberately **not bundled into the app** and are references, not production sprite sheets. Runtime visuals are currently rendered in code until consistent transparent sprites are created.
+`assets/images/` contains 1408×768 JPEG concept boards. They are deliberately **not bundled into the app** and are references, not production sprite sheets. Runtime visuals remain code-rendered until consistent transparent sprite sheets are produced.
 
 ## Quality gates
 
-GitHub Actions checks formatting, static analysis and tests on every branch push and pull request. Application dependencies are pinned by `pubspec.lock` once resolved.
+The repository includes input, campaign-persistence and Flame game tests. The guarded PowerShell release script refuses to package the app until formatting, static analysis and all tests pass.
 
-See [roadmap.md](roadmap.md) for the honest next steps.
+Hosted CI is still pending because the current GitHub App connection cannot add workflow files. The first Flutter-enabled checkout should commit the generated `pubspec.lock`.
+
+See [roadmap.md](roadmap.md) for remaining production work.

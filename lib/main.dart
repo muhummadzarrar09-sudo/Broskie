@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'game/broskie_game.dart';
-import 'game/models/game_hud_state.dart';
+import 'game/ui/credits_overlay.dart';
+import 'game/ui/ending_overlay.dart';
 import 'game/ui/game_over.dart';
 import 'game/ui/hud_overlay.dart';
 import 'game/ui/level_complete.dart';
+import 'game/ui/main_menu.dart';
 import 'game/ui/pause_overlay.dart';
+import 'game/ui/settings_overlay.dart';
+import 'game/ui/stage_intro.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,23 +52,41 @@ class _BroskieAppState extends State<BroskieApp> {
           game: _game,
           overlayBuilderMap: {
             BroskieGame.hudOverlay: (context, game) => BroskieHud(game: game),
+            BroskieGame.menuOverlay: (context, game) =>
+                MainMenuOverlay(game: game),
+            BroskieGame.stageIntroOverlay: (context, game) =>
+                StageIntroOverlay(game: game),
+            BroskieGame.settingsOverlay: (context, game) =>
+                SettingsOverlay(game: game),
+            BroskieGame.creditsOverlay: (context, game) =>
+                CreditsOverlay(onClose: game.closeCredits),
             BroskieGame.pauseOverlay: (context, game) => PauseOverlay(
               onResume: game.togglePause,
-              onRestart: game.restartUnawaited,
+              onRestart: game.restartStage,
+              onSettings: game.openSettings,
+              onMenu: game.showMenu,
             ),
-            BroskieGame.gameOverOverlay: (context, game) =>
-                GameOverOverlay(onRestart: game.restartUnawaited),
-            BroskieGame.completeOverlay: (context, game) =>
-                ValueListenableBuilder<GameHudState>(
-                  valueListenable: game.hud,
-                  builder: (context, state, _) => LevelCompleteOverlay(
-                    cash: state.cash,
-                    enemiesStomped: game.enemiesDefeated,
-                    onReplay: game.restartUnawaited,
-                  ),
-                ),
+            BroskieGame.gameOverOverlay: (context, game) => GameOverOverlay(
+              onRestart: game.restartStage,
+              onMenu: game.showMenu,
+            ),
+            BroskieGame.completeOverlay: (context, game) {
+              final result = game.lastResult;
+              if (result == null) {
+                return const SizedBox.shrink();
+              }
+              return LevelCompleteOverlay(
+                result: result,
+                finalStage: game.currentStageIndex == 3,
+                onNext: game.nextStage,
+                onReplay: game.restartStage,
+                onMenu: game.showMenu,
+              );
+            },
+            BroskieGame.endingOverlay: (context, game) =>
+                EndingOverlay(game: game),
           },
-          initialActiveOverlays: const [BroskieGame.hudOverlay],
+          initialActiveOverlays: const [BroskieGame.menuOverlay],
         ),
       ),
     );

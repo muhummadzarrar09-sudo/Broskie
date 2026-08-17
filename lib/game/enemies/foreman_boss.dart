@@ -77,7 +77,8 @@ class TheForeman extends PositionComponent
       _hurtCooldown = 0.55;
       direction = other.x < x ? 1 : -1;
       other.bounce();
-      game.bossDamaged(health);
+      game.addFlow(16);
+      game.bossDamaged(health, maxHealth);
       if (health <= 0) {
         defeated = true;
         game.bossDefeated();
