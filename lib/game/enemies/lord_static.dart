@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 
@@ -29,12 +30,14 @@ class LordStatic extends PositionComponent with HasGameRef<BroskieGame>, Collisi
 
   void _changeShape() {
     currentShape = SwarmShape.values[_rng.nextInt(SwarmShape.values.length)];
-    print("Lord Static changed shape to: ${currentShape.name}");
+    gameRef.showDialogue("LORD STATIC", "Swarm Shape Shifted: ${currentShape.name.toUpperCase()}");
     
     if (currentShape == SwarmShape.fist) {
       size = Vector2(150, 150);
     } else if (currentShape == SwarmShape.sword) {
       size = Vector2(50, 250);
+    } else {
+      size = Vector2(100, 100);
     }
   }
 
@@ -46,7 +49,23 @@ class LordStatic extends PositionComponent with HasGameRef<BroskieGame>, Collisi
   }
 
   void _triggerBroskieCorpEnding() {
-    print("STORY ENDING: Broskie takes over the Monopoly!");
-    print("Broskie: 'Standardization is over. Everyone, find your own beat. Welcome to Broskie Corp.'");
+    gameRef.showDialogue("BROSKIE", "Standardization is over. Everyone, find your own beat. Welcome to Broskie Corp!");
+    removeFromParent();
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final rect = size.toRect();
+    final staticPaint = Paint()..color = Colors.white.withOpacity(0.8);
+    final cyanPaint = Paint()..color = Colors.cyanAccent.withOpacity(0.6);
+
+    canvas.drawRect(rect, cyanPaint);
+
+    // Static Noise Particles
+    for (int i = 0; i < 40; i++) {
+      double px = _rng.nextDouble() * size.x;
+      double py = _rng.nextDouble() * size.y;
+      canvas.drawRect(Rect.fromLTWH(px, py, 3, 3), staticPaint);
+    }
   }
 }

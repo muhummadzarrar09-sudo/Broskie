@@ -1,14 +1,14 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-part 'game_state.g.dart';
+// Game Cash Provider
+final gameCashProvider = AsyncNotifierProvider<GameCashNotifier, int>(GameCashNotifier.new);
 
-@Riverpod(keepAlive: true)
-class GameCash extends _$GameCash {
+class GameCashNotifier extends AsyncNotifier<int> {
   static const _key = 'broskie_cash';
-  
+
   @override
-  FutureOr<int> build() async {
+  Future<int> build() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt(_key) ?? 0;
   }
@@ -34,12 +34,14 @@ class GameCash extends _$GameCash {
   }
 }
 
-@Riverpod(keepAlive: true)
-class GameProgression extends _$GameProgression {
+// Game Progression Provider
+final gameProgressionProvider = AsyncNotifierProvider<GameProgressionNotifier, int>(GameProgressionNotifier.new);
+
+class GameProgressionNotifier extends AsyncNotifier<int> {
   static const _key = 'broskie_level';
-  
+
   @override
-  FutureOr<int> build() async {
+  Future<int> build() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt(_key) ?? 1;
   }
