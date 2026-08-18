@@ -14,6 +14,7 @@ import 'game/ui/pause_menu.dart';
 import 'game/ui/shop_overlay.dart';
 import 'game/ui/level_select.dart';
 import 'game/ui/settings_overlay.dart';
+import 'game/ui/splash_screen.dart';
 import 'game/ui/victory_overlay.dart';
 
 void main() async {
@@ -35,7 +36,7 @@ class BroskieApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       title: 'Broskie Game',
       theme: ThemeData.dark(),
-      home: const BroskieGameScreen(),
+      home: const SplashScreen(next: BroskieGameScreen()),
     );
   }
 }
