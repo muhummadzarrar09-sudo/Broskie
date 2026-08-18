@@ -8,6 +8,7 @@ import 'game/ui/ending_overlay.dart';
 import 'game/ui/game_over.dart';
 import 'game/ui/hud_overlay.dart';
 import 'game/ui/level_complete.dart';
+import 'game/ui/loading_screen.dart';
 import 'game/ui/main_menu.dart';
 import 'game/ui/pause_overlay.dart';
 import 'game/ui/settings_overlay.dart';
@@ -50,6 +51,8 @@ class _BroskieAppState extends State<BroskieApp> {
         backgroundColor: const Color(0xFF050711),
         body: GameWidget<BroskieGame>(
           game: _game,
+          loadingBuilder: (context) => const BroskieLoadingScreen(),
+          errorBuilder: (context, error) => BroskieLoadError(error: error),
           overlayBuilderMap: {
             BroskieGame.hudOverlay: (context, game) => BroskieHud(game: game),
             BroskieGame.menuOverlay: (context, game) =>

@@ -20,7 +20,7 @@ Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums,
 - Main menu, continue/new run, stage select, settings, credits and ending
 - Saved campaign unlocks, best ranks and accessibility preferences
 - Four 3,000–4,600-pixel side-scrolling stages
-- Responsive fixed-resolution camera using Flame's `World` correctly
+- Responsive full-width camera with smooth follow, forward look-ahead and stage-edge bounds
 - Momentum movement, running, directional dash, coyote time, jump buffering and movement substeps
 - Keyboard and multi-touch controls
 - Health, knockback, fall respawns, checkpoints and invulnerability frames
@@ -34,6 +34,8 @@ Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums,
 - Responsive HUD with semantic labels and optional touch controls
 - Haptic and reduced-effects preferences
 - AI-assisted production backgrounds and character sprites backed by reliable code collision geometry
+- Stage-specific rain, sparks, steam/data particles and distant moving traffic
+- Native launch artwork plus a full branded loading/error presentation
 
 ## Controls
 

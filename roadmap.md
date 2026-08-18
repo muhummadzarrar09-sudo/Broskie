@@ -9,8 +9,10 @@ This roadmap reports only integrated code as complete. Runtime certification on 
 - [x] Stage briefings, reactive broadcasts and a complete ending
 - [x] SharedPreferences progression, settings and best-rank persistence
 - [x] C/B/A/S stage result system
-- [x] Correct Flame `World` and fixed-resolution camera architecture
+- [x] Correct Flame `World`, smooth follow target and wide-screen responsive camera
 - [x] AI-assisted stage backgrounds and transparent player/enemy/boss sprites
+- [x] Animated rain, sparks, ambient particles and distant traffic
+- [x] Branded native/Flutter loading presentation
 - [x] Code-driven platforms, collectibles, hazards and reliable hitboxes
 - [x] Momentum movement, acceleration, friction, running and directional dash
 - [x] Stable axis-separated platform collisions with movement substeps

@@ -39,6 +39,22 @@ void main() {
   );
 
   testWithGame<BroskieGame>(
+    'camera follows Broskie through the side-scrolling world',
+    () => BroskieGame(campaignRepository: MemoryCampaignRepository()),
+    (game) async {
+      await game.prepareStage(0);
+      game.beginStage();
+      game.player.x = 1400;
+
+      game
+        ..update(0.1)
+        ..update(0.1);
+
+      expect(game.camera.viewfinder.position.x, greaterThan(600));
+    },
+  );
+
+  testWithGame<BroskieGame>(
     'rejects invalid cash and persists stage progression',
     () => BroskieGame(campaignRepository: MemoryCampaignRepository()),
     (game) async {

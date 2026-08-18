@@ -331,21 +331,21 @@ class _TouchControls extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         _HoldButton(
-          size: compact ? 58 : 74,
+          size: compact ? 68 : 84,
           label: 'Move left',
           icon: Icons.arrow_left_rounded,
           onChanged: game.setTouchLeft,
         ),
-        SizedBox(width: compact ? 7 : 12),
+        SizedBox(width: compact ? 9 : 14),
         _HoldButton(
-          size: compact ? 58 : 74,
+          size: compact ? 68 : 84,
           label: 'Move right',
           icon: Icons.arrow_right_rounded,
           onChanged: game.setTouchRight,
         ),
         const Spacer(),
         _HoldButton(
-          size: compact ? 56 : 68,
+          size: compact ? 66 : 78,
           label: 'Dash',
           icon: Icons.double_arrow_rounded,
           accent: const Color(0xFFFFEC3D),
@@ -358,9 +358,9 @@ class _TouchControls extends StatelessWidget {
             }
           },
         ),
-        SizedBox(width: compact ? 7 : 12),
+        SizedBox(width: compact ? 9 : 14),
         _HoldButton(
-          size: compact ? 62 : 74,
+          size: compact ? 74 : 88,
           label: 'Jump',
           icon: Icons.arrow_upward_rounded,
           accent: const Color(0xFFFF3EC8),

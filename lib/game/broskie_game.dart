@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
@@ -6,6 +7,7 @@ import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 
 import 'components/hazards.dart';
+import 'components/stage_atmosphere.dart';
 import 'components/world_components.dart';
 import 'enemies/data_broker_boss.dart';
 import 'enemies/enemy.dart';
@@ -57,6 +59,7 @@ class BroskieGame extends FlameGame
 
   late Player player;
   late LevelExit exit;
+  late PositionComponent _cameraTarget;
   BossGate? bossGate;
 
   CampaignProgress progress = const CampaignProgress();
@@ -70,6 +73,7 @@ class BroskieGame extends FlameGame
   int bossMaxHealth = 1;
   double flow = 0;
   double stageTime = 0;
+  double _visibleWorldWidth = logicalWidth;
 
   Vector2 _checkpoint = Vector2(80, groundY - 58);
   bool _bossEncounterStarted = false;
@@ -92,13 +96,30 @@ class BroskieGame extends FlameGame
   bool get showTouchControls => progress.showTouchControls;
 
   @override
+  void onGameResize(Vector2 canvasSize) {
+    super.onGameResize(canvasSize);
+    if (canvasSize.y <= 0) {
+      return;
+    }
+    final responsiveWidth = (logicalHeight * canvasSize.x / canvasSize.y)
+        .clamp(logicalWidth, 1280.0)
+        .toDouble();
+    if ((responsiveWidth - _visibleWorldWidth).abs() < 1) {
+      return;
+    }
+    _visibleWorldWidth = responsiveWidth;
+    camera.viewport = FixedResolutionViewport(
+      resolution: Vector2(_visibleWorldWidth, logicalHeight),
+    );
+  }
+
+  @override
   Future<void> onLoad() async {
     await super.onLoad();
     await images.loadAll(RuntimeAssets.all);
     progress = await _campaignRepository.load();
     campaign.value = progress;
     await _buildStage();
-    camera.viewfinder.position = Vector2(logicalWidth / 2, logicalHeight / 2);
     phase = GamePhase.menu;
     _gameReady = true;
     campaign.value = progress;
@@ -130,10 +151,16 @@ class BroskieGame extends FlameGame
       _updateTutorial();
     }
 
-    final cameraX = player.center.x
-        .clamp(logicalWidth / 2, levelWidth - logicalWidth / 2)
+    final halfView = _visibleWorldWidth / 2;
+    final lookAhead =
+        player.facing * math.min(180.0, 70.0 + player.velocity.x.abs() * 0.16);
+    final desiredCameraX = (player.center.x + lookAhead)
+        .clamp(halfView, levelWidth - halfView)
         .toDouble();
-    camera.viewfinder.position.setValues(cameraX, logicalHeight / 2);
+    final cameraResponsiveness = 1 - math.exp(-7.5 * dt);
+    _cameraTarget.x +=
+        (desiredCameraX - _cameraTarget.x) * cameraResponsiveness;
+    _cameraTarget.y = logicalHeight / 2;
 
     for (final checkpoint in _checkpoints) {
       if (player.x >= checkpoint.x && checkpoint.x > _checkpoint.x) {
@@ -178,6 +205,12 @@ class BroskieGame extends FlameGame
         accent: currentStage.accent,
         reducedEffects: progress.reducedEffects,
       ),
+      StageAtmosphere(
+        levelSize: Vector2(levelWidth, logicalHeight),
+        stageIndex: currentStageIndex,
+        accent: currentStage.accent,
+        reducedEffects: progress.reducedEffects,
+      ),
     ];
 
     switch (currentStageIndex) {
@@ -192,8 +225,15 @@ class BroskieGame extends FlameGame
     }
 
     player = Player(position: Vector2(80, groundY - 58));
-    components.addAll([exit, player]);
+    _cameraTarget = PositionComponent(
+      position: Vector2(_visibleWorldWidth / 2, logicalHeight / 2),
+      priority: -90,
+    );
+    components.addAll([exit, player, _cameraTarget]);
     await world.addAll(components);
+    camera
+      ..stop()
+      ..follow(_cameraTarget, horizontalOnly: true, snap: true);
   }
 
   void _buildGreyZone(List<Component> components) {
@@ -516,7 +556,6 @@ class BroskieGame extends FlameGame
     await ready();
     await _buildStage();
     await ready();
-    camera.viewfinder.position = Vector2(logicalWidth / 2, logicalHeight / 2);
     phase = GamePhase.stageIntro;
     overlays.clear();
     _addOverlay(hudOverlay);
