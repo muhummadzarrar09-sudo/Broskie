@@ -1,117 +1,82 @@
 import 'package:flutter/material.dart';
+import 'package:broskie_game/game/broskie_game.dart';
 
-import '../broskie_game.dart';
-import '../models/campaign_progress.dart';
+class SettingsOverlay extends StatefulWidget {
+  final BroskieGame game;
 
-class SettingsOverlay extends StatelessWidget {
   const SettingsOverlay({super.key, required this.game});
 
-  final BroskieGame game;
+  @override
+  State<SettingsOverlay> createState() => _SettingsOverlayState();
+}
+
+class _SettingsOverlayState extends State<SettingsOverlay> {
+  bool sfxEnabled = true;
+  bool touchControlsEnabled = true;
+  double shakeScale = 1.0;
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0xE8050711),
-      child: SafeArea(
-        minimum: const EdgeInsets.all(8),
-        child: Center(
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Card(
-                color: const Color(0xFF11172A),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                  child: ValueListenableBuilder<CampaignProgress>(
-                    valueListenable: game.campaign,
-                    builder: (context, progress, _) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const FittedBox(
-                            child: Text(
-                              'SYSTEM SETTINGS',
-                              style: TextStyle(
-                                color: Color(0xFF47F8FF),
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SwitchListTile.adaptive(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Haptic feedback'),
-                            subtitle: const Text('Touch jump and impacts'),
-                            value: progress.hapticsEnabled,
-                            onChanged: game.setHaptics,
-                          ),
-                          SwitchListTile.adaptive(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Music & sound effects'),
-                            subtitle: const Text('Placeholder neon audio'),
-                            value: progress.audioEnabled,
-                            onChanged: game.setAudio,
-                          ),
-                          SwitchListTile.adaptive(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('On-screen controls'),
-                            subtitle: const Text(
-                              'Hide for keyboard/controller',
-                            ),
-                            value: progress.showTouchControls,
-                            onChanged: game.setTouchControls,
-                          ),
-                          Row(
-                            children: [
-                              const Expanded(child: Text('Control size')),
-                              Text(
-                                '${(progress.controlScale * 100).round()}%',
-                                style: const TextStyle(
-                                  color: Color(0xFF47F8FF),
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Slider(
-                            min: 0.9,
-                            max: 1.6,
-                            divisions: 7,
-                            value: progress.controlScale,
-                            label: '${(progress.controlScale * 100).round()}%',
-                            onChanged: game.setControlScale,
-                          ),
-                          SwitchListTile.adaptive(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Reduced effects'),
-                            subtitle: const Text(
-                              'Less glow and visual intensity',
-                            ),
-                            value: progress.reducedEffects,
-                            onChanged: game.setReducedEffects,
-                          ),
-                          const SizedBox(height: 8),
-                          FilledButton.icon(
-                            onPressed: game.closeSettings,
-                            icon: const Icon(Icons.check),
-                            label: const Text('SAVE & CLOSE'),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
+    return Center(
+      child: Container(
+        width: 340,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.95),
+          border: Border.all(color: const Color(0xFF00E5FF), width: 4),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "SYSTEM SETTINGS",
+              style: TextStyle(
+                color: Color(0xFF00E5FF),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'monospace',
               ),
             ),
-          ),
+            const Divider(color: Colors.white24, height: 20),
+
+            SwitchListTile(
+              activeColor: const Color(0xFF00E5FF),
+              title: const Text("Sound FX", style: TextStyle(color: Colors.white)),
+              value: sfxEnabled,
+              onChanged: (val) => setState(() => sfxEnabled = val),
+            ),
+
+            SwitchListTile(
+              activeColor: const Color(0xFF00E5FF),
+              title: const Text("Touch Controls", style: TextStyle(color: Colors.white)),
+              value: touchControlsEnabled,
+              onChanged: (val) => setState(() => touchControlsEnabled = val),
+            ),
+
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Screen Shake", style: TextStyle(color: Colors.white)),
+                Text("${(shakeScale * 100).toInt()}%", style: const TextStyle(color: Colors.amber)),
+              ],
+            ),
+            Slider(
+              activeColor: Colors.amber,
+              value: shakeScale,
+              onChanged: (val) => setState(() => shakeScale = val),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF)),
+              onPressed: () => widget.game.overlays.remove('Settings'),
+              child: const Text("SAVE & EXIT", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
+          ],
         ),
       ),
     );

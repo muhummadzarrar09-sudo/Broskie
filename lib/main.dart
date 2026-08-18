@@ -10,6 +10,9 @@ import 'game/ui/news_ticker.dart';
 import 'game/ui/touch_controls.dart';
 import 'game/ui/pause_menu.dart';
 import 'game/ui/shop_overlay.dart';
+import 'game/ui/level_select.dart';
+import 'game/ui/settings_overlay.dart';
+import 'game/ui/victory_overlay.dart';
 
 void main() {
   runApp(
@@ -77,7 +80,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                           const Icon(Icons.flash_on, color: Colors.amber, size: 20),
                           const SizedBox(width: 6),
                           Text(
-                            "BROSKIE | ${game.player.currentPower.name.toUpperCase()}",
+                            "STAGE ${game.currentStage} | BROSKIE",
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
                           ),
                         ],
@@ -93,11 +96,23 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            "STOMPED: ${game.enemiesDefeated}",
+                            "CASH: \$${game.scoreCoins}",
                             style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
                           ),
                         ),
                         const SizedBox(width: 10),
+
+                        // Stage Select Button
+                        IconButton(
+                          icon: const Icon(Icons.map, color: Colors.amber, size: 32),
+                          onPressed: () => game.overlays.add('LevelSelect'),
+                        ),
+
+                        // Settings Button
+                        IconButton(
+                          icon: const Icon(Icons.settings, color: Colors.grey, size: 32),
+                          onPressed: () => game.overlays.add('Settings'),
+                        ),
 
                         // Pause Button
                         IconButton(
@@ -130,9 +145,15 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
             ],
           ),
 
+          'LevelSelect': (context, game) => LevelSelectOverlay(game: game),
+
+          'Settings': (context, game) => SettingsOverlay(game: game),
+
           'PauseMenu': (context, game) => PauseMenuOverlay(game: game),
 
           'Shop': (context, game) => ShopOverlay(game: game),
+
+          'Victory': (context, game) => VictoryOverlay(game: game),
 
           'GameOver': (context, game) => GameOverOverlay(
             onRestart: () => game.restart(),

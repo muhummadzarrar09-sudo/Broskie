@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'player.dart';
 import 'blocks/interactable_block.dart';
 import 'blocks/hazards.dart';
+import 'blocks/collectibles.dart';
 import 'enemies/enemy.dart';
 import 'enemies/bull_enemy.dart';
 import 'enemies/foreman_boss.dart';
@@ -24,13 +25,13 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   late Player player;
   final WidgetRef ref;
 
+  int currentStage = 1; // 1, 2, 3, 4
   String activeSpeaker = 'BROSKIE CORP';
   String activeDialogue = '';
   int scoreCoins = 0;
   int enemiesDefeated = 0;
   bool isPaused = false;
 
-  // Camera Shake Effect State
   double shakeIntensity = 0;
 
   BroskieGame({required this.ref});
@@ -53,7 +54,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       add(ProceduralSkylineParallax());
     }
 
-    _buildMassiveHardLevel();
+    _buildCurrentStage();
   }
 
   @override
@@ -83,103 +84,99 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     }
   }
 
-  void _buildMassiveHardLevel() {
+  void advanceStage() {
+    if (currentStage < 4) {
+      currentStage++;
+      restart();
+    } else {
+      pauseEngine();
+      overlays.add('Victory');
+    }
+  }
+
+  void _buildCurrentStage() {
     player = Player(position: Vector2(100, 300));
     add(player);
     camera.follow(player);
 
-    // --- SECTOR 1: THE GREY ZONE ENTRY ---
-    add(Floor(Vector2(-200, 480), Vector2(2200, 120)));
+    if (currentStage == 1) {
+      _buildStage1GreyZone();
+    } else if (currentStage == 2) {
+      _buildStage2NeonSlums();
+    } else if (currentStage == 3) {
+      _buildStage3StockExchange();
+    } else {
+      _buildStage4ExecutiveArena();
+    }
+  }
 
+  void _buildStage1GreyZone() {
+    add(Floor(Vector2(-200, 480), Vector2(3000, 120)));
     add(InteractableBlock(position: Vector2(300, 340), type: BlockType.mystery));
     add(InteractableBlock(position: Vector2(332, 340), type: BlockType.brick));
-    add(InteractableBlock(position: Vector2(364, 340), type: BlockType.mystery));
+    add(DataBitCoin(position: Vector2(500, 380)));
+    add(DataBitCoin(position: Vector2(540, 380)));
 
     add(InteractableLore(
       position: Vector2(180, 432),
-      speaker: "BROSKIE CORP TERMINAL",
-      text: "SYSTEM ALERT: Monopoly forces are restructuring Neo-City! Use 'J' or 'F' to throw Vinyl Boomerangs!",
+      speaker: "STAGE 1-1",
+      text: "THE GREY ZONE: Learn to run, jump, and throw Vinyl Boomerangs (J/F)!",
     ));
 
-    add(GrumpyBrick(position: Vector2(500, 448)));
     add(GrumpyBrick(position: Vector2(800, 448)));
-    add(WallStreetBull(position: Vector2(1200, 432)));
+    add(GrumpyBrick(position: Vector2(1200, 448)));
+    add(LevelExit(position: Vector2(2500, 352)));
+  }
 
-    // --- SECTOR 2: THE LASER & MOVING PLATFORM PARKOUR RUN ---
-    add(DataSpike(position: Vector2(2200, 480), size: Vector2(800, 32)));
+  void _buildStage2NeonSlums() {
+    add(Floor(Vector2(-200, 480), Vector2(1500, 120)));
+    add(DataSpike(position: Vector2(1300, 480), size: Vector2(800, 32)));
 
-    add(Floor(Vector2(2100, 360), Vector2(180, 24)));
     add(MovingPlatform(
-      position: Vector2(2350, 320),
+      position: Vector2(1450, 320),
       size: Vector2(120, 24),
-      targetPos: Vector2(2750, 320),
+      targetPos: Vector2(1850, 320),
+      speed: 160,
+    ));
+
+    add(Floor(Vector2(2000, 340), Vector2(1500, 120)));
+    add(PropagandaSign(position: Vector2(2200, 276)));
+    add(LaserHazard(position: Vector2(2500, 180), size: Vector2(12, 160)));
+    add(HaterCloud(position: Vector2(2700, 180)));
+    add(LevelExit(position: Vector2(3300, 212)));
+  }
+
+  void _buildStage3StockExchange() {
+    add(Floor(Vector2(-200, 480), Vector2(1800, 120)));
+    add(WallStreetBull(position: Vector2(800, 432)));
+    add(WallStreetBull(position: Vector2(1400, 432)));
+
+    add(DataSpike(position: Vector2(1600, 480), size: Vector2(1000, 32)));
+
+    add(MovingPlatform(
+      position: Vector2(1700, 400),
+      size: Vector2(120, 24),
+      targetPos: Vector2(1700, 180),
       speed: 140,
     ));
 
-    add(Floor(Vector2(2900, 280), Vector2(200, 24)));
-    add(LaserHazard(position: Vector2(3000, 160), size: Vector2(12, 120)));
+    add(Floor(Vector2(1900, 180), Vector2(1200, 24)));
+    add(AuditorEnemy(position: Vector2(2200, 116)));
+    add(LevelExit(position: Vector2(2900, 52)));
+  }
 
-    add(CrumblingPlatform(position: Vector2(3150, 280), size: Vector2(100, 24)));
-    add(CrumblingPlatform(position: Vector2(3300, 280), size: Vector2(100, 24)));
-
-    add(Floor(Vector2(3450, 340), Vector2(300, 24)));
-    add(HaterCloud(position: Vector2(3500, 180)));
-    add(AuditorEnemy(position: Vector2(3600, 276)));
-
-    // Mid-Level Ground Floor
-    add(Floor(Vector2(3800, 480), Vector2(2700, 120)));
-    add(PropagandaSign(position: Vector2(4000, 416)));
-
-    add(InteractableBlock(position: Vector2(4200, 340), type: BlockType.mystery));
-    add(InteractableBlock(position: Vector2(4232, 340), type: BlockType.brick));
-    add(InteractableBlock(position: Vector2(4264, 340), type: BlockType.mystery));
-
-    add(WallStreetBull(position: Vector2(4500, 432)));
-    add(GrumpyBrick(position: Vector2(4800, 448)));
-    add(GrumpyBrick(position: Vector2(5100, 448)));
-
-    // --- SECTOR 3: VERTICAL TOWER CLIMB ---
-    add(DataSpike(position: Vector2(6500, 480), size: Vector2(1200, 32)));
-
-    add(MovingPlatform(
-      position: Vector2(6600, 400),
-      size: Vector2(120, 24),
-      targetPos: Vector2(6600, 180),
-      speed: 120,
-    ));
-
-    add(Floor(Vector2(6800, 180), Vector2(200, 24)));
-    add(LaserHazard(position: Vector2(6900, 60), size: Vector2(12, 120)));
-
-    add(MovingPlatform(
-      position: Vector2(7100, 180),
-      size: Vector2(120, 24),
-      targetPos: Vector2(7600, 180),
-      speed: 180,
-    ));
-
-    add(Floor(Vector2(7800, 240), Vector2(250, 24)));
-    add(AuditorEnemy(position: Vector2(7900, 176)));
-    add(HaterCloud(position: Vector2(8000, 100)));
-
-    // --- SECTOR 4: BOSS ARENA ---
-    add(Floor(Vector2(8500, 480), Vector2(3500, 120)));
+  void _buildStage4ExecutiveArena() {
+    add(Floor(Vector2(-200, 480), Vector2(4000, 120)));
 
     add(InteractableLore(
-      position: Vector2(8700, 432),
-      speaker: "BROSKIE CORP TERMINAL",
-      text: "WARNING: Entering High-Security Executive Arena! Restructuring Boss Ahead!",
+      position: Vector2(180, 432),
+      speaker: "STAGE 1-4",
+      text: "EXECUTIVE ARENA: Dual Boss Battle! Defeat The Foreman and Data-Broker!",
     ));
 
-    add(TheForeman(position: Vector2(9500, 384)));
-
-    add(InteractableBlock(position: Vector2(10200, 340), type: BlockType.mystery));
-    add(InteractableBlock(position: Vector2(10232, 340), type: BlockType.mystery));
-    add(InteractableBlock(position: Vector2(10264, 340), type: BlockType.mystery));
-
-    add(DataBrokerBoss(position: Vector2(10800, 400)));
-
-    add(LevelExit(position: Vector2(11600, 352)));
+    add(TheForeman(position: Vector2(1200, 384)));
+    add(DataBrokerBoss(position: Vector2(2500, 400)));
+    add(LevelExit(position: Vector2(3600, 352)));
   }
 
   void triggerGameOver() {
@@ -190,7 +187,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
   void triggerLevelComplete() {
     pauseEngine();
-    overlays.add('LevelComplete');
+    advanceStage();
   }
 
   void showDialogue(String speaker, String text) {
@@ -209,12 +206,11 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     overlays.remove('Dialogue');
     overlays.remove('PauseMenu');
     overlays.remove('Shop');
+    overlays.remove('Victory');
 
     children.where((c) => c is! ScreenHitbox && c is! ProceduralSkylineParallax).toList().forEach((c) => c.removeFromParent());
 
-    scoreCoins = 0;
-    enemiesDefeated = 0;
-    _buildMassiveHardLevel();
+    _buildCurrentStage();
     resumeEngine();
   }
 
