@@ -41,6 +41,7 @@ class LevelSelectOverlay extends StatelessWidget {
                     title: "The Grey Zone",
                     subtitle: "Concrete, Cubes & Intro",
                     isUnlocked: unlocked >= 1,
+                    stage: 1,
                     onTap: () => _launch(1),
                   ),
                   const SizedBox(height: 10),
@@ -49,6 +50,7 @@ class LevelSelectOverlay extends StatelessWidget {
                     title: "Neon Slums",
                     subtitle: "Lasers & Moving Platforms",
                     isUnlocked: unlocked >= 2,
+                    stage: 2,
                     onTap: () => _launch(2),
                   ),
                   const SizedBox(height: 10),
@@ -57,6 +59,7 @@ class LevelSelectOverlay extends StatelessWidget {
                     title: "Stock Exchange",
                     subtitle: "Bull Run & Tower Climb",
                     isUnlocked: unlocked >= 3,
+                    stage: 3,
                     onTap: () => _launch(3),
                   ),
                   const SizedBox(height: 10),
@@ -65,6 +68,7 @@ class LevelSelectOverlay extends StatelessWidget {
                     title: "Executive Arena",
                     subtitle: "The Foreman & Data Broker",
                     isUnlocked: unlocked >= 4,
+                    stage: 4,
                     onTap: () => _launch(4),
                   ),
                 ],
@@ -96,8 +100,10 @@ class LevelSelectOverlay extends StatelessWidget {
     required String title,
     required String subtitle,
     required bool isUnlocked,
+    required int stage,
     required VoidCallback onTap,
   }) {
+    final best = game.bestRankLabelFor(stage);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white10,
@@ -111,7 +117,25 @@ class LevelSelectOverlay extends StatelessWidget {
         ),
         title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-        trailing: Icon(isUnlocked ? Icons.play_arrow : Icons.lock, color: isUnlocked ? Colors.amber : Colors.grey),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isUnlocked && best != '—')
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Text(
+                  best,
+                  style: TextStyle(
+                    color: best == 'S' ? Colors.amber : (best == 'A' ? Colors.cyanAccent : Colors.white54),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+            Icon(isUnlocked ? Icons.play_arrow : Icons.lock, color: isUnlocked ? Colors.amber : Colors.grey),
+          ],
+        ),
         onTap: isUnlocked ? onTap : null,
       ),
     );

@@ -10,6 +10,13 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('stage rank math is honest', () {
+    expect(BroskieGame.stageRankFor(1, 3, 20), 'S'); // flawless and under par
+    expect(BroskieGame.stageRankFor(1, 2, 40), 'A'); // 2 hearts, within 1.5x par
+    expect(BroskieGame.stageRankFor(1, 1, 40), 'B'); // survived within 2x par
+    expect(BroskieGame.stageRankFor(1, 1, 80), 'C'); // barely made it
+  });
+
   testWithGame<BroskieGame>(
     'boots stage 1 with a player, floors and an exit',
     BroskieGame.new,

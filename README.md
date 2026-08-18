@@ -18,6 +18,7 @@ Broskie breaks out of Monopoly Corp's orientation, crosses the Grey Zone, the Ne
 - 3-heart health with knockback, invulnerability frames and **checkpoint flags** — falls respawn at the last flag, not the stage start — plus a live hearts/cash/stage HUD built on `ValueNotifier`s
 - **Boss-gated exit**: the Stage 4 portal stays LOCKED until both executives are down
 - **Progression that sticks**: cleared stages unlock the next one, saved on-device with your settings (SharedPreferences — no accounts, no servers, crew build)
+- **Stage ranks (C/B/A/S)**: graded on hearts kept and clear time vs par, best rank per stage saved and flexed on the level-complete screen AND the stage-select tiles
 - Game-feel movement kit: momentum, run, **dash** (K/Ctrl), **coyote time**, **jump buffering** and **variable jump height**
 - Vinyl boomerang with cooldown that damages grunts *and both bosses*
 - Real boss battles: Foreman pace/charge/wall-crash/dizzy cycle with three phases; Data-Broker hover corridors, aimed bolt volleys, control inversion, proxy fake-out and death dialogues
@@ -25,7 +26,7 @@ Broskie breaks out of Monopoly Corp's orientation, crosses the Grey Zone, the Ne
 - Slow debuffs wired live (Hater Cloud aura, Auditor audit), control-hack inversion, mystery-block power-ups with the Volt sheet swap
 - Cash collectibles feeding one shared wallet used by the Black Market shop
 - Stage select gated by real unlocks, pause menu, **settings that actually work** (SFX, music, touch controls, screen-shake strength), game-over, level-complete stats and victory flows
-- Wired audio: synthesized SFX (jump/dash/hit/pickup/power-up/stomp/boss/stage-complete/UI) plus the looping neon chiptune `neon_loop.wav`, with working mute switches
+- Wired audio: synthesized SFX (jump/dash/hit/pickup/power-up/stomp/boss/stage-complete/UI), the menu chiptune `neon_loop.wav`, plus **one synthesized stage theme per stage** (pure-code chiptunes — `tools/make_chiptunes.py` writes the WAVs), with working mute switches
 - Splash-screen news ticker, lore terminals, boss banter and the "DELETED" game-over stamp
 - AI sprite sheets (4-frame normal + Volt run cycles, transparent bosses/grunts) with a procedural pixel-painter fallback per component, so missing art never breaks a build
 

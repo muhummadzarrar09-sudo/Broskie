@@ -32,7 +32,10 @@ This roadmap reports only integrated, running code as complete. Runtime certific
 - [x] Working settings (SFX / music / touch controls / shake strength) wired live
 - [x] On-device persistence of settings + stage unlocks (crew build, no accounts)
 - [x] Unlock-gated stage select
-- [x] Flame smoke tests against the live API (boot / restart / fall / advance / checkpoint / boss-gate / unlock)
+- [x] C/B/A/S stage ranks (hearts + par time), persisted best ranks, shown on level-complete and stage select
+- [x] Hidden cash stashes off the main line in every stage
+- [x] One synthesized chiptune theme per stage (`tools/make_chiptunes.py` — zero samples, pure code)
+- [x] Flame smoke tests against the live API (boot / restart / fall / advance / checkpoint / boss-gate / unlock / rank math)
 - [x] Dead-code purge: ~2,800 lines of an unwired second architecture removed
 - [ ] Run `flutter analyze` and `flutter test` on Flutter 3.41+ (this sandbox has no Flutter SDK)
 - [ ] Commit the generated `pubspec.lock`

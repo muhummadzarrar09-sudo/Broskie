@@ -47,6 +47,11 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   int enemiesDefeated = 0;
   bool isPaused = false;
 
+  // Stage performance tracking for ranks + persistence.
+  double stageTime = 0;
+  String lastRank = 'C';
+  final Map<int, int> bestRanks = {}; // stage -> 1=C, 2=B, 3=A, 4=S
+
   final Vector2 playerSpawn = Vector2(100, 300);
   double shakeIntensity = 0;
 
@@ -79,6 +84,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
   @override
   void update(double dt) {
+    stageTime += dt;
     if (shakeIntensity > 0) {
       shakeIntensity -= dt * 10;
       if (shakeIntensity < 0) shakeIntensity = 0;
@@ -93,6 +99,34 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     shakeIntensity = intensity * shakeScale.value;
   }
 
+  // ── Stage ranks (crew bragging rights) ─────────────────────────────────
+  static const Map<int, double> parTimes = {1: 35, 2: 50, 3: 55, 4: 110};
+
+  static String stageRankFor(int stage, int hearts, double seconds) {
+    final par = parTimes[stage] ?? 60;
+    if (hearts >= maxHp && seconds <= par) return 'S';
+    if (hearts >= 2 && seconds <= par * 1.5) return 'A';
+    if (seconds <= par * 2 || hearts >= 2) return 'B';
+    return 'C';
+  }
+
+  static int rankValue(String rank) => switch (rank) {
+        'S' => 4,
+        'A' => 3,
+        'B' => 2,
+        _ => 1,
+      };
+
+  static String rankLabel(int value) => switch (value) {
+        4 => 'S',
+        3 => 'A',
+        2 => 'B',
+        1 => 'C',
+        _ => '—',
+      };
+
+  String bestRankLabelFor(int stage) => rankLabel(bestRanks[stage] ?? 0);
+
   /// Persist settings + campaign progress locally. Crew build: no accounts,
   /// no servers — the save lives on the device.
   Future<void> loadPrefs() async {
@@ -103,6 +137,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       touchControlsEnabled.value = prefs.getBool('settings_touch') ?? true;
       shakeScale.value = prefs.getDouble('settings_shake') ?? 1.0;
       unlockedStage.value = max(1, min(4, prefs.getInt('unlocked_stage') ?? 1));
+      for (var i = 1; i <= 4; i++) {
+        bestRanks[i] = prefs.getInt('rank_stage_$i') ?? 0;
+      }
       BroskieAudio.setSfx(sfxEnabled.value);
       BroskieAudio.setMusicEnabled(musicEnabled.value);
     } catch (_) {}
@@ -116,6 +153,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       await prefs.setBool('settings_touch', touchControlsEnabled.value);
       await prefs.setDouble('settings_shake', shakeScale.value);
       await prefs.setInt('unlocked_stage', unlockedStage.value);
+      for (final entry in bestRanks.entries) {
+        await prefs.setInt('rank_stage_${entry.key}', entry.value);
+      }
     } catch (_) {}
   }
 
@@ -162,9 +202,15 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   void _buildCurrentStage() {
     // Full stage (re)build always starts Broskie at the stage entrance.
     playerSpawn.setValues(100, 300);
+    stageTime = 0;
     player = Player(position: playerSpawn.clone());
     add(player);
     camera.follow(player);
+
+    // Stage theme swap (the boot build sits silently paused behind the menu).
+    if (!overlays.isActive('MainMenu')) {
+      BroskieAudio.playStageTheme(currentStage.value);
+    }
 
     if (currentStage.value == 1) {
       _buildStage1GreyZone();
@@ -185,6 +231,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(InteractableBlock(position: Vector2(332, 340), type: BlockType.brick));
     add(DataBitCoin(position: Vector2(500, 380)));
     add(DataBitCoin(position: Vector2(540, 380)));
+    // Hidden stash: hovering above the mystery blocks — climb and grab.
+    add(DataBitCoin(position: Vector2(316, 216)));
+    add(DataBitCoin(position: Vector2(348, 216)));
 
     add(InteractableLore(
       position: Vector2(180, 432),
@@ -210,6 +259,10 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       targetPos: Vector2(1850, 320),
       speed: 160,
     ));
+
+    // Hidden stash: floating over the spike gap — time it with the ferry.
+    add(DataBitCoin(position: Vector2(1600, 400)));
+    add(DataBitCoin(position: Vector2(1760, 420)));
 
     add(Floor(Vector2(2000, 340), Vector2(1500, 120)));
     add(CheckpointFlag(position: Vector2(2100, 276)));
@@ -237,6 +290,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
     add(Floor(Vector2(1900, 180), Vector2(1200, 24)));
     add(CheckpointFlag(position: Vector2(2000, 116)));
+    // Hidden stash: dangling past the tower's far lip.
+    add(DataBitCoin(position: Vector2(2980, 100)));
+    add(DataBitCoin(position: Vector2(3030, 100)));
     add(AuditorEnemy(position: Vector2(2200, 116)));
     add(LevelExit(position: Vector2(2900, 52)));
   }
@@ -255,6 +311,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(TheForeman(position: Vector2(900, 400), minX: 500, maxX: 1900));
     add(DataBrokerBoss(position: Vector2(2600, 406), minX: 2300, maxX: 3200));
     add(CheckpointFlag(position: Vector2(2100, 416)));
+    // Mid-arena supply: cash for the shop between the two executives.
+    add(DataBitCoin(position: Vector2(2230, 360)));
+    add(DataBitCoin(position: Vector2(2280, 360)));
     add(LevelExit(
       position: Vector2(3600, 352),
       lockCondition: () =>
@@ -285,6 +344,12 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void triggerLevelComplete() {
+    final rank = stageRankFor(currentStage.value, hp.value, stageTime);
+    lastRank = rank;
+    if (rankValue(rank) > (bestRanks[currentStage.value] ?? 0)) {
+      bestRanks[currentStage.value] = rankValue(rank);
+      savePrefs();
+    }
     BroskieAudio.playStageComplete();
     pauseEngine();
     overlays.add('LevelComplete');

@@ -203,6 +203,8 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
           'LevelComplete': (context, game) => LevelCompleteOverlay(
             coins: game.scoreCoins.value,
             enemiesStomped: game.enemiesDefeated,
+            rank: game.lastRank,
+            bestRank: game.bestRankLabelFor(game.currentStage.value),
             onNextLevel: () => game.advanceStage(),
           ),
 
