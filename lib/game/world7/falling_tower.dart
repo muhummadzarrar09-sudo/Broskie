@@ -26,7 +26,16 @@ class FallingTower extends PositionComponent with HasGameRef<BroskieGame>, Colli
   }
 
   @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    if (other is Player) {
+      other.gameOver();
+    }
+    super.onCollision(intersectionPoints, other);
+  }
+
+  @override
   void render(Canvas canvas) {
     canvas.drawRect(size.toRect(), Paint()..color = const Color(0xFF333333));
+    canvas.drawRect(size.toRect(), Paint()..color = Colors.red..style = PaintingStyle.stroke..strokeWidth = 2);
   }
 }

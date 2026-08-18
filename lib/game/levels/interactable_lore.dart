@@ -1,8 +1,10 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
+import 'package:broskie_game/game/broskie_game.dart';
 
-class InteractableLore extends SpriteComponent with CollisionCallbacks {
+class InteractableLore extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   final String text;
   final String speaker;
   bool _hasTriggered = false;
@@ -25,7 +27,32 @@ class InteractableLore extends SpriteComponent with CollisionCallbacks {
   }
 
   void _showDialogue() {
-    print("$speaker: $text");
-    // This will trigger the DialogueBox UI overlay
+    gameRef.showDialogue(speaker, text);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (sprite != null) {
+      super.render(canvas);
+      return;
+    }
+
+    final rect = size.toRect();
+    final terminalPaint = Paint()..color = const Color(0xFF1E88E5);
+    final screenPaint = Paint()..color = const Color(0xFF00E5FF);
+
+    canvas.drawRect(rect, terminalPaint);
+    canvas.drawRect(const Rect.fromLTWH(4, 4, 24, 24), screenPaint);
+
+    // Terminal blinking cursor / icon
+    final textPainter = TextPainter(
+      text: const TextSpan(
+        text: "i",
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'monospace'),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, const Offset(12, 6));
   }
 }
