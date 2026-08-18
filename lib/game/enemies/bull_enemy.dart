@@ -1,10 +1,12 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/effects/kill_burst.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/audio_manager.dart';
 
-class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
+class WallStreetBull extends SpriteAnimationComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   bool isCharging = false;
   bool isDizzy = false;
   double patrolSpeed = 60;
@@ -76,6 +78,9 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
 
       if (isDizzy && other.velocity.y > 0 && playerBottom <= bullTop + 16) {
         BroskieAudio.playStomp();
+        gameRef.add(KillBurst(position: position.clone()..add(size / 2), color: const Color(0xFFFFB800)));
+        gameRef.hitStop(0.08);
+        gameRef.enemiesDefeated++;
         removeFromParent(); // Stomped!
         other.bounce();
       } else {

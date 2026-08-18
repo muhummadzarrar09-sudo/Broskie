@@ -1,12 +1,14 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/effects/kill_burst.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/enemies/enemy.dart';
 import 'package:broskie_game/game/enemies/foreman_boss.dart';
 import 'package:broskie_game/game/enemies/data_broker_boss.dart';
 
-class VinylBoomerang extends SpriteComponent with CollisionCallbacks {
+class VinylBoomerang extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   final double speed = 400;
   bool returning = false;
   late Vector2 direction;
@@ -43,6 +45,9 @@ class VinylBoomerang extends SpriteComponent with CollisionCallbacks {
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Enemy) {
       other.die();
+      gameRef.add(KillBurst(position: other.position.clone()..add(other.size / 2)));
+      gameRef.hitStop(0.05);
+      removeFromParent();
     } else if (other is TheForeman) {
       other.hitByReflectedBrick();
       removeFromParent();

@@ -19,9 +19,13 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
   final double minX;
   final double maxX;
 
-  // Charge cycle: pace for a while, then telegraph and charge at the player.
-  // Charging into an arena edge crashes the Foreman and opens the dizzy window.
+  // Charge cycle: pace for a while, then TELEGRAPH (fair play = fun), then
+  // charge at the player. Charging into an arena edge crashes the Foreman
+  // and opens the dizzy window.
   bool isCharging = false;
+  bool isTelegraphing = false;
+  double telegraphTimer = 0;
+  static const double telegraphTime = 0.45;
   double behaviorTimer = 0;
   static const double chargeWindup = 3.5;
   static const double chargeMax = 2.5;
@@ -70,12 +74,22 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
     } else {
       behaviorTimer += dt;
 
-      if (!isCharging && behaviorTimer > chargeWindup) {
-        isCharging = true;
-        behaviorTimer = 0;
+      if (!isCharging && !isTelegraphing && behaviorTimer > chargeWindup) {
+        // Telegraph first: eyes flare at the player, THEN the charge lands.
+        isTelegraphing = true;
+        telegraphTimer = 0;
+        BroskieAudio.playGlitch();
         final player = gameRef.children.whereType<Player>().firstOrNull;
         if (player != null) {
           direction = player.position.x >= position.x ? 1 : -1;
+        }
+      }
+      if (isTelegraphing) {
+        telegraphTimer += dt;
+        if (telegraphTimer > telegraphTime) {
+          isTelegraphing = false;
+          isCharging = true;
+          behaviorTimer = 0;
         }
       }
       if (isCharging && behaviorTimer > chargeMax) {
@@ -83,15 +97,17 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
         behaviorTimer = 0;
       }
 
-      final double moveSpeed = isCharging ? speed * 1.9 : speed;
-      position.x += direction * moveSpeed * dt;
+      if (!isTelegraphing) {
+        final double moveSpeed = isCharging ? speed * 1.9 : speed;
+        position.x += direction * moveSpeed * dt;
 
-      if (position.x <= minX) {
-        position.x = minX;
-        _hitArenaEdge();
-      } else if (position.x >= maxX) {
-        position.x = maxX;
-        _hitArenaEdge();
+        if (position.x <= minX) {
+          position.x = minX;
+          _hitArenaEdge();
+        } else if (position.x >= maxX) {
+          position.x = maxX;
+          _hitArenaEdge();
+        }
       }
 
       if (_artLoaded) {
@@ -130,6 +146,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
   void hitByReflectedBrick() {
     if (isDizzy) return;
     BroskieAudio.playBossHit();
+    gameRef.hitStop(0.05);
     health--;
     if (health <= 0) die();
   }
@@ -171,6 +188,19 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
       super.render(canvas);
     } else {
       _renderProcedural(canvas);
+    }
+
+    // Blinking amber warning while the charge telegraphs.
+    if (isTelegraphing && (telegraphTimer * 16).toInt() % 2 == 0) {
+      final cx = size.x / 2;
+      final warn = Path()
+        ..moveTo(cx, -44)
+        ..lineTo(cx - 16, -16)
+        ..lineTo(cx + 16, -16)
+        ..close();
+      canvas.drawPath(warn, Paint()..color = Colors.amber);
+      canvas.drawRect(Rect.fromLTWH(cx - 2, -38, 4, 12), Paint()..color = Colors.black);
+      canvas.drawRect(Rect.fromLTWH(cx - 2, -23, 4, 4), Paint()..color = Colors.black);
     }
 
     // In-game dynamic health bar above the boss, drawn for both art paths.

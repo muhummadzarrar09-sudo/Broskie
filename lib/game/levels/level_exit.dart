@@ -54,7 +54,9 @@ class LevelExit extends PositionComponent with HasGameRef<BroskieGame>, Collisio
     final portalPaint = Paint()..color = locked ? Colors.redAccent : const Color(0xFF00FF66);
     final borderPaint = Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 3;
 
-    canvas.drawRect(rect, portalPaint.withOpacity(locked ? 0.45 : 0.8));
+    // Unlocked portals thump on the beat — the door IS the drop.
+    final glow = locked ? 0.45 : 0.55 + 0.45 * gameRef.beatPulse;
+    canvas.drawRect(rect, portalPaint.withOpacity(glow));
     canvas.drawRect(rect, borderPaint);
 
     // Locked portals get cross-chains

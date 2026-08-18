@@ -20,6 +20,7 @@ import 'enemies/bull_enemy.dart';
 import 'enemies/foreman_boss.dart';
 import 'enemies/data_broker_boss.dart';
 import 'levels/interactable_lore.dart';
+import 'levels/boss_intro_trigger.dart';
 import 'levels/level_exit.dart';
 import 'world2/propaganda_sign.dart';
 import 'world4/hater_cloud.dart';
@@ -51,6 +52,59 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   double stageTime = 0;
   String lastRank = 'C';
   final Map<int, int> bestRanks = {}; // stage -> 1=C, 2=B, 3=A, 4=S
+
+  // Juice state.
+  double _hitStopTimer = 0;
+
+  // Boss intro card state (read by the BossCard overlay).
+  String bossCardName = '';
+  String bossCardTitle = '';
+  String bossCardArt = '';
+
+  // Stage presentation registry (read by the StageBanner overlay).
+  static const Map<int, (String, String)> stageInfo = {
+    1: ('THE GREY ZONE', 'UNAUTHORIZED INDIVIDUALITY'),
+    2: ('NEON SLUMS', 'TERMS AND CONDITIONS APPLY'),
+    3: ('THE EXCHANGE', 'MARKET HOSTILITY'),
+    4: ('EXECUTIVE ARENA', 'GOING LIVE'),
+  };
+  static const Map<int, int> stageAccents = {
+    1: 0xFF00E5FF,
+    2: 0xFFFF3FA4,
+    3: 0xFFF2F2F2,
+    4: 0xFFFFB800,
+  };
+
+  /// The world dances to its own chiptune: sharp 0..1 spike on every beat.
+  static const Map<int, int> stageBpm = {1: 92, 2: 112, 3: 128, 4: 140};
+  double get beatPulse {
+    final bpm = stageBpm[currentStage.value] ?? 100;
+    final phase = (stageTime * bpm / 60) % 1.0;
+    final t = 1 - phase;
+    return t * t;
+  }
+
+  /// 60-90ms freeze frame — this is why actions feel expensive.
+  void hitStop([double seconds = 0.07]) {
+    _hitStopTimer = max(_hitStopTimer, seconds);
+  }
+
+  void showBossCard(String name, String title, String artFile) {
+    bossCardName = name;
+    bossCardTitle = title;
+    bossCardArt = artFile;
+    BroskieAudio.playGlitch();
+    triggerScreenShake(intensity: 0.5);
+    overlays.add('BossCard');
+  }
+
+  void hideBossCard() {
+    overlays.remove('BossCard');
+  }
+
+  void hideStageBanner() {
+    overlays.remove('StageBanner');
+  }
 
   final Vector2 playerSpawn = Vector2(100, 300);
   double shakeIntensity = 0;
@@ -84,6 +138,11 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
   @override
   void update(double dt) {
+    // Hit-stop window: the whole world holds its breath for the impact.
+    if (_hitStopTimer > 0) {
+      _hitStopTimer -= dt;
+      return;
+    }
     stageTime += dt;
     if (shakeIntensity > 0) {
       shakeIntensity -= dt * 10;
@@ -210,6 +269,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     // Stage theme swap (the boot build sits silently paused behind the menu).
     if (!overlays.isActive('MainMenu')) {
       BroskieAudio.playStageTheme(currentStage.value);
+      overlays.add('StageBanner');
     }
 
     if (currentStage.value == 1) {
@@ -308,7 +368,19 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       text: "EXECUTIVE ARENA: Bait the Foreman's charge into the arena walls, then stomp him. Burn the Data-Broker with boomerangs!",
     ));
 
+    add(BossIntroTrigger(
+      position: Vector2(420, 280),
+      bossName: 'THE FOREMAN',
+      bossTitle: 'MNPLY-042 · MANAGEMENT HARDWARE',
+      bossArt: 'foreman_intro.png',
+    ));
     add(TheForeman(position: Vector2(900, 400), minX: 500, maxX: 1900));
+    add(BossIntroTrigger(
+      position: Vector2(2150, 280),
+      bossName: 'DATA-BROKER',
+      bossTitle: 'MNPLY-0DAY · SIGNAL THIEF',
+      bossArt: 'broker_intro.png',
+    ));
     add(DataBrokerBoss(position: Vector2(2600, 406), minX: 2300, maxX: 3200));
     add(CheckpointFlag(position: Vector2(2100, 416)));
     // Mid-arena supply: cash for the shop between the two executives.
@@ -372,6 +444,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     overlays.remove('PauseMenu');
     overlays.remove('Shop');
     overlays.remove('Victory');
+    overlays.remove('BossCard');
+    overlays.remove('StageBanner');
 
     hp.value = maxHp;
 
@@ -399,7 +473,8 @@ class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCal
   void render(Canvas canvas) {
     final rect = size.toRect();
     final darkConcrete = Paint()..color = const Color(0xFF222533);
-    final topNeonLine = Paint()..color = const Color(0xFF00E5FF);
+    // The neon edge breathes on the stage beat.
+    final topNeonLine = Paint()..color = const Color(0xFF00E5FF).withOpacity(0.45 + 0.55 * gameRef.beatPulse);
     final gridLine = Paint()..color = const Color(0xFF33384A)..strokeWidth = 1;
 
     canvas.drawRect(rect, darkConcrete);

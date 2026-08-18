@@ -24,7 +24,9 @@ class PropagandaSign extends SpriteComponent with HasGameRef<BroskieGame> {
   @override
   void render(Canvas canvas) {
     final rect = size.toRect();
-    final bgPaint = Paint()..color = isHacked ? const Color(0xFFD50000) : const Color(0xFF00E5FF);
+    // Propaganda flickers on the stage beat — even the ads dance.
+    final pulse = 0.65 + 0.35 * gameRef.beatPulse;
+    final bgPaint = Paint()..color = (isHacked ? const Color(0xFFD50000) : const Color(0xFF00E5FF)).withOpacity(pulse);
 
     canvas.drawRect(rect, bgPaint);
     canvas.drawRect(rect, Paint()..color = Colors.black..style = PaintingStyle.stroke..strokeWidth = 3);

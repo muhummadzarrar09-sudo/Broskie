@@ -108,6 +108,7 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGam
 
   void hit() {
     BroskieAudio.playBossHit();
+    gameRef.hitStop(0.05);
     health--;
     if (isFake && health <= 4) {
       _triggerFakeOut();
@@ -151,6 +152,15 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGam
       super.render(canvas);
     } else {
       _renderProcedural(canvas);
+    }
+
+    // Glitch static flickers right before the attack lands — read the tell.
+    if (attackTimer > 3.4) {
+      final jx = sin(attackTimer * 90) * 3;
+      final jy = cos(attackTimer * 70) * 3;
+      final glitchPaint = Paint()..color = const Color(0xFFFF3FA4).withOpacity(0.85);
+      canvas.drawRect(Rect.fromLTWH(jx - 6, 6 + jy, 16, 6), glitchPaint);
+      canvas.drawRect(Rect.fromLTWH(size.x + jx - 10, size.y - 14 + jy, 16, 6), glitchPaint);
     }
 
     // Health bar tracks the CURRENT phase health so the fake-out reads clearly.

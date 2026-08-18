@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'game/audio_manager.dart';
 import 'game/broskie_game.dart';
+import 'game/ui/boss_card_overlay.dart';
 import 'game/ui/broskie_style.dart';
 import 'game/ui/dialogue_box.dart';
 import 'game/ui/game_over.dart';
 import 'game/ui/level_complete.dart';
 import 'game/ui/main_menu_screen.dart';
 import 'game/ui/news_ticker.dart';
+import 'game/ui/stage_banner_overlay.dart';
 import 'game/ui/touch_controls.dart';
 import 'game/ui/pause_menu.dart';
 import 'game/ui/shop_overlay.dart';
@@ -204,6 +206,10 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
           )),
 
           'MainMenu': (context, game) => broskieOverlayScan(MainMenuOverlay(game: game)),
+
+          'BossCard': (context, game) => broskieOverlayScan(BossCardOverlay(game: game)),
+
+          'StageBanner': (context, game) => broskieOverlayScan(StageBannerOverlay(game: game)),
 
           'LevelSelect': (context, game) => broskieOverlayScan(LevelSelectOverlay(game: game)),
 
