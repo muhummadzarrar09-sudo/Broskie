@@ -6,8 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/blocks/interactable_block.dart';
 import 'package:broskie_game/game/world4/hater_cloud.dart';
+import 'package:broskie_game/game/weapons/vinyl_boomerang.dart';
 
 enum PowerUpType { none, classic, juggernaut, shockwave }
+enum PlayerState { idle, walking, running, jumping, falling, vaulting }
 
 class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<BroskieGame>, CollisionCallbacks {
   Player({required Vector2 position}) : super(position: position, size: Vector2(32, 48)) {
@@ -15,12 +17,12 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
   }
 
   final Vector2 velocity = Vector2.zero();
-  final double gravity = 1800;
-  final double jumpStrength = 650;
-  final double walkSpeed = 300;
-  final double runSpeed = 550;
-  final double acceleration = 2000;
-  final double friction = 1500;
+  final double gravity = 1900;
+  final double jumpStrength = 700;
+  final double walkSpeed = 320;
+  final double runSpeed = 600;
+  final double acceleration = 2200;
+  final double friction = 1600;
   
   bool isGrounded = false;
   int horizontalDirection = 0;
@@ -30,15 +32,21 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
   double invulnerableTimer = 0;
   PowerUpType currentPower = PowerUpType.none;
 
-  // Visual/Facing State
-  int facing = 1; // 1 = Right, -1 = Left
+  // Pixel Animation Engine State
+  PlayerState state = PlayerState.idle;
+  int facing = 1; // 1 Right, -1 Left
   double animTimer = 0;
-  int walkFrame = 0;
+  int animFrame = 0;
+  double vaultTimer = 0;
+  double shootCooldown = 0;
 
-  // Modern State (Hacker Gimmicks)
+  // Modern State
   bool controlsInverted = false;
   double hackTimer = 0;
   List<Debuff> activeDebuffs = [];
+
+  // Particle list for retro pixel effects
+  final List<PixelParticle> particles = [];
 
   @override
   void update(double dt) {
@@ -52,18 +60,18 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
       if (invulnerableTimer <= 0) isInvulnerable = false;
     }
 
+    if (shootCooldown > 0) shootCooldown -= dt;
+
     // Gravity
-    if (!isGrounded) {
+    if (!isGrounded && state != PlayerState.vaulting) {
       velocity.y += gravity * dt;
     }
 
-    // Debuffs & Speed Modifiers
+    // Debuffs & Speed
     double speedMod = 1.0;
-    double jumpMod = 1.0;
     activeDebuffs.removeWhere((d) {
       d.duration -= dt;
       if (d.type == DebuffType.slow) speedMod *= 0.5;
-      if (d.type == DebuffType.lowJump) jumpMod *= 0.6;
       return d.duration <= 0;
     });
 
@@ -81,17 +89,50 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     }
     velocity.x = velocity.x.clamp(-targetSpeed, targetSpeed);
 
-    // Animation frame timer
-    animTimer += dt;
-    if (animTimer > 0.1) {
-      animTimer = 0;
-      walkFrame = (walkFrame + 1) % 4;
+    // Vaulting State Logic
+    if (state == PlayerState.vaulting) {
+      vaultTimer -= dt;
+      velocity.x = facing * 400;
+      velocity.y = -150;
+      if (vaultTimer <= 0) {
+        state = PlayerState.idle;
+      }
+    } else {
+      // Determine Animation State
+      if (!isGrounded) {
+        state = velocity.y < 0 ? PlayerState.jumping : PlayerState.falling;
+      } else if (velocity.x.abs() > 30) {
+        state = isRunning ? PlayerState.running : PlayerState.walking;
+      } else {
+        state = PlayerState.idle;
+      }
     }
+
+    // Animation Frame Clock
+    animTimer += dt;
+    double frameDuration = isRunning ? 0.06 : 0.12;
+    if (animTimer >= frameDuration) {
+      animTimer = 0;
+      animFrame = (animFrame + 1) % 8;
+    }
+
+    // Running Dust/Trail Pixel Particles
+    if (isGrounded && velocity.x.abs() > 200 && animFrame % 2 == 0) {
+      particles.add(PixelParticle(
+        position: Vector2(position.x + (facing == 1 ? 4 : 24), position.y + size.y - 4),
+        velocity: Vector2(-facing * 40, -20 - Random().nextDouble() * 30),
+        color: const Color(0xFF888888),
+        lifetime: 0.25,
+      ));
+    }
+
+    // Update Particles
+    particles.forEach((p) => p.update(dt));
+    particles.removeWhere((p) => p.isDead);
 
     position += velocity * dt;
 
-    // Void death check
-    if (position.y > 1000) {
+    if (position.y > 1400) {
       gameOver();
     }
 
@@ -112,12 +153,42 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
 
     if ((keysPressed.contains(LogicalKeyboardKey.space) || keysPressed.contains(LogicalKeyboardKey.arrowUp) || keysPressed.contains(LogicalKeyboardKey.keyW)) && event is KeyDownEvent) {
       if (isGrounded) {
-        double jumpMod = activeDebuffs.any((d) => d.type == DebuffType.lowJump) ? 0.6 : 1.0;
-        velocity.y = -jumpStrength * jumpMod;
+        velocity.y = -jumpStrength;
         isGrounded = false;
+
+        // Jump Particle Burst
+        for (int i = 0; i < 6; i++) {
+          particles.add(PixelParticle(
+            position: Vector2(position.x + 8 + i * 3, position.y + size.y),
+            velocity: Vector2((i - 3) * 30, 20),
+            color: const Color(0xFF00E5FF),
+            lifetime: 0.3,
+          ));
+        }
       }
     }
+
+    // Throw Vinyl Boomerang Weapon (Key J or Key F)
+    if ((keysPressed.contains(LogicalKeyboardKey.keyJ) || keysPressed.contains(LogicalKeyboardKey.keyF)) && event is KeyDownEvent) {
+      throwVinylBoomerang();
+    }
+
     return super.onKeyEvent(event, keysPressed);
+  }
+
+  void throwVinylBoomerang() {
+    if (shootCooldown > 0) return;
+    shootCooldown = 0.4;
+    gameRef.add(VinylBoomerang(
+      position: Vector2(position.x + (facing == 1 ? size.x : -24), position.y + 12),
+      owner: this,
+      isLeft: facing == -1,
+    ));
+  }
+
+  void triggerParkourVault() {
+    state = PlayerState.vaulting;
+    vaultTimer = 0.35;
   }
 
   void grow(PowerUpType type) {
@@ -145,25 +216,26 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     gameRef.triggerGameOver();
   }
 
-  void bounce() => velocity.y = -jumpStrength * 0.7;
+  void bounce() => velocity.y = -jumpStrength * 0.75;
 
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
-    if (other is Floor || other is InteractableBlock) {
+    if (other is Floor || other is InteractableBlock || other is MovingPlatform) {
       final playerBottom = position.y + size.y;
       final playerTop = position.y;
       final otherTop = other.position.y;
       final otherBottom = other.position.y + other.size.y;
 
-      // Vertical landing collision (coming down onto block/floor)
-      if (velocity.y >= 0 && playerBottom >= otherTop && (playerBottom - velocity.y * 0.05) <= otherTop + 12) {
+      if (velocity.y >= 0 && playerBottom >= otherTop && (playerBottom - velocity.y * 0.05) <= otherTop + 14) {
         velocity.y = 0;
         position.y = otherTop - size.y;
         isGrounded = true;
-      }
-      // Hitting head on ceiling/block from below
-      else if (velocity.y < 0 && playerTop <= otherBottom && (playerTop - velocity.y * 0.05) >= otherBottom - 12) {
+
+        if (other is CrumblingPlatform) {
+          other.stepOn();
+        }
+      } else if (velocity.y < 0 && playerTop <= otherBottom && (playerTop - velocity.y * 0.05) >= otherBottom - 14) {
         velocity.y = 0;
         position.y = otherBottom;
       }
@@ -173,20 +245,22 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
-    if (other is Floor || other is InteractableBlock) {
+    if (other is Floor || other is InteractableBlock || other is MovingPlatform) {
       isGrounded = false;
     }
   }
 
   @override
   void render(Canvas canvas) {
+    // Render Particles
+    particles.forEach((p) => p.render(canvas, position));
+
     if (animation != null) {
       super.render(canvas);
       return;
     }
 
-    // Invulnerability Blink Effect
-    if (isInvulnerable && (invulnerableTimer * 10).toInt() % 2 == 0) {
+    if (isInvulnerable && (invulnerableTimer * 12).toInt() % 2 == 0) {
       return;
     }
 
@@ -195,66 +269,116 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
 
     canvas.save();
 
-    // Horizontal Facing Flip
     if (facing == -1) {
       canvas.translate(w, 0);
       canvas.scale(-1, 1);
     }
 
-    // 16-Bit Retro Pixel Art Rendering for Broskie
-    // Cap (Red with turned brim)
+    // Palette Colors
     final Paint redPaint = Paint()..color = const Color(0xFFE52521);
     final Paint darkRedPaint = Paint()..color = const Color(0xFF990000);
-    final Paint bluePaint = Paint()..color = const Color(0xFF0066CC);
     final Paint skinPaint = Paint()..color = const Color(0xFFFFCC99);
     final Paint blackPaint = Paint()..color = const Color(0xFF111111);
     final Paint whitePaint = Paint()..color = const Color(0xFFFFFFFF);
     final Paint denimPaint = Paint()..color = const Color(0xFF1F4287);
+    final Paint bluePantsPaint = Paint()..color = const Color(0xFF0D47A1);
 
-    // Body offsets for walk/jump animations
-    double legOffset = isGrounded ? (horizontalDirection != 0 ? sin(walkFrame * pi / 2) * 4 : 0) : 6;
+    // Dynamic Frame Calculations
+    double headY = 2.0;
+    double armShift = 0.0;
+    double legL = 0.0;
+    double legR = 0.0;
+
+    switch (state) {
+      case PlayerState.idle:
+        headY = (animFrame % 4 == 0) ? 3.0 : 2.0; // Idle breathing bounce
+        legL = 0; legR = 0;
+        break;
+      case PlayerState.walking:
+      case PlayerState.running:
+        armShift = sin(animFrame * pi / 4) * 8;
+        legL = sin(animFrame * pi / 4) * 10;
+        legR = -legL;
+        break;
+      case PlayerState.jumping:
+        headY = 0.0;
+        armShift = -10;
+        legL = -6; legR = 6;
+        break;
+      case PlayerState.falling:
+        headY = 4.0;
+        armShift = 10;
+        legL = 6; legR = -6;
+        break;
+      case PlayerState.vaulting:
+        headY = 6.0;
+        armShift = -14;
+        legL = 12; legR = 12;
+        break;
+    }
 
     // Head & Cap
-    canvas.drawRect(Rect.fromLTWH(4, 2, 24, 14), skinPaint); // Head
-    canvas.drawRect(Rect.fromLTWH(2, 0, 28, 6), redPaint); // Cap top
-    canvas.drawRect(Rect.fromLTWH(facing == 1 ? -2 : 12, 5, 20, 3), darkRedPaint); // Backwards/Forward brim
+    canvas.drawRect(Rect.fromLTWH(4, headY, 24, 14), skinPaint);
+    canvas.drawRect(Rect.fromLTWH(2, headY - 2, 28, 6), redPaint);
+    canvas.drawRect(Rect.fromLTWH(-2, headY + 3, 18, 3), darkRedPaint); // Backwards Cap Brim
 
     // Sunglasses
-    canvas.drawRect(Rect.fromLTWH(12, 6, 14, 5), blackPaint);
-    canvas.drawRect(Rect.fromLTWH(22, 7, 3, 2), whitePaint); // Glint
+    canvas.drawRect(Rect.fromLTWH(10, headY + 5, 14, 5), blackPaint);
+    canvas.drawRect(Rect.fromLTWH(20, headY + 6, 3, 2), whitePaint);
 
-    // Cool Smile
-    canvas.drawRect(Rect.fromLTWH(16, 13, 8, 2), blackPaint);
+    // Smile / Expression
+    canvas.drawRect(Rect.fromLTWH(14, headY + 12, 8, 2), blackPaint);
 
-    // Vest / White Tee
-    canvas.drawRect(Rect.fromLTWH(6, 16, 20, 16), whitePaint); // Tee
-    canvas.drawRect(Rect.fromLTWH(4, 16, 6, 16), denimPaint); // Vest Left
-    canvas.drawRect(Rect.fromLTWH(22, 16, 6, 16), denimPaint); // Vest Right
+    // Upper Body / Vest / White Tee
+    canvas.drawRect(Rect.fromLTWH(6, headY + 14, 20, 16), whitePaint);
+    canvas.drawRect(Rect.fromLTWH(4, headY + 14, 6, 16), denimPaint);
+    canvas.drawRect(Rect.fromLTWH(22, headY + 14, 6, 16), denimPaint);
 
     // Arms
-    canvas.drawRect(Rect.fromLTWH(0, 18, 4, 12), skinPaint);
-    canvas.drawRect(Rect.fromLTWH(28, 18, 4, 12), skinPaint);
+    canvas.drawRect(Rect.fromLTWH(-2 + armShift * 0.5, headY + 16, 6, 12), skinPaint);
+    canvas.drawRect(Rect.fromLTWH(28 - armShift * 0.5, headY + 16, 6, 12), skinPaint);
 
-    // Pants & Legs (Animated)
-    double leftLeg = legOffset;
-    double rightLeg = -legOffset;
-    canvas.drawRect(Rect.fromLTWH(6, 32, 8, 12 + leftLeg), bluePaint);
-    canvas.drawRect(Rect.fromLTWH(18, 32, 8, 12 + rightLeg), bluePaint);
+    // Legs & Pants
+    canvas.drawRect(Rect.fromLTWH(6, headY + 30, 8, 12 + legL), bluePantsPaint);
+    canvas.drawRect(Rect.fromLTWH(18, headY + 30, 8, 12 + legR), bluePantsPaint);
 
     // Red Sneakers
-    canvas.drawRect(Rect.fromLTWH(4, 44 + leftLeg, 12, 4), redPaint);
-    canvas.drawRect(Rect.fromLTWH(16, 44 + rightLeg, 12, 4), redPaint);
-    canvas.drawRect(Rect.fromLTWH(4, 47 + leftLeg, 12, 1), whitePaint); // Sole
-    canvas.drawRect(Rect.fromLTWH(16, 47 + rightLeg, 12, 1), whitePaint);
+    canvas.drawRect(Rect.fromLTWH(4, headY + 42 + legL, 12, 4), redPaint);
+    canvas.drawRect(Rect.fromLTWH(16, headY + 42 + legR, 12, 4), redPaint);
+    canvas.drawRect(Rect.fromLTWH(4, headY + 45 + legL, 12, 1), whitePaint);
+    canvas.drawRect(Rect.fromLTWH(16, headY + 45 + legR, 12, 1), whitePaint);
 
-    // Powerup Aura Effect
+    // Aura Powerup Effects
     if (currentPower != PowerUpType.none) {
       final auraColor = currentPower == PowerUpType.juggernaut 
-          ? const Color(0xFFFFD700).withOpacity(0.4) 
-          : const Color(0xFF00FFFF).withOpacity(0.4);
-      canvas.drawCircle(Offset(w / 2, h / 2), w * 0.8, Paint()..color = auraColor);
+          ? const Color(0xFFFFD700).withOpacity(0.5) 
+          : const Color(0xFF00E5FF).withOpacity(0.5);
+      canvas.drawCircle(Offset(w / 2, h / 2), w * 0.9, Paint()..color = auraColor);
     }
 
     canvas.restore();
+  }
+}
+
+class PixelParticle {
+  Vector2 position;
+  Vector2 velocity;
+  Color color;
+  double lifetime;
+  double age = 0;
+
+  PixelParticle({required this.position, required this.velocity, required this.color, required this.lifetime});
+
+  void update(double dt) {
+    age += dt;
+    position += velocity * dt;
+  }
+
+  bool get isDead => age >= lifetime;
+
+  void render(Canvas canvas, Vector2 playerPos) {
+    double alpha = (1.0 - age / lifetime).clamp(0.0, 1.0);
+    final paint = Paint()..color = color.withOpacity(alpha);
+    canvas.drawRect(Rect.fromLTWH(position.x - playerPos.x, position.y - playerPos.y, 3, 3), paint);
   }
 }

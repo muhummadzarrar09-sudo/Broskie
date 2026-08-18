@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'player.dart';
 import 'blocks/interactable_block.dart';
+import 'blocks/hazards.dart';
 import 'enemies/enemy.dart';
 import 'enemies/bull_enemy.dart';
 import 'enemies/foreman_boss.dart';
@@ -17,7 +18,6 @@ import 'levels/level_exit.dart';
 import 'world2/propaganda_sign.dart';
 import 'world4/hater_cloud.dart';
 import 'world5/auditor_enemy.dart';
-import 'world7/falling_tower.dart';
 
 class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   late Player player;
@@ -34,7 +34,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   Future<void> onLoad() async {
     add(ScreenHitbox());
 
-    // Safe Parallax Background Loading
+    // Safe Parallax Background
     try {
       final parallax = await loadParallaxComponent(
         [
@@ -46,56 +46,120 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       );
       add(parallax);
     } catch (e) {
-      debugPrint("Parallax fallback activated: $e");
       add(ProceduralSkylineParallax());
     }
 
-    _buildLevel();
+    _buildMassiveHardLevel();
   }
 
-  void _buildLevel() {
+  void _buildMassiveHardLevel() {
     // 1. Spawning Player
     player = Player(position: Vector2(100, 300));
     add(player);
     camera.follow(player);
 
-    // 2. Main Ground Floor
-    add(Floor(Vector2(-200, 480), Vector2(3800, 120)));
+    // --- SECTOR 1: THE GREY ZONE ENTRY (X: -200 to 2,500) ---
+    add(Floor(Vector2(-200, 480), Vector2(2200, 120)));
 
-    // 3. Platforms & Stepping Blocks
-    add(Floor(Vector2(250, 360), Vector2(200, 24)));
-    add(Floor(Vector2(550, 280), Vector2(180, 24)));
-    add(Floor(Vector2(850, 360), Vector2(240, 24)));
-    add(Floor(Vector2(1200, 260), Vector2(300, 24)));
-    add(Floor(Vector2(1700, 340), Vector2(250, 24)));
-    add(Floor(Vector2(2100, 280), Vector2(400, 24)));
+    // Early Mystery Blocks & Lore Terminal
+    add(InteractableBlock(position: Vector2(300, 340), type: BlockType.mystery));
+    add(InteractableBlock(position: Vector2(332, 340), type: BlockType.brick));
+    add(InteractableBlock(position: Vector2(364, 340), type: BlockType.mystery));
 
-    // 4. Mystery & Brick Blocks
-    add(InteractableBlock(position: Vector2(300, 240), type: BlockType.mystery));
-    add(InteractableBlock(position: Vector2(332, 240), type: BlockType.brick));
-    add(InteractableBlock(position: Vector2(364, 240), type: BlockType.mystery));
-    add(InteractableBlock(position: Vector2(600, 160), type: BlockType.mystery));
-    add(InteractableBlock(position: Vector2(900, 220), type: BlockType.brick));
-    add(InteractableBlock(position: Vector2(1250, 140), type: BlockType.mystery));
-
-    // 5. Enemies & Bosses
-    add(GrumpyBrick(position: Vector2(400, 448)));
-    add(GrumpyBrick(position: Vector2(650, 248)));
-    add(WallStreetBull(position: Vector2(1000, 432)));
-    add(HaterCloud(position: Vector2(1300, 180)));
-    add(AuditorEnemy(position: Vector2(1750, 276)));
-    add(TheForeman(position: Vector2(2300, 384))); // World 1 Boss
-
-    // 6. Interactive Cyberpunk Sign & Lore Terminals
-    add(PropagandaSign(position: Vector2(500, 416)));
     add(InteractableLore(
       position: Vector2(180, 432),
       speaker: "BROSKIE CORP TERMINAL",
-      text: "SYSTEM ALERT: Monopoly forces are restructuring Neo-City! Find the Volt-Cola and break the standardization!",
+      text: "SYSTEM ALERT: Monopoly forces are restructuring Neo-City! Use 'J' or 'F' to throw Vinyl Boomerangs!",
     ));
 
-    // 7. Level Exit Portal
-    add(LevelExit(position: Vector2(3200, 352)));
+    // Enemy Patrol 1
+    add(GrumpyBrick(position: Vector2(500, 448)));
+    add(GrumpyBrick(position: Vector2(800, 448)));
+    add(WallStreetBull(position: Vector2(1200, 432)));
+
+    // --- SECTOR 2: THE LASER & MOVING PLATFORM PARKOUR RUN (X: 2,200 to 5,000) ---
+    // Ground Pit with Data Spikes!
+    add(DataSpike(position: Vector2(2200, 480), size: Vector2(800, 32)));
+
+    // High Platforms & Moving Platforms
+    add(Floor(Vector2(2100, 360), Vector2(180, 24)));
+    add(MovingPlatform(
+      position: Vector2(2350, 320),
+      size: Vector2(120, 24),
+      targetPos: Vector2(2750, 320),
+      speed: 140,
+    ));
+
+    add(Floor(Vector2(2900, 280), Vector2(200, 24)));
+    add(LaserHazard(position: Vector2(3000, 160), size: Vector2(12, 120))); // Pulsing Laser Barrier
+
+    add(CrumblingPlatform(position: Vector2(3150, 280), size: Vector2(100, 24)));
+    add(CrumblingPlatform(position: Vector2(3300, 280), size: Vector2(100, 24)));
+
+    add(Floor(Vector2(3450, 340), Vector2(300, 24)));
+    add(HaterCloud(position: Vector2(3500, 180)));
+    add(AuditorEnemy(position: Vector2(3600, 276)));
+
+    // Mid-Level Ground Floor (X: 3,800 to 6,500)
+    add(Floor(Vector2(3800, 480), Vector2(2700, 120)));
+    add(PropagandaSign(position: Vector2(4000, 416)));
+
+    add(InteractableBlock(position: Vector2(4200, 340), type: BlockType.mystery));
+    add(InteractableBlock(position: Vector2(4232, 340), type: BlockType.brick));
+    add(InteractableBlock(position: Vector2(4264, 340), type: BlockType.mystery));
+
+    add(WallStreetBull(position: Vector2(4500, 432)));
+    add(GrumpyBrick(position: Vector2(4800, 448)));
+    add(GrumpyBrick(position: Vector2(5100, 448)));
+
+    // --- SECTOR 3: VERTICAL TOWER CLIMB (X: 6,500 to 8,500) ---
+    // Deep Spike Pit
+    add(DataSpike(position: Vector2(6500, 480), size: Vector2(1200, 32)));
+
+    // Vertical Moving Platforms
+    add(MovingPlatform(
+      position: Vector2(6600, 400),
+      size: Vector2(120, 24),
+      targetPos: Vector2(6600, 180),
+      speed: 120,
+    ));
+
+    add(Floor(Vector2(6800, 180), Vector2(200, 24)));
+    add(LaserHazard(position: Vector2(6900, 60), size: Vector2(12, 120)));
+
+    add(MovingPlatform(
+      position: Vector2(7100, 180),
+      size: Vector2(120, 24),
+      targetPos: Vector2(7600, 180),
+      speed: 180,
+    ));
+
+    add(Floor(Vector2(7800, 240), Vector2(250, 24)));
+    add(AuditorEnemy(position: Vector2(7900, 176)));
+    add(HaterCloud(position: Vector2(8000, 100)));
+
+    // --- SECTOR 4: BOSS ARENA - THE FOREMAN & DATA BROKER (X: 8,500 to 12,000) ---
+    add(Floor(Vector2(8500, 480), Vector2(3500, 120)));
+
+    add(InteractableLore(
+      position: Vector2(8700, 432),
+      speaker: "BROSKIE CORP TERMINAL",
+      text: "WARNING: Entering High-Security Executive Arena! Restructuring Boss Ahead!",
+    ));
+
+    // Boss 1: The Foreman Excavator Mech
+    add(TheForeman(position: Vector2(9500, 384)));
+
+    // Secret Reward Cache
+    add(InteractableBlock(position: Vector2(10200, 340), type: BlockType.mystery));
+    add(InteractableBlock(position: Vector2(10232, 340), type: BlockType.mystery));
+    add(InteractableBlock(position: Vector2(10264, 340), type: BlockType.mystery));
+
+    // Boss 2: Data Broker Spider Mech
+    add(DataBrokerBoss(position: Vector2(10800, 400)));
+
+    // Final Victory Portal Exit
+    add(LevelExit(position: Vector2(11600, 352)));
   }
 
   void triggerGameOver() {
@@ -123,20 +187,18 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     overlays.remove('LevelComplete');
     overlays.remove('Dialogue');
 
-    // Clear all components except camera/hitbox
     children.where((c) => c is! ScreenHitbox && c is! ProceduralSkylineParallax).toList().forEach((c) => c.removeFromParent());
 
     scoreCoins = 0;
     enemiesDefeated = 0;
-    _buildLevel();
+    _buildMassiveHardLevel();
     resumeEngine();
   }
 
   @override
-  Color backgroundColor() => const Color(0xFF0F0C20); // Deep Cyberpunk Purple/Blue
+  Color backgroundColor() => const Color(0xFF0F0C20);
 }
 
-// Floor Class with Retro Concrete/Brick Styling
 class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   Floor(Vector2 position, Vector2 size) : super(position: position, size: size) {
     add(RectangleHitbox());
@@ -146,13 +208,12 @@ class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCal
   void render(Canvas canvas) {
     final rect = size.toRect();
     final darkConcrete = Paint()..color = const Color(0xFF222533);
-    final topNeonLine = Paint()..color = const Color(0xFF00E5FF); // Neon Cyan top highlight
+    final topNeonLine = Paint()..color = const Color(0xFF00E5FF);
     final gridLine = Paint()..color = const Color(0xFF33384A)..strokeWidth = 1;
 
     canvas.drawRect(rect, darkConcrete);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, 4), topNeonLine);
 
-    // Brick grid pattern
     for (double x = 0; x < size.x; x += 32) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.y), gridLine);
     }
@@ -162,7 +223,6 @@ class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCal
   }
 }
 
-// Fallback Parallax in case image files missing
 class ProceduralSkylineParallax extends Component with HasGameRef<BroskieGame> {
   double scrollX = 0;
 
