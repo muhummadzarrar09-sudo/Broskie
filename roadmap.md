@@ -27,7 +27,8 @@ This roadmap reports only integrated, running code as complete. Runtime certific
 - [x] Wired SFX for the real files on disk + looping `neon_loop.wav` chiptune; audio init in `main()`
 - [x] Correct Flame camera follow and stage-edge mortality (`onPlayerFell`)
 - [x] Main menu (NEW RUN / CONTINUE / STAGE SELECT / SETTINGS) over a paused world, backed by AI rooftop key art
-- [x] Branded in-app splash screen with AI leap key art and fade transition
+- [x] Branded in-app splash screen with AI leap key art, Ken Burns zoom and true asset-preload progress
+- [x] Living main menu: art sway/breathing, procedural rain painter, staggered entrances, floating title
 - [x] Checkpoint flags: falls respawn at the last flag inside the stage
 - [x] Boss-gated Stage 4 exit (locked until both executives are defeated)
 - [x] Working settings (SFX / music / touch controls / shake strength) wired live

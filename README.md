@@ -14,7 +14,7 @@ Broskie breaks out of Monopoly Corp's orientation, crosses the Grey Zone, the Ne
 ## Features (what is actually in the build)
 
 - Four side-scrolling stages with AI-generated tiled backdrops per stage
-- **Branded splash screen** (AI key art, glowing title, fade into the menu) and a **key-art main menu** (rainy rooftop vista behind NEW RUN / CONTINUE / STAGE SELECT / SETTINGS)
+- **Branded splash screen** (AI key art with Ken Burns zoom, glowing/floating title, REAL asset-preload progress bar, fade into the menu) and a **living main menu** — swaying/breathing rooftop key art, procedural code-rain, staggered button entrances, floating title
 - 3-heart health with knockback, invulnerability frames and **checkpoint flags** — falls respawn at the last flag, not the stage start — plus a live hearts/cash/stage HUD built on `ValueNotifier`s
 - **Boss-gated exit**: the Stage 4 portal stays LOCKED until both executives are down
 - **Progression that sticks**: cleared stages unlock the next one, saved on-device with your settings (SharedPreferences — no accounts, no servers, crew build)
