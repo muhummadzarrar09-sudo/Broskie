@@ -10,75 +10,49 @@ import '../player.dart';
 class NeonCityBackdrop extends PositionComponent {
   NeonCityBackdrop({
     required Vector2 levelSize,
-    required this.skyTop,
-    required this.skyBottom,
+    required this.backgroundSprite,
     required this.accent,
     required this.reducedEffects,
   }) : super(size: levelSize, priority: -100);
 
-  final Color skyTop;
-  final Color skyBottom;
+  static const double panelWidth = 960;
+
+  final Sprite backgroundSprite;
   final Color accent;
   final bool reducedEffects;
 
   @override
   void render(Canvas canvas) {
-    final bounds = Rect.fromLTWH(0, 0, size.x, size.y);
-    final sky = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [skyTop, skyBottom, const Color(0xFF071923)],
-      ).createShader(bounds);
-    canvas.drawRect(bounds, sky);
-
-    if (!reducedEffects) {
-      final moonPaint = Paint()..color = accent.withValues(alpha: 0.2);
-      canvas.drawCircle(const Offset(700, 105), 72, moonPaint);
-      canvas.drawCircle(
-        const Offset(700, 105),
-        48,
-        Paint()..color = accent.withValues(alpha: 0.38),
-      );
-    }
-
-    final farPaint = Paint()..color = const Color(0xFF111B35);
-    final nearPaint = Paint()..color = const Color(0xFF17263D);
-    final windowPaint = Paint()..color = accent.withValues(alpha: 0.6);
-    for (var i = 0; i < 60; i++) {
-      final x = i * 64.0;
-      final wave = math.sin(i * 1.7) * 35;
-      final buildingHeight = 120 + (i % 5) * 22 + wave.abs();
-      final building = Rect.fromLTWH(
-        x,
-        size.y - 80 - buildingHeight,
-        54,
-        buildingHeight,
-      );
-      canvas.drawRect(building, i.isEven ? farPaint : nearPaint);
-      for (var row = 0; row < 5; row++) {
-        if ((row + i) % 3 == 0) {
-          continue;
-        }
-        canvas.drawRect(
-          Rect.fromLTWH(x + 10, building.top + 18 + row * 24, 8, 5),
-          windowPaint,
-        );
-        canvas.drawRect(
-          Rect.fromLTWH(x + 34, building.top + 18 + row * 24, 8, 5),
-          windowPaint,
+    final panelSize = Vector2(panelWidth, height);
+    var panel = 0;
+    for (double x = 0; x < width; x += panelWidth) {
+      canvas.save();
+      if (panel.isOdd) {
+        canvas.translate(x + panelWidth, 0);
+        canvas.scale(-1, 1);
+        backgroundSprite.render(canvas, size: panelSize);
+      } else {
+        backgroundSprite.render(
+          canvas,
+          position: Vector2(x, 0),
+          size: panelSize,
         );
       }
+      canvas.restore();
+      panel++;
     }
 
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, width, height),
+      Paint()
+        ..color = Colors.black.withValues(alpha: reducedEffects ? 0.22 : 0.1),
+    );
+
     final gridPaint = Paint()
-      ..color = accent.withValues(alpha: reducedEffects ? 0.04 : 0.1)
+      ..color = accent.withValues(alpha: reducedEffects ? 0.025 : 0.055)
       ..strokeWidth = 1;
-    for (double x = 0; x < size.x; x += 64) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.y), gridPaint);
-    }
-    for (double y = 32; y < size.y; y += 32) {
-      canvas.drawLine(Offset(0, y), Offset(size.x, y), gridPaint);
+    for (double x = 0; x < width; x += 64) {
+      canvas.drawLine(Offset(x, 0), Offset(x, height), gridPaint);
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 import '../broskie_game.dart';
+import '../models/runtime_assets.dart';
 import '../player.dart';
 
 enum ForemanPhase { chilling, mad, berserk }
@@ -22,9 +23,16 @@ class TheForeman extends PositionComponent
   final double arenaLeft;
   final double arenaRight;
   int health = maxHealth;
+  late final Sprite _sprite;
   int direction = -1;
   double _hurtCooldown = 0;
   bool defeated = false;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    _sprite = Sprite(game.images.fromCache(RuntimeAssets.foreman));
+  }
 
   ForemanPhase get phase {
     if (health <= 2) {
@@ -95,30 +103,24 @@ class TheForeman extends PositionComponent
       return;
     }
 
-    final Color machine;
-    switch (phase) {
-      case ForemanPhase.chilling:
-        machine = const Color(0xFFF3A61D);
-      case ForemanPhase.mad:
-        machine = const Color(0xFFFF7029);
-      case ForemanPhase.berserk:
-        machine = const Color(0xFFFF345F);
+    canvas.save();
+    if (direction > 0) {
+      canvas.translate(width, 0);
+      canvas.scale(-1, 1);
     }
-    final metal = Paint()..color = const Color(0xFF263448);
-    final body = Paint()..color = machine;
-    final dark = Paint()..color = const Color(0xFF121520);
-    final eye = Paint()..color = const Color(0xFFFF2E55);
+    _sprite.render(
+      canvas,
+      position: Vector2(-24, -9),
+      size: Vector2(width + 48, height + 18),
+    );
+    canvas.restore();
 
-    canvas.drawRect(const Rect.fromLTWH(8, 20, 110, 48), body);
-    canvas.drawRect(const Rect.fromLTWH(20, 8, 84, 22), body);
-    canvas.drawRect(const Rect.fromLTWH(28, 26, 68, 30), dark);
-    canvas.drawRect(const Rect.fromLTWH(38, 34, 14, 8), eye);
-    canvas.drawRect(const Rect.fromLTWH(72, 34, 14, 8), eye);
-    canvas.drawRect(const Rect.fromLTWH(48, 51, 30, 4), eye);
-    canvas.drawCircle(const Offset(26, 68), 10, metal);
-    canvas.drawCircle(const Offset(99, 68), 10, metal);
-    canvas.drawRect(const Rect.fromLTWH(0, 9, 30, 8), metal);
-    canvas.drawRect(const Rect.fromLTWH(96, 9, 30, 8), metal);
+    if (phase == ForemanPhase.berserk) {
+      canvas.drawRect(
+        Rect.fromLTWH(-8, -4, width + 16, height + 8),
+        Paint()..color = const Color(0x22FF3158),
+      );
+    }
 
     final healthRatio = health / maxHealth;
     canvas.drawRect(

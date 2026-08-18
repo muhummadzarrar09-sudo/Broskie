@@ -21,7 +21,7 @@ Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums,
 - Saved campaign unlocks, best ranks and accessibility preferences
 - Four 3,000–4,600-pixel side-scrolling stages
 - Responsive fixed-resolution camera using Flame's `World` correctly
-- Momentum movement, running, coyote time, jump buffering and movement substeps
+- Momentum movement, running, directional dash, coyote time, jump buffering and movement substeps
 - Keyboard and multi-touch controls
 - Health, knockback, fall respawns, checkpoints and invulnerability frames
 - Cash chips, hackable propaganda terminals and functional Volt-Cola power
@@ -33,7 +33,7 @@ Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums,
 - C/B/A/S stage ranks based on health, time and peak Flow
 - Responsive HUD with semantic labels and optional touch controls
 - Haptic and reduced-effects preferences
-- Cohesive programmatic pixel rendering with no missing runtime art dependency
+- AI-assisted production backgrounds and character sprites backed by reliable code collision geometry
 
 ## Controls
 
@@ -42,6 +42,7 @@ Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums,
 | Move | A/D or arrow keys | Left/right buttons |
 | Jump | Space, W or up arrow | Jump button |
 | Run | Shift | Volt-Cola and Flow increase movement speed |
+| Dash | K or Ctrl | Yellow dash button |
 | Pause | HUD pause button | HUD pause button |
 
 The Android build is locked to landscape and uses an immersive fullscreen presentation.
@@ -117,7 +118,7 @@ Input is isolated in `InputController`; campaign and HUD state are exposed throu
 
 ## Concept art
 
-`assets/images/` contains 1408×768 JPEG concept boards. They are deliberately **not bundled into the app** and are references, not production sprite sheets. Runtime visuals remain code-rendered until consistent transparent sprite sheets are produced.
+`assets/images/` contains the original 1408×768 JPEG concept boards, while `assets/images/runtime/` contains dedicated AI-assisted game backgrounds and transparent character sprites derived from that direction. Only the runtime directory is bundled. Physics and hitboxes remain code-driven so richer art cannot destabilize gameplay.
 
 ## Quality gates
 

@@ -13,6 +13,7 @@ import 'enemies/foreman_boss.dart';
 import 'input/input_controller.dart';
 import 'models/campaign_progress.dart';
 import 'models/game_hud_state.dart';
+import 'models/runtime_assets.dart';
 import 'models/stage_catalog.dart';
 import 'player.dart';
 import 'services/campaign_repository.dart';
@@ -79,6 +80,7 @@ class BroskieGame extends FlameGame
   double _peakFlow = 0;
   double _hudTimer = 0;
   double _broadcastTimer = 0;
+  int _tutorialStep = 0;
   String? _broadcastMessage;
 
   bool get isPlaying => phase == GamePhase.playing;
@@ -92,6 +94,7 @@ class BroskieGame extends FlameGame
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    await images.loadAll(RuntimeAssets.all);
     progress = await _campaignRepository.load();
     campaign.value = progress;
     await _buildStage();
@@ -123,6 +126,9 @@ class BroskieGame extends FlameGame
         _broadcastMessage = null;
       }
     }
+    if (currentStageIndex == 0) {
+      _updateTutorial();
+    }
 
     final cameraX = player.center.x
         .clamp(logicalWidth / 2, levelWidth - logicalWidth / 2)
@@ -149,12 +155,26 @@ class BroskieGame extends FlameGame
     }
   }
 
+  void _updateTutorial() {
+    if (_tutorialStep == 0) {
+      _tutorialStep = 1;
+      showBroadcast('MOVE WITH THE ARROWS. DASH WITH K OR THE YELLOW BUTTON.');
+    } else if (_tutorialStep == 1 && player.x > 260) {
+      _tutorialStep = 2;
+      showBroadcast('JUMP WITH SPACE OR THE PINK BUTTON. KEEP YOUR MOMENTUM.');
+    } else if (_tutorialStep == 2 && player.x > 720) {
+      _tutorialStep = 3;
+      showBroadcast('LAND ON CORPORATE CUBES. CHAINS BUILD FLOW AND SPEED.');
+    }
+  }
+
   Future<void> _buildStage() async {
     final components = <Component>[
       NeonCityBackdrop(
         levelSize: Vector2(levelWidth, logicalHeight),
-        skyTop: currentStage.skyTop,
-        skyBottom: currentStage.skyBottom,
+        backgroundSprite: Sprite(
+          images.fromCache(RuntimeAssets.backgroundForStage(currentStageIndex)),
+        ),
         accent: currentStage.accent,
         reducedEffects: progress.reducedEffects,
       ),
@@ -486,6 +506,7 @@ class BroskieGame extends FlameGame
     _controlsHackTimer = 0;
     _broadcastMessage = null;
     _broadcastTimer = 0;
+    _tutorialStep = 0;
     _bossEncounterStarted = false;
     _checkpoint = Vector2(80, groundY - 58);
     _checkpoints.clear();
@@ -519,6 +540,7 @@ class BroskieGame extends FlameGame
   void setTouchLeft(bool pressed) => input.setTouchLeft(pressed);
   void setTouchRight(bool pressed) => input.setTouchRight(pressed);
   void jump() => input.queueJump();
+  void dash() => input.queueDash();
 
   void spawnVoltCola(Vector2 position) {
     world.add(VoltCola(position: position));

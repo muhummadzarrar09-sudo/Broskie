@@ -10,8 +10,9 @@ This roadmap reports only integrated code as complete. Runtime certification on 
 - [x] SharedPreferences progression, settings and best-rank persistence
 - [x] C/B/A/S stage result system
 - [x] Correct Flame `World` and fixed-resolution camera architecture
-- [x] Programmatic player, city, platform, collectible, hazard and enemy visuals
-- [x] Momentum movement, acceleration, friction and running
+- [x] AI-assisted stage backgrounds and transparent player/enemy/boss sprites
+- [x] Code-driven platforms, collectibles, hazards and reliable hitboxes
+- [x] Momentum movement, acceleration, friction, running and directional dash
 - [x] Stable axis-separated platform collisions with movement substeps
 - [x] Coyote time and jump buffering
 - [x] Keyboard and multi-touch controls

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'broskie_game.dart';
+import 'models/runtime_assets.dart';
 
 class Player extends PositionComponent
     with KeyboardHandler, CollisionCallbacks, HasGameReference<BroskieGame> {
@@ -24,6 +25,7 @@ class Player extends PositionComponent
   static const double terminalVelocity = 1050;
 
   final Vector2 velocity = Vector2.zero();
+  late final Sprite _sprite;
 
   bool isGrounded = false;
   bool powered = false;
@@ -33,11 +35,19 @@ class Player extends PositionComponent
   double _coyoteTimer = 0;
   double _jumpBufferTimer = 0;
   double _invulnerabilityTimer = 0;
+  double _dashCooldown = 0;
+  double _visualTime = 0;
   bool _fallHandled = false;
 
   bool get isInvulnerable => _invulnerabilityTimer > 0;
 
   double get bottom => y + height;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    _sprite = Sprite(game.images.fromCache(RuntimeAssets.player));
+  }
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
@@ -60,6 +70,13 @@ class Player extends PositionComponent
     if (event is KeyDownEvent && jumpKey) {
       game.input.queueJump();
     }
+    final dashKey =
+        event.logicalKey == LogicalKeyboardKey.keyK ||
+        event.logicalKey == LogicalKeyboardKey.controlLeft ||
+        event.logicalKey == LogicalKeyboardKey.controlRight;
+    if (event is KeyDownEvent && dashKey) {
+      game.input.queueDash();
+    }
     return true;
   }
 
@@ -71,8 +88,10 @@ class Player extends PositionComponent
     }
 
     final frameDt = math.min(dt, 1 / 30);
+    _visualTime += frameDt;
     previousBottom = bottom;
     _invulnerabilityTimer = math.max(0.0, _invulnerabilityTimer - frameDt);
+    _dashCooldown = math.max(0.0, _dashCooldown - frameDt);
 
     if (game.input.takeJump()) {
       _jumpBufferTimer = 0.12;
@@ -98,6 +117,12 @@ class Player extends PositionComponent
     final targetX = direction * maxSpeed;
     final changeRate = direction == 0 ? groundFriction : acceleration;
     velocity.x = _moveTowards(velocity.x, targetX, changeRate * frameDt);
+
+    if (game.input.takeDash() && _dashCooldown <= 0) {
+      velocity.x = facing * 760.0;
+      _dashCooldown = 0.8;
+      game.addFlow(4);
+    }
 
     if (_jumpBufferTimer > 0 && _coyoteTimer > 0) {
       velocity.y = -jumpSpeed;
@@ -227,25 +252,29 @@ class Player extends PositionComponent
       );
     }
 
-    final skin = Paint()..color = const Color(0xFFE4A067);
-    final cap = Paint()..color = const Color(0xFFE51E36);
-    final jacket = Paint()..color = const Color(0xFF1678C8);
-    final dark = Paint()..color = const Color(0xFF111827);
-    final shoe = Paint()..color = const Color(0xFFE51E36);
-
-    canvas.drawRect(const Rect.fromLTWH(10, 8, 24, 18), skin);
-    canvas.drawRect(const Rect.fromLTWH(6, 4, 30, 8), cap);
-    canvas.drawRect(Rect.fromLTWH(facing > 0 ? 31 : 2, 9, 9, 4), cap);
-    canvas.drawRect(const Rect.fromLTWH(11, 13, 24, 6), dark);
-    canvas.drawRect(const Rect.fromLTWH(7, 26, 28, 21), jacket);
-    canvas.drawRect(
-      const Rect.fromLTWH(16, 26, 8, 21),
-      Paint()..color = Colors.white,
+    final moving = velocity.x.abs() > 30 && isGrounded;
+    final bob = moving ? math.sin(_visualTime * 15) * 1.8 : 0.0;
+    if (_dashCooldown > 0.62) {
+      final trail = Paint()
+        ..color = const Color(0x9947F8FF)
+        ..strokeWidth = 3;
+      final startX = facing > 0 ? -28.0 : width + 28.0;
+      final endX = facing > 0 ? 4.0 : width - 4.0;
+      for (double y = 17; y < height; y += 11) {
+        canvas.drawLine(Offset(startX, y), Offset(endX, y), trail);
+      }
+    }
+    canvas.save();
+    if (facing < 0) {
+      canvas.translate(width, 0);
+      canvas.scale(-1, 1);
+    }
+    _sprite.render(
+      canvas,
+      position: Vector2(-5, -9 + bob),
+      size: Vector2(width + 10, height + 12),
     );
-    canvas.drawRect(const Rect.fromLTWH(8, 47, 11, 8), dark);
-    canvas.drawRect(const Rect.fromLTWH(25, 47, 10, 8), dark);
-    canvas.drawRect(const Rect.fromLTWH(5, 54, 16, 4), shoe);
-    canvas.drawRect(const Rect.fromLTWH(24, 54, 16, 4), shoe);
+    canvas.restore();
   }
 
   double _moveTowards(double current, double target, double maxDelta) {

@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 import '../broskie_game.dart';
+import '../models/runtime_assets.dart';
 import '../player.dart';
 
 class DataBrokerBoss extends PositionComponent
@@ -22,6 +23,7 @@ class DataBrokerBoss extends PositionComponent
   final double arenaLeft;
   final double arenaRight;
   int health = maxHealth;
+  late final Sprite _sprite;
   int direction = -1;
   int _attackIndex = 0;
   double _attackTimer = 1.8;
@@ -29,6 +31,12 @@ class DataBrokerBoss extends PositionComponent
   double _time = 0;
   late final double _originY = y;
   bool defeated = false;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    _sprite = Sprite(game.images.fromCache(RuntimeAssets.dataBroker));
+  }
 
   double get speed => health <= 3 ? 210 : (health <= 6 ? 145 : 95);
 
@@ -109,26 +117,22 @@ class DataBrokerBoss extends PositionComponent
     if (_hurtCooldown > 0 && (_hurtCooldown * 20).floor().isOdd) {
       return;
     }
-    final shell = health <= 3
-        ? const Color(0xFFFF3158)
-        : const Color(0xFF8D4DFF);
-    final metal = Paint()..color = const Color(0xFF1C2438);
-    final neon = Paint()..color = shell;
-    final eye = Paint()..color = const Color(0xFF55FF8A);
+    canvas.save();
+    if (direction > 0) {
+      canvas.translate(width, 0);
+      canvas.scale(-1, 1);
+    }
+    _sprite.render(
+      canvas,
+      position: Vector2(-35, -6),
+      size: Vector2(width + 70, height + 12),
+    );
+    canvas.restore();
 
-    canvas.drawOval(const Rect.fromLTWH(18, 14, 106, 62), metal);
-    canvas.drawOval(const Rect.fromLTWH(29, 23, 84, 43), neon);
-    canvas.drawRect(const Rect.fromLTWH(48, 33, 46, 24), metal);
-    canvas.drawRect(const Rect.fromLTWH(59, 40, 9, 8), eye);
-    canvas.drawRect(const Rect.fromLTWH(76, 40, 9, 8), eye);
-    for (var leg = 0; leg < 4; leg++) {
-      final left = 16.0 + leg * 27;
-      canvas.drawLine(
-        Offset(left + 8, 66),
-        Offset(left, 90),
-        Paint()
-          ..color = shell
-          ..strokeWidth = 7,
+    if (health <= 3) {
+      canvas.drawRect(
+        Rect.fromLTWH(-14, -5, width + 28, height + 10),
+        Paint()..color = const Color(0x22FF3158),
       );
     }
 

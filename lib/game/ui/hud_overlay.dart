@@ -13,23 +13,34 @@ class BroskieHud extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screen = MediaQuery.sizeOf(context);
+    final compact = screen.width < 760 || screen.height < 430;
     return ValueListenableBuilder<GameHudState>(
       valueListenable: game.hud,
       builder: (context, state, _) {
         return SafeArea(
-          minimum: const EdgeInsets.all(12),
+          minimum: EdgeInsets.symmetric(
+            horizontal: compact ? 6 : 12,
+            vertical: compact ? 4 : 10,
+          ),
           child: Stack(
             fit: StackFit.expand,
             children: [
               Align(
                 alignment: Alignment.topCenter,
-                child: _StatusBar(state: state, onPause: game.togglePause),
+                child: _StatusBar(
+                  state: state,
+                  compact: compact,
+                  onPause: game.togglePause,
+                ),
               ),
               if (state.broadcast != null)
                 Positioned(
-                  top: state.bossActive ? 126 : 106,
-                  left: 90,
-                  right: 90,
+                  top: compact
+                      ? (state.bossActive ? 105 : 82)
+                      : (state.bossActive ? 126 : 106),
+                  left: compact ? 12 : 90,
+                  right: compact ? 12 : 90,
                   child: IgnorePointer(
                     child: Semantics(
                       liveRegion: true,
@@ -57,7 +68,7 @@ class BroskieHud extends StatelessWidget {
               if (state.phase == GamePhase.playing && game.showTouchControls)
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: _TouchControls(game: game),
+                  child: _TouchControls(game: game, compact: compact),
                 ),
             ],
           ),
@@ -68,9 +79,14 @@ class BroskieHud extends StatelessWidget {
 }
 
 class _StatusBar extends StatelessWidget {
-  const _StatusBar({required this.state, required this.onPause});
+  const _StatusBar({
+    required this.state,
+    required this.compact,
+    required this.onPause,
+  });
 
   final GameHudState state;
+  final bool compact;
   final VoidCallback onPause;
 
   String _clock(int seconds) {
@@ -89,6 +105,7 @@ class _StatusBar extends StatelessWidget {
           Row(
             children: [
               _HudChip(
+                compact: compact,
                 semanticLabel: '${state.health} health remaining',
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -101,17 +118,18 @@ class _StatusBar extends StatelessWidget {
                             ? Icons.favorite
                             : Icons.favorite_border,
                         color: const Color(0xFFFF3D67),
-                        size: 22,
+                        size: compact ? 17 : 22,
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: compact ? 4 : 8),
               _HudChip(
+                compact: compact,
                 semanticLabel: '${state.cash} cash',
                 child: Text(
-                  'CASH  \$${state.cash}',
+                  compact ? '\$${state.cash}' : 'CASH  \$${state.cash}',
                   style: const TextStyle(
                     color: Color(0xFF6CFF83),
                     fontWeight: FontWeight.w900,
@@ -119,12 +137,15 @@ class _StatusBar extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: compact ? 4 : 8),
               _HudChip(
+                compact: compact,
                 semanticLabel:
                     'Stage ${state.stageNumber}, ${state.stageTitle}, ${state.elapsedSeconds} seconds',
                 child: Text(
-                  '${state.stageNumber}/4  ${state.stageTitle}  ${_clock(state.elapsedSeconds)}',
+                  compact
+                      ? '${state.stageNumber}/4  ${_clock(state.elapsedSeconds)}'
+                      : '${state.stageNumber}/4  ${state.stageTitle}  ${_clock(state.elapsedSeconds)}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -133,20 +154,26 @@ class _StatusBar extends StatelessWidget {
                 ),
               ),
               if (state.powered) ...[
-                const SizedBox(width: 8),
-                const _HudChip(
+                SizedBox(width: compact ? 4 : 8),
+                _HudChip(
+                  compact: compact,
                   semanticLabel: 'Volt Cola active',
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.bolt, color: Color(0xFFFFEC3D), size: 20),
-                      Text(
-                        'VOLT MODE',
-                        style: TextStyle(
-                          color: Color(0xFF4AF8FF),
-                          fontWeight: FontWeight.w900,
-                        ),
+                      const Icon(
+                        Icons.bolt,
+                        color: Color(0xFFFFEC3D),
+                        size: 20,
                       ),
+                      if (!compact)
+                        const Text(
+                          'VOLT MODE',
+                          style: TextStyle(
+                            color: Color(0xFF4AF8FF),
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -155,7 +182,12 @@ class _StatusBar extends StatelessWidget {
               IconButton.filledTonal(
                 tooltip: 'Pause game',
                 onPressed: onPause,
-                icon: const Icon(Icons.pause),
+                icon: Icon(Icons.pause, size: compact ? 18 : 24),
+                constraints: BoxConstraints.tightFor(
+                  width: compact ? 38 : 48,
+                  height: compact ? 38 : 48,
+                ),
+                padding: EdgeInsets.zero,
                 style: IconButton.styleFrom(
                   foregroundColor: const Color(0xFF47F8FF),
                   backgroundColor: const Color(0xCC11172A),
@@ -179,9 +211,11 @@ class _StatusBar extends StatelessWidget {
           Row(
             children: [
               SizedBox(
-                width: 108,
+                width: compact ? 58 : 108,
                 child: Text(
-                  'FLOW: ${state.flowLabel}',
+                  compact
+                      ? '${state.flow.round()}%'
+                      : 'FLOW: ${state.flowLabel}',
                   style: const TextStyle(
                     color: Color(0xFFFFEC3D),
                     fontSize: 11,
@@ -200,11 +234,11 @@ class _StatusBar extends StatelessWidget {
                 ),
               ),
               if (state.controlsInverted)
-                const Padding(
-                  padding: EdgeInsets.only(left: 12),
+                Padding(
+                  padding: EdgeInsets.only(left: compact ? 6 : 12),
                   child: Text(
-                    '⚠ CONTROLS HACKED',
-                    style: TextStyle(
+                    compact ? '⚠ HACKED' : '⚠ CONTROLS HACKED',
+                    style: const TextStyle(
                       color: Color(0xFFFF3EC8),
                       fontWeight: FontWeight.w900,
                     ),
@@ -216,13 +250,14 @@ class _StatusBar extends StatelessWidget {
             const SizedBox(height: 9),
             Semantics(
               label:
-                  'The Foreman boss health ${state.bossHealth} of ${state.bossMaxHealth}',
+                  '${state.stageNumber == 4 ? 'Data Broker' : 'The Foreman'} boss health ${state.bossHealth} of ${state.bossMaxHealth}',
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     state.stageNumber == 4 ? 'DATA BROKER' : 'THE FOREMAN',
                     style: TextStyle(
+                      fontSize: compact ? 11 : 14,
                       color: state.stageNumber == 4
                           ? const Color(0xFF55FF8A)
                           : const Color(0xFFFFB329),
@@ -230,9 +265,9 @@ class _StatusBar extends StatelessWidget {
                       letterSpacing: 2,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: compact ? 7 : 12),
                   SizedBox(
-                    width: 220,
+                    width: compact ? 145 : 220,
                     child: LinearProgressIndicator(
                       minHeight: 10,
                       value: state.bossHealth / state.bossMaxHealth,
@@ -251,10 +286,15 @@ class _StatusBar extends StatelessWidget {
 }
 
 class _HudChip extends StatelessWidget {
-  const _HudChip({required this.semanticLabel, required this.child});
+  const _HudChip({
+    required this.semanticLabel,
+    required this.child,
+    this.compact = false,
+  });
 
   final String semanticLabel;
   final Widget child;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -265,10 +305,13 @@ class _HudChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xCC11172A),
           border: Border.all(color: const Color(0x6647F8FF)),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(compact ? 9 : 12),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 7 : 12,
+            vertical: compact ? 5 : 8,
+          ),
           child: child,
         ),
       ),
@@ -277,9 +320,10 @@ class _HudChip extends StatelessWidget {
 }
 
 class _TouchControls extends StatelessWidget {
-  const _TouchControls({required this.game});
+  const _TouchControls({required this.game, required this.compact});
 
   final BroskieGame game;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -287,18 +331,36 @@ class _TouchControls extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         _HoldButton(
+          size: compact ? 58 : 74,
           label: 'Move left',
           icon: Icons.arrow_left_rounded,
           onChanged: game.setTouchLeft,
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: compact ? 7 : 12),
         _HoldButton(
+          size: compact ? 58 : 74,
           label: 'Move right',
           icon: Icons.arrow_right_rounded,
           onChanged: game.setTouchRight,
         ),
         const Spacer(),
         _HoldButton(
+          size: compact ? 56 : 68,
+          label: 'Dash',
+          icon: Icons.double_arrow_rounded,
+          accent: const Color(0xFFFFEC3D),
+          onChanged: (pressed) {
+            if (pressed) {
+              if (game.hapticsEnabled) {
+                unawaited(HapticFeedback.selectionClick());
+              }
+              game.dash();
+            }
+          },
+        ),
+        SizedBox(width: compact ? 7 : 12),
+        _HoldButton(
+          size: compact ? 62 : 74,
           label: 'Jump',
           icon: Icons.arrow_upward_rounded,
           accent: const Color(0xFFFF3EC8),
@@ -321,9 +383,11 @@ class _HoldButton extends StatefulWidget {
     required this.label,
     required this.icon,
     required this.onChanged,
+    this.size = 74,
     this.accent = const Color(0xFF47F8FF),
   });
 
+  final double size;
   final String label;
   final IconData icon;
   final ValueChanged<bool> onChanged;
@@ -366,14 +430,14 @@ class _HoldButtonState extends State<_HoldButton> {
         onPointerCancel: (_) => _setPressed(false),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 70),
-          width: 74,
-          height: 74,
+          width: widget.size,
+          height: widget.size,
           decoration: BoxDecoration(
             color: _pressed
                 ? widget.accent.withValues(alpha: 0.42)
                 : const Color(0x9911172A),
             border: Border.all(color: widget.accent, width: _pressed ? 4 : 2),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(widget.size * 0.27),
             boxShadow: _pressed
                 ? [
                     BoxShadow(
@@ -383,7 +447,11 @@ class _HoldButtonState extends State<_HoldButton> {
                   ]
                 : null,
           ),
-          child: Icon(widget.icon, color: widget.accent, size: 46),
+          child: Icon(
+            widget.icon,
+            color: widget.accent,
+            size: widget.size * 0.62,
+          ),
         ),
       ),
     );

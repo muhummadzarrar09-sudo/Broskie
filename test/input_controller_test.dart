@@ -17,13 +17,18 @@ void main() {
       expect(input.horizontalDirection, 1);
     });
 
-    test('buffers each jump request exactly once', () {
+    test('buffers jump and dash requests exactly once', () {
       final input = InputController();
 
       expect(input.takeJump(), isFalse);
-      input.queueJump();
+      expect(input.takeDash(), isFalse);
+      input
+        ..queueJump()
+        ..queueDash();
       expect(input.takeJump(), isTrue);
       expect(input.takeJump(), isFalse);
+      expect(input.takeDash(), isTrue);
+      expect(input.takeDash(), isFalse);
     });
 
     test('reset releases every held input', () {
@@ -32,11 +37,13 @@ void main() {
         ..setKeyboard(left: true, right: false, running: true)
         ..setTouchRight(true)
         ..queueJump()
+        ..queueDash()
         ..reset();
 
       expect(input.horizontalDirection, 0);
       expect(input.isRunning, isFalse);
       expect(input.takeJump(), isFalse);
+      expect(input.takeDash(), isFalse);
     });
   });
 }

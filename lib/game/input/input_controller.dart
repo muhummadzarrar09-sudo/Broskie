@@ -7,6 +7,7 @@ class InputController {
   bool _touchRight = false;
   bool _running = false;
   bool _jumpQueued = false;
+  bool _dashQueued = false;
 
   int get horizontalDirection {
     final left = _keyboardLeft || _touchLeft;
@@ -41,6 +42,14 @@ class InputController {
     return queued;
   }
 
+  void queueDash() => _dashQueued = true;
+
+  bool takeDash() {
+    final queued = _dashQueued;
+    _dashQueued = false;
+    return queued;
+  }
+
   void reset() {
     _keyboardLeft = false;
     _keyboardRight = false;
@@ -48,5 +57,6 @@ class InputController {
     _touchRight = false;
     _running = false;
     _jumpQueued = false;
+    _dashQueued = false;
   }
 }
