@@ -100,6 +100,7 @@ class BroskieGame extends FlameGame
   StageInfo get currentStage => stages[currentStageIndex];
   bool get hapticsEnabled => progress.hapticsEnabled;
   bool get showTouchControls => progress.showTouchControls;
+  double get controlScale => progress.controlScale;
 
   void emitFeedback(FeedbackCue cue) {
     feedback.emit(cue, hapticsEnabled: progress.hapticsEnabled);
@@ -807,6 +808,13 @@ class BroskieGame extends FlameGame
   void setTouchControls(bool enabled) {
     progress = progress.copyWith(showTouchControls: enabled);
     input.reset();
+    _saveSettings();
+  }
+
+  void setControlScale(double scale) {
+    progress = progress.copyWith(
+      controlScale: scale.clamp(0.9, 1.6).toDouble(),
+    );
     _saveSettings();
   }
 

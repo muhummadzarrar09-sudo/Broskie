@@ -324,25 +324,26 @@ class _TouchControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scale = game.controlScale;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         _HoldButton(
-          size: compact ? 68 : 84,
+          size: (compact ? 68 : 84) * scale,
           label: 'Move left',
           icon: Icons.arrow_left_rounded,
           onChanged: game.setTouchLeft,
         ),
         SizedBox(width: compact ? 9 : 14),
         _HoldButton(
-          size: compact ? 68 : 84,
+          size: (compact ? 68 : 84) * scale,
           label: 'Move right',
           icon: Icons.arrow_right_rounded,
           onChanged: game.setTouchRight,
         ),
         const Spacer(),
         _HoldButton(
-          size: compact ? 66 : 78,
+          size: (compact ? 66 : 78) * scale,
           label: 'Dash',
           icon: Icons.double_arrow_rounded,
           accent: const Color(0xFFFFEC3D),
@@ -354,7 +355,7 @@ class _TouchControls extends StatelessWidget {
         ),
         SizedBox(width: compact ? 9 : 14),
         _HoldButton(
-          size: compact ? 74 : 88,
+          size: (compact ? 74 : 88) * scale,
           label: 'Jump',
           icon: Icons.arrow_upward_rounded,
           accent: const Color(0xFFFF3EC8),

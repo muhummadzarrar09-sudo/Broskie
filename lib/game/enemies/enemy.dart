@@ -32,7 +32,15 @@ class GrumpyBrick extends PositionComponent
   @override
   void update(double dt) {
     if (game.isPlaying && !defeated) {
-      x += direction * speed * dt;
+      final stageMultiplier = 1 + game.currentStageIndex * 0.2;
+      final distanceToPlayer = game.player.center.x - center.x;
+      final chasing =
+          game.currentStageIndex >= 2 && distanceToPlayer.abs() < 300;
+      if (chasing) {
+        direction = distanceToPlayer.sign.toInt();
+      }
+      final movementSpeed = speed * stageMultiplier * (chasing ? 1.65 : 1);
+      x += direction * movementSpeed * dt;
       if (x <= patrolStart) {
         x = patrolStart;
         direction = 1;

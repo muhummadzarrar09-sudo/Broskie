@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import '../broskie_game.dart';
 import '../player.dart';
 
-class NeonCityBackdrop extends PositionComponent {
+class NeonCityBackdrop extends PositionComponent
+    with HasGameReference<BroskieGame> {
   NeonCityBackdrop({
     required Vector2 levelSize,
     required this.backgroundSprite,
@@ -23,9 +24,19 @@ class NeonCityBackdrop extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
+    final visible = game.camera.visibleWorldRect;
+    final maxPanel = math.max(0, (width / panelWidth).ceil() - 1);
+    final firstPanel = (visible.left / panelWidth)
+        .floor()
+        .clamp(0, maxPanel)
+        .toInt();
+    final lastPanel = (visible.right / panelWidth)
+        .floor()
+        .clamp(firstPanel, maxPanel)
+        .toInt();
     final panelSize = Vector2(panelWidth, height);
-    var panel = 0;
-    for (double x = 0; x < width; x += panelWidth) {
+    for (var panel = firstPanel; panel <= lastPanel; panel++) {
+      final x = panel * panelWidth;
       canvas.save();
       if (panel.isOdd) {
         canvas.translate(x + panelWidth, 0);
@@ -39,11 +50,11 @@ class NeonCityBackdrop extends PositionComponent {
         );
       }
       canvas.restore();
-      panel++;
     }
 
+    final visibleBounds = Rect.fromLTWH(visible.left, 0, visible.width, height);
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, width, height),
+      visibleBounds,
       Paint()
         ..color = Colors.black.withValues(alpha: reducedEffects ? 0.22 : 0.1),
     );
@@ -51,7 +62,8 @@ class NeonCityBackdrop extends PositionComponent {
     final gridPaint = Paint()
       ..color = accent.withValues(alpha: reducedEffects ? 0.025 : 0.055)
       ..strokeWidth = 1;
-    for (double x = 0; x < width; x += 64) {
+    final firstGridLine = (visible.left / 64).floor() * 64.0;
+    for (double x = firstGridLine; x <= visible.right + 64; x += 64) {
       canvas.drawLine(Offset(x, 0), Offset(x, height), gridPaint);
     }
   }

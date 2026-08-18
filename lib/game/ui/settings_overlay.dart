@@ -68,6 +68,26 @@ class SettingsOverlay extends StatelessWidget {
                             value: progress.showTouchControls,
                             onChanged: game.setTouchControls,
                           ),
+                          Row(
+                            children: [
+                              const Expanded(child: Text('Control size')),
+                              Text(
+                                '${(progress.controlScale * 100).round()}%',
+                                style: const TextStyle(
+                                  color: Color(0xFF47F8FF),
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Slider(
+                            min: 0.9,
+                            max: 1.6,
+                            divisions: 7,
+                            value: progress.controlScale,
+                            label: '${(progress.controlScale * 100).round()}%',
+                            onChanged: game.setControlScale,
+                          ),
                           SwitchListTile.adaptive(
                             dense: true,
                             contentPadding: EdgeInsets.zero,

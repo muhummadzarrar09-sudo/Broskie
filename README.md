@@ -27,14 +27,16 @@ Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums,
 - Cash chips, hackable propaganda terminals and functional Volt-Cola power
 - **Flow system** with CHILL, COOKING, LOCKED IN and UNGOVERNABLE states
 - Patrolling corporate-cube enemies and stomp combos
-- Foreman and Data Broker boss encounters
-- Data spikes, hack zones and Data Broker pulse attacks
+- Foreman charge telegraphs, wall-crash stun windows, ground shockwaves and targeted wrecking-ball drops
+- Data Broker pulse volleys, control hacks and escalating movement
 - Stage briefings, reactive broadcasts, pause/restart and game-over flows
 - C/B/A/S stage ranks based on health, time and peak Flow
 - Responsive HUD with semantic labels and optional touch controls
 - Event-driven haptics plus generated chiptune music and placeholder SFX
-- Persisted audio, haptic, touch-control and reduced-effects preferences
-- AI-assisted production backgrounds and character sprites backed by reliable code collision geometry
+- Persisted audio, haptic, adjustable control-scale and reduced-effects preferences
+- AI-assisted production backgrounds and transparent character/boss sprites backed by reliable code collision geometry
+- Four-frame normal and Volt-powered run animation sheets
+- Camera-culled stage backgrounds/particles for stable performance on long stages
 - Stage-specific rain, sparks, steam/data particles and distant moving traffic
 - Native launch artwork plus a full branded loading/error presentation
 

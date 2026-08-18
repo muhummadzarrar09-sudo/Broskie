@@ -3,7 +3,10 @@ import 'dart:math' as math;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class StageAtmosphere extends PositionComponent {
+import '../broskie_game.dart';
+
+class StageAtmosphere extends PositionComponent
+    with HasGameReference<BroskieGame> {
   StageAtmosphere({
     required Vector2 levelSize,
     required this.stageIndex,
@@ -11,7 +14,8 @@ class StageAtmosphere extends PositionComponent {
     required this.reducedEffects,
   }) : super(size: levelSize, priority: -30) {
     final random = math.Random(9000 + stageIndex);
-    final count = reducedEffects ? 28 : 85;
+    final baseCount = stageIndex == 2 ? 55 : 72;
+    final count = reducedEffects ? 24 : baseCount;
     for (var i = 0; i < count; i++) {
       _particles.add(
         _AtmosphereParticle(
@@ -67,7 +71,11 @@ class StageAtmosphere extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
+    final visible = game.camera.visibleWorldRect.inflate(30);
     for (final particle in _particles) {
+      if (!visible.contains(Offset(particle.x, particle.y))) {
+        continue;
+      }
       switch (stageIndex) {
         case 0:
           canvas.drawCircle(
@@ -105,15 +113,18 @@ class StageAtmosphere extends PositionComponent {
     }
 
     if (!reducedEffects) {
-      _renderTraffic(canvas);
+      _renderTraffic(canvas, visible);
     }
   }
 
-  void _renderTraffic(Canvas canvas) {
+  void _renderTraffic(Canvas canvas, Rect visible) {
     for (var i = 0; i < 4; i++) {
       final direction = i.isEven ? 1.0 : -1.0;
       final travel = (_time * (55 + i * 18) + i * 830) % (width + 300);
       final x = direction > 0 ? travel - 150 : width - travel + 150;
+      if (x + 40 < visible.left || x > visible.right) {
+        continue;
+      }
       final y = 95.0 + i * 37;
       final vehicleColor = i.isEven ? accent : const Color(0xFFFF3EC8);
       canvas.drawRRect(

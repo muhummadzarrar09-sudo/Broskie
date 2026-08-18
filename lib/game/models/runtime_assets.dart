@@ -4,6 +4,8 @@ class RuntimeAssets {
   static const neonSlumsBackground = 'runtime/neon_slums_background.png';
   static const monopolyCoreBackground = 'runtime/monopoly_core_background.png';
   static const player = 'runtime/broskie_player.png';
+  static const playerWalk = 'runtime/broskie_walk_sheet.png';
+  static const playerVoltWalk = 'runtime/broskie_volt_walk_sheet.png';
   static const corporateCube = 'runtime/corporate_cube.png';
   static const foreman = 'runtime/foreman_boss.png';
   static const dataBroker = 'runtime/data_broker_boss.png';
@@ -14,6 +16,8 @@ class RuntimeAssets {
     neonSlumsBackground,
     monopolyCoreBackground,
     player,
+    playerWalk,
+    playerVoltWalk,
     corporateCube,
     foreman,
     dataBroker,

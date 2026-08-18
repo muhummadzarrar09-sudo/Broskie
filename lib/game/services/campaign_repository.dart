@@ -15,6 +15,7 @@ class SharedPreferencesCampaignRepository implements CampaignRepository {
   static const _hapticsKey = 'settings.haptics';
   static const _audioKey = 'settings.audio';
   static const _controlsKey = 'settings.touchControls';
+  static const _controlScaleKey = 'settings.controlScale';
   static const _effectsKey = 'settings.reducedEffects';
 
   @override
@@ -36,6 +37,9 @@ class SharedPreferencesCampaignRepository implements CampaignRepository {
       hapticsEnabled: preferences.getBool(_hapticsKey) ?? true,
       audioEnabled: preferences.getBool(_audioKey) ?? true,
       showTouchControls: preferences.getBool(_controlsKey) ?? true,
+      controlScale: (preferences.getDouble(_controlScaleKey) ?? 1.25)
+          .clamp(0.9, 1.6)
+          .toDouble(),
       reducedEffects: preferences.getBool(_effectsKey) ?? false,
     );
   }
@@ -53,6 +57,7 @@ class SharedPreferencesCampaignRepository implements CampaignRepository {
       preferences.setBool(_hapticsKey, progress.hapticsEnabled),
       preferences.setBool(_audioKey, progress.audioEnabled),
       preferences.setBool(_controlsKey, progress.showTouchControls),
+      preferences.setDouble(_controlScaleKey, progress.controlScale),
       preferences.setBool(_effectsKey, progress.reducedEffects),
     ]);
   }

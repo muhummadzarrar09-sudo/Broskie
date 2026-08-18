@@ -11,6 +11,8 @@ This roadmap reports only integrated code as complete. Runtime certification on 
 - [x] C/B/A/S stage result system
 - [x] Correct Flame `World`, smooth follow target and wide-screen responsive camera
 - [x] AI-assisted stage backgrounds and transparent player/enemy/boss sprites
+- [x] Four-frame normal and Volt-powered run animation sheets
+- [x] Camera-culling for background panels, atmosphere and traffic
 - [x] Animated rain, sparks, ambient particles and distant traffic
 - [x] Branded native/Flutter loading presentation
 - [x] Code-driven platforms, collectibles, hazards and reliable hitboxes
@@ -23,11 +25,11 @@ This roadmap reports only integrated code as complete. Runtime certification on 
 - [x] Flow meter with four gameplay states and speed scaling
 - [x] Corporate-cube patrol and stomp behavior
 - [x] Data spikes, control-hack zones and projectile attacks
-- [x] The Foreman boss with three speed phases and a real death path
+- [x] The Foreman boss with three phases, charge/stun cycles, shockwaves and wrecking-ball attacks
 - [x] Data Broker final boss with escalating attacks and control inversion
 - [x] Locked exits, stage completion, pause, restart and game-over flows
 - [x] Responsive and accessible HUD overlays
-- [x] Event-driven haptics and persisted audio/touch/effects settings
+- [x] Event-driven haptics and persisted audio/control-scale/effects settings
 - [x] Original generated placeholder SFX and looping neon chiptune
 - [x] Input, persistence and Flame game tests
 - [ ] Run `flutter analyze` and `flutter test` on Flutter 3.41+

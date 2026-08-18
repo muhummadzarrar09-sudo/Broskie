@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -27,6 +28,8 @@ class Player extends PositionComponent
 
   final Vector2 velocity = Vector2.zero();
   late final Sprite _sprite;
+  late final List<Sprite> _walkFrames;
+  late final List<Sprite> _voltWalkFrames;
 
   bool isGrounded = false;
   bool powered = false;
@@ -38,6 +41,8 @@ class Player extends PositionComponent
   double _invulnerabilityTimer = 0;
   double _dashCooldown = 0;
   double _visualTime = 0;
+  double _walkFrameTimer = 0;
+  int _walkFrameIndex = 0;
   bool _fallHandled = false;
 
   bool get isInvulnerable => _invulnerabilityTimer > 0;
@@ -48,6 +53,26 @@ class Player extends PositionComponent
   Future<void> onLoad() async {
     await super.onLoad();
     _sprite = Sprite(game.images.fromCache(RuntimeAssets.player));
+    _walkFrames = _sliceRunSheet(
+      game.images.fromCache(RuntimeAssets.playerWalk),
+    );
+    _voltWalkFrames = _sliceRunSheet(
+      game.images.fromCache(RuntimeAssets.playerVoltWalk),
+    );
+  }
+
+  List<Sprite> _sliceRunSheet(ui.Image image) {
+    final frameWidth = image.width / 4;
+    final frameSize = Vector2(frameWidth, image.height.toDouble());
+    return List.generate(
+      4,
+      (index) => Sprite(
+        image,
+        srcPosition: Vector2(frameWidth * index, 0),
+        srcSize: frameSize,
+      ),
+      growable: false,
+    );
   }
 
   @override
@@ -124,6 +149,17 @@ class Player extends PositionComponent
       _dashCooldown = 0.8;
       game.emitFeedback(FeedbackCue.dash);
       game.addFlow(4);
+    }
+
+    if (velocity.x.abs() > 35 && isGrounded) {
+      _walkFrameTimer += frameDt * (0.75 + velocity.x.abs() / walkSpeed);
+      if (_walkFrameTimer >= 0.1) {
+        _walkFrameTimer = 0;
+        _walkFrameIndex = (_walkFrameIndex + 1) % _walkFrames.length;
+      }
+    } else {
+      _walkFrameTimer = 0;
+      _walkFrameIndex = 0;
     }
 
     if (_jumpBufferTimer > 0 && _coyoteTimer > 0) {
@@ -268,15 +304,22 @@ class Player extends PositionComponent
         canvas.drawLine(Offset(startX, y), Offset(endX, y), trail);
       }
     }
+    final animated = moving || powered;
+    final activeSprite = powered
+        ? _voltWalkFrames[_walkFrameIndex]
+        : (moving ? _walkFrames[_walkFrameIndex] : _sprite);
     canvas.save();
     if (facing < 0) {
       canvas.translate(width, 0);
       canvas.scale(-1, 1);
     }
-    _sprite.render(
+    activeSprite.render(
       canvas,
-      position: Vector2(-5, -9 + bob),
-      size: Vector2(width + 10, height + 12),
+      position: Vector2(animated ? -10 : -5, -9 + bob),
+      size: Vector2(
+        width + (animated ? 20 : 10),
+        height + (animated ? 14 : 12),
+      ),
     );
     canvas.restore();
   }

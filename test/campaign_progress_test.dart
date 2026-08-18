@@ -11,6 +11,7 @@ void main() {
       bestRanks: [CampaignRank.a.index, CampaignRank.s.index, 0, 0],
       hapticsEnabled: false,
       audioEnabled: false,
+      controlScale: 1.5,
       reducedEffects: true,
     );
 
@@ -23,6 +24,7 @@ void main() {
     expect(restored.rankFor(1), CampaignRank.s);
     expect(restored.hapticsEnabled, isFalse);
     expect(restored.audioEnabled, isFalse);
+    expect(restored.controlScale, 1.5);
     expect(restored.reducedEffects, isTrue);
   });
 

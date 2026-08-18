@@ -25,6 +25,7 @@ class CampaignProgress {
     this.hapticsEnabled = true,
     this.audioEnabled = true,
     this.showTouchControls = true,
+    this.controlScale = 1.25,
     this.reducedEffects = false,
   });
 
@@ -34,6 +35,7 @@ class CampaignProgress {
   final bool hapticsEnabled;
   final bool audioEnabled;
   final bool showTouchControls;
+  final double controlScale;
   final bool reducedEffects;
 
   CampaignRank rankFor(int stage) {
@@ -50,6 +52,7 @@ class CampaignProgress {
     bool? hapticsEnabled,
     bool? audioEnabled,
     bool? showTouchControls,
+    double? controlScale,
     bool? reducedEffects,
   }) {
     return CampaignProgress(
@@ -59,6 +62,7 @@ class CampaignProgress {
       hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
       audioEnabled: audioEnabled ?? this.audioEnabled,
       showTouchControls: showTouchControls ?? this.showTouchControls,
+      controlScale: controlScale ?? this.controlScale,
       reducedEffects: reducedEffects ?? this.reducedEffects,
     );
   }
