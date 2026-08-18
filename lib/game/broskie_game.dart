@@ -6,6 +6,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'player.dart';
 import 'audio_manager.dart';
@@ -13,6 +14,7 @@ import 'stage_backdrop.dart';
 import 'blocks/interactable_block.dart';
 import 'blocks/hazards.dart';
 import 'blocks/collectibles.dart';
+import 'blocks/checkpoint.dart';
 import 'enemies/enemy.dart';
 import 'enemies/bull_enemy.dart';
 import 'enemies/foreman_boss.dart';
@@ -32,6 +34,13 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   final ValueNotifier<int> scoreCoins = ValueNotifier(0);
   final ValueNotifier<int> hp = ValueNotifier(maxHp);
   static const int maxHp = 3;
+
+  // Crew settings + campaign progression (persisted on-device).
+  final ValueNotifier<int> unlockedStage = ValueNotifier(1);
+  final ValueNotifier<bool> sfxEnabled = ValueNotifier(true);
+  final ValueNotifier<bool> musicEnabled = ValueNotifier(true);
+  final ValueNotifier<bool> touchControlsEnabled = ValueNotifier(true);
+  final ValueNotifier<double> shakeScale = ValueNotifier(1.0);
 
   String activeSpeaker = 'BROSKIE CORP';
   String activeDialogue = '';
@@ -63,6 +72,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     }
 
     _buildCurrentStage();
+
+    // Hold the world behind the main menu until the crew hits RUN IT.
+    pauseEngine();
   }
 
   @override
@@ -78,7 +90,45 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void triggerScreenShake({double intensity = 1.0}) {
-    shakeIntensity = intensity;
+    shakeIntensity = intensity * shakeScale.value;
+  }
+
+  /// Persist settings + campaign progress locally. Crew build: no accounts,
+  /// no servers — the save lives on the device.
+  Future<void> loadPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      sfxEnabled.value = prefs.getBool('settings_sfx') ?? true;
+      musicEnabled.value = prefs.getBool('settings_music') ?? true;
+      touchControlsEnabled.value = prefs.getBool('settings_touch') ?? true;
+      shakeScale.value = prefs.getDouble('settings_shake') ?? 1.0;
+      unlockedStage.value = max(1, min(4, prefs.getInt('unlocked_stage') ?? 1));
+      BroskieAudio.setSfx(sfxEnabled.value);
+      BroskieAudio.setMusicEnabled(musicEnabled.value);
+    } catch (_) {}
+  }
+
+  Future<void> savePrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('settings_sfx', sfxEnabled.value);
+      await prefs.setBool('settings_music', musicEnabled.value);
+      await prefs.setBool('settings_touch', touchControlsEnabled.value);
+      await prefs.setDouble('settings_shake', shakeScale.value);
+      await prefs.setInt('unlocked_stage', unlockedStage.value);
+    } catch (_) {}
+  }
+
+  /// A checkpoint flag was touched: falls now respawn at the ground point.
+  void setCheckpoint(Vector2 groundPoint) {
+    playerSpawn.setValues(groundPoint.x, groundPoint.y - 48);
+  }
+
+  /// Main menu / stage select entry point.
+  void startRun(int stage) {
+    currentStage.value = max(1, min(4, stage));
+    overlays.remove('MainMenu');
+    restart();
   }
 
   void togglePause() {
@@ -97,14 +147,21 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     overlays.remove('LevelComplete');
     if (currentStage.value < 4) {
       currentStage.value++;
+      if (currentStage.value > unlockedStage.value) {
+        unlockedStage.value = currentStage.value;
+      }
+      savePrefs();
       restart();
     } else {
+      savePrefs();
       pauseEngine();
       overlays.add('Victory');
     }
   }
 
   void _buildCurrentStage() {
+    // Full stage (re)build always starts Broskie at the stage entrance.
+    playerSpawn.setValues(100, 300);
     player = Player(position: playerSpawn.clone());
     add(player);
     camera.follow(player);
@@ -137,6 +194,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
     add(GrumpyBrick(position: Vector2(800, 448), patrolRange: 300));
     add(GrumpyBrick(position: Vector2(1200, 448), patrolRange: 300));
+    add(CheckpointFlag(position: Vector2(1500, 416)));
     add(LevelExit(position: Vector2(2500, 352)));
   }
 
@@ -154,6 +212,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     ));
 
     add(Floor(Vector2(2000, 340), Vector2(1500, 120)));
+    add(CheckpointFlag(position: Vector2(2100, 276)));
     add(PropagandaSign(position: Vector2(2200, 276)));
     add(LaserHazard(position: Vector2(2500, 180), size: Vector2(12, 160)));
     add(HaterCloud(position: Vector2(2700, 180)));
@@ -177,6 +236,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     ));
 
     add(Floor(Vector2(1900, 180), Vector2(1200, 24)));
+    add(CheckpointFlag(position: Vector2(2000, 116)));
     add(AuditorEnemy(position: Vector2(2200, 116)));
     add(LevelExit(position: Vector2(2900, 52)));
   }
@@ -194,7 +254,13 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
     add(TheForeman(position: Vector2(900, 400), minX: 500, maxX: 1900));
     add(DataBrokerBoss(position: Vector2(2600, 406), minX: 2300, maxX: 3200));
-    add(LevelExit(position: Vector2(3600, 352)));
+    add(CheckpointFlag(position: Vector2(2100, 416)));
+    add(LevelExit(
+      position: Vector2(3600, 352),
+      lockCondition: () =>
+          children.whereType<TheForeman>().isNotEmpty || children.whereType<DataBrokerBoss>().isNotEmpty,
+      lockHint: "PORTAL JAMMED: Defeat BOTH executives to go live!",
+    ));
   }
 
   /// Falling off the world costs one heart and respawns at the stage start.

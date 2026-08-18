@@ -3,6 +3,8 @@ import 'package:flame_audio/flame_audio.dart';
 
 class BroskieAudio {
   static bool audioAvailable = false;
+  static bool sfxOn = true;
+  static bool musicOn = true;
 
   // Only files that actually exist in assets/audio/. Keep this list honest.
   static const List<String> _sfxFiles = [
@@ -28,8 +30,21 @@ class BroskieAudio {
     }
   }
 
+  static void setSfx(bool on) {
+    sfxOn = on;
+  }
+
+  static void setMusicEnabled(bool on) {
+    musicOn = on;
+    if (on) {
+      startMusic();
+    } else {
+      stopMusic();
+    }
+  }
+
   static void _play(String file, double volume) {
-    if (!audioAvailable) return;
+    if (!audioAvailable || !sfxOn) return;
     try {
       FlameAudio.play(file, volume: volume);
     } catch (_) {}
@@ -47,7 +62,7 @@ class BroskieAudio {
   static void playUiClick() => _play('ui_click.wav', 0.6);
 
   static void startMusic() {
-    if (audioAvailable) {
+    if (audioAvailable && musicOn) {
       try {
         FlameAudio.bgm.play('neon_loop.wav', volume: 0.35);
       } catch (_) {}

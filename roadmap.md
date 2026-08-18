@@ -26,7 +26,13 @@ This roadmap reports only integrated, running code as complete. Runtime certific
 - [x] Live slow debuffs (Hater Cloud aura, Auditor Frozen Assets)
 - [x] Wired SFX for the real files on disk + looping `neon_loop.wav` chiptune; audio init in `main()`
 - [x] Correct Flame camera follow and stage-edge mortality (`onPlayerFell`)
-- [x] Flame smoke tests against the live API (boot / restart / fall / advance)
+- [x] Main menu (NEW RUN / CONTINUE / STAGE SELECT / SETTINGS) over a paused world
+- [x] Checkpoint flags: falls respawn at the last flag inside the stage
+- [x] Boss-gated Stage 4 exit (locked until both executives are defeated)
+- [x] Working settings (SFX / music / touch controls / shake strength) wired live
+- [x] On-device persistence of settings + stage unlocks (crew build, no accounts)
+- [x] Unlock-gated stage select
+- [x] Flame smoke tests against the live API (boot / restart / fall / advance / checkpoint / boss-gate / unlock)
 - [x] Dead-code purge: ~2,800 lines of an unwired second architecture removed
 - [ ] Run `flutter analyze` and `flutter test` on Flutter 3.41+ (this sandbox has no Flutter SDK)
 - [ ] Commit the generated `pubspec.lock`
@@ -42,13 +48,10 @@ This roadmap reports only integrated, running code as complete. Runtime certific
 
 ## Campaign Polish
 
-- [ ] Physical-device playtesting and movement tuning
-- [ ] Checkpoints inside longer stages
-- [ ] Boss-gated locked exits (defeat the bosses to unlock the portal)
+- [ ] Physical-device playtesting and movement tuning (crew APK feedback round)
 - [ ] Contextual tutorial prompts in Stage 1
 - [ ] Balance stage target times, boss health and damage windows
-- [ ] Main menu with continue/new run
-- [ ] Campaign persistence (ranks/unlocks) rebuilt against the live game
+- [ ] Stage ranks (C/B/A/S) shown on level-complete, persisted per stage
 - [ ] Controller input and remapping
 - [ ] Golden tests for major overlays
 
@@ -62,13 +65,13 @@ This roadmap reports only integrated, running code as complete. Runtime certific
 
 Future content is not considered started merely because a class name or concept image exists — and classes that exist are now required to be wired in.
 
-## Release
+## Crew Distribution (no Play Store)
+
+Broskie is a crew build: sideloaded APK, no store, no signing ceremony.
 
 - [x] Unique Android application ID
 - [x] Android API 36 target
-- [x] Release configuration does not use debug signing
-- [x] Guarded App Bundle build script
-- [ ] Create and securely back up the upload keystore
-- [ ] Physical-device matrix testing
-- [ ] Internal Play track and closed testing
-- [ ] Store listing, privacy declarations and final accessibility review
+- [x] Guarded APK build script (format + analyze + test gates before packaging)
+- [ ] Physical-device matrix testing on crew phones
+- [ ] Ship `BROSKIE.apk` to the group chat
+- [ ] (Optional, later) Signed release keystore if a store build ever returns

@@ -14,15 +14,18 @@ Broskie breaks out of Monopoly Corp's orientation, crosses the Grey Zone, the Ne
 ## Features (what is actually in the build)
 
 - Four side-scrolling stages with AI-generated tiled backdrops per stage
-- 3-heart health with knockback, invulnerability frames and fall-respawn at the stage start — plus a live hearts/cash/stage HUD built on `ValueNotifier`s
+- **Main menu** (NEW RUN / CONTINUE / STAGE SELECT / SETTINGS) over a paused world
+- 3-heart health with knockback, invulnerability frames and **checkpoint flags** — falls respawn at the last flag, not the stage start — plus a live hearts/cash/stage HUD built on `ValueNotifier`s
+- **Boss-gated exit**: the Stage 4 portal stays LOCKED until both executives are down
+- **Progression that sticks**: cleared stages unlock the next one, saved on-device with your settings (SharedPreferences — no accounts, no servers, crew build)
 - Game-feel movement kit: momentum, run, **dash** (K/Ctrl), **coyote time**, **jump buffering** and **variable jump height**
 - Vinyl boomerang with cooldown that damages grunts *and both bosses*
 - Real boss battles: Foreman pace/charge/wall-crash/dizzy cycle with three phases; Data-Broker hover corridors, aimed bolt volleys, control inversion, proxy fake-out and death dialogues
 - Stomp combos, patrol-bounded enemies (nobody walks off the stage forever anymore)
 - Slow debuffs wired live (Hater Cloud aura, Auditor audit), control-hack inversion, mystery-block power-ups with the Volt sheet swap
 - Cash collectibles feeding one shared wallet used by the Black Market shop
-- Stage select, pause menu, settings, game-over, level-complete stats and victory flows
-- Wired audio: synthesized SFX (jump/dash/hit/pickup/power-up/stomp/boss/stage-complete/UI) plus the looping neon chiptune `neon_loop.wav`
+- Stage select gated by real unlocks, pause menu, **settings that actually work** (SFX, music, touch controls, screen-shake strength), game-over, level-complete stats and victory flows
+- Wired audio: synthesized SFX (jump/dash/hit/pickup/power-up/stomp/boss/stage-complete/UI) plus the looping neon chiptune `neon_loop.wav`, with working mute switches
 - Splash-screen news ticker, lore terminals, boss banter and the "DELETED" game-over stamp
 - AI sprite sheets (4-frame normal + Volt run cycles, transparent bosses/grunts) with a procedural pixel-painter fallback per component, so missing art never breaks a build
 
@@ -61,31 +64,28 @@ flutter test
 flutter run
 ```
 
-## Release signing
+## Crew build (sideloaded — no Play Store)
 
-Release builds are never signed with Flutter's debug key. Create a private upload keystore outside Git, then create `android/key.properties`:
+Broskie ships as an APK handed straight to the crew. No store signing, no keystores needed: the guarded script builds a debug-signed APK that installs on any Android phone:
 
-```properties
-storePassword=YOUR_STORE_PASSWORD
-keyPassword=YOUR_KEY_PASSWORD
-keyAlias=upload
-storeFile=C:\\absolute\\path\\to\\upload-keystore.jks
+```powershell
+./build_broskie.ps1 -Target apk
 ```
 
-Never commit the keystore or `key.properties`; both are ignored. See `build_broskie.ps1` for the guarded bundle/APK pipeline.
+This writes `build/app/outputs/flutter-apk/BROSKIE.apk` — send it to the group chat, tap, install ("allow unknown apps" once), done. The script still refuses to package until format, analysis and tests pass. If a signed release is ever wanted later, the `android/key.properties` flow stays documented in git history.
 
 ## Architecture
 
 ```text
 GameWidget overlays (main.dart)
-├── HUD (hearts / stage / cash via ValueListenableBuilder) / touch controls / news ticker
-├── Stage select / settings / pause / shop
+├── Main menu / HUD (hearts·stage·cash listenables) / touch controls / news ticker
+├── Stage select (unlock-gated) / settings / pause / shop
 ├── Level complete / game over / victory / dialogue
-└── BroskieGame (FlameGame)
+└── BroskieGame (FlameGame) + SharedPreferences save
     ├── Sky parallax (asset) or procedural skyline fallback
     ├── StageBackdrop (tiled AI art) per stage
     ├── Floor / InteractableBlock / MovingPlatform / CrumblingPlatform
-    ├── DataBitCoin / PropagandaSign / InteractableLore / LevelExit
+    ├── CheckpointFlag / DataBitCoin / PropagandaSign / InteractableLore / LevelExit (lockable)
     ├── DataSpike / LaserHazard
     ├── GrumpyBrick / WallStreetBull / HaterCloud / AuditorEnemy
     ├── TheForeman / DataBrokerBoss (+ DataBolt)

@@ -32,55 +32,43 @@ class LevelSelectOverlay extends StatelessWidget {
             ),
             const Divider(color: Colors.white24, height: 20),
 
-            _buildStageTile(
-              stageNum: "1-1",
-              title: "The Grey Zone",
-              subtitle: "Concrete, Cubes & Intro",
-              isUnlocked: true,
-              onTap: () {
-                game.currentStage.value = 1;
-                game.restart();
-                game.overlays.remove('LevelSelect');
-              },
-            ),
-            const SizedBox(height: 10),
-
-            _buildStageTile(
-              stageNum: "1-2",
-              title: "Neon Slums",
-              subtitle: "Lasers & Moving Platforms",
-              isUnlocked: true,
-              onTap: () {
-                game.currentStage.value = 2;
-                game.restart();
-                game.overlays.remove('LevelSelect');
-              },
-            ),
-            const SizedBox(height: 10),
-
-            _buildStageTile(
-              stageNum: "1-3",
-              title: "Stock Exchange",
-              subtitle: "Bull Run & Tower Climb",
-              isUnlocked: true,
-              onTap: () {
-                game.currentStage.value = 3;
-                game.restart();
-                game.overlays.remove('LevelSelect');
-              },
-            ),
-            const SizedBox(height: 10),
-
-            _buildStageTile(
-              stageNum: "1-4",
-              title: "Executive Arena",
-              subtitle: "The Foreman & Data Broker",
-              isUnlocked: true,
-              onTap: () {
-                game.currentStage.value = 4;
-                game.restart();
-                game.overlays.remove('LevelSelect');
-              },
+            ValueListenableBuilder<int>(
+              valueListenable: game.unlockedStage,
+              builder: (context, unlocked, _) => Column(
+                children: [
+                  _buildStageTile(
+                    stageNum: "1-1",
+                    title: "The Grey Zone",
+                    subtitle: "Concrete, Cubes & Intro",
+                    isUnlocked: unlocked >= 1,
+                    onTap: () => _launch(1),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStageTile(
+                    stageNum: "1-2",
+                    title: "Neon Slums",
+                    subtitle: "Lasers & Moving Platforms",
+                    isUnlocked: unlocked >= 2,
+                    onTap: () => _launch(2),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStageTile(
+                    stageNum: "1-3",
+                    title: "Stock Exchange",
+                    subtitle: "Bull Run & Tower Climb",
+                    isUnlocked: unlocked >= 3,
+                    onTap: () => _launch(3),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStageTile(
+                    stageNum: "1-4",
+                    title: "Executive Arena",
+                    subtitle: "The Foreman & Data Broker",
+                    isUnlocked: unlocked >= 4,
+                    onTap: () => _launch(4),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -94,6 +82,13 @@ class LevelSelectOverlay extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _launch(int stage) {
+    game.currentStage.value = stage;
+    game.restart();
+    game.overlays.remove('LevelSelect');
+    game.overlays.remove('MainMenu');
   }
 
   Widget _buildStageTile({

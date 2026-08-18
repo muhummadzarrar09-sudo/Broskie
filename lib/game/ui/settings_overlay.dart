@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 
-class SettingsOverlay extends StatefulWidget {
+class SettingsOverlay extends StatelessWidget {
   final BroskieGame game;
 
   const SettingsOverlay({super.key, required this.game});
-
-  @override
-  State<SettingsOverlay> createState() => _SettingsOverlayState();
-}
-
-class _SettingsOverlayState extends State<SettingsOverlay> {
-  bool sfxEnabled = true;
-  bool touchControlsEnabled = true;
-  double shakeScale = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -41,39 +33,79 @@ class _SettingsOverlayState extends State<SettingsOverlay> {
             ),
             const Divider(color: Colors.white24, height: 20),
 
-            SwitchListTile(
-              activeColor: const Color(0xFF00E5FF),
-              title: const Text("Sound FX", style: TextStyle(color: Colors.white)),
-              value: sfxEnabled,
-              onChanged: (val) => setState(() => sfxEnabled = val),
+            ValueListenableBuilder<bool>(
+              valueListenable: game.sfxEnabled,
+              builder: (context, on, _) => SwitchListTile(
+                activeColor: const Color(0xFF00E5FF),
+                title: const Text("Sound FX", style: TextStyle(color: Colors.white)),
+                value: on,
+                onChanged: (v) {
+                  game.sfxEnabled.value = v;
+                  BroskieAudio.setSfx(v);
+                  game.savePrefs();
+                },
+              ),
             ),
 
-            SwitchListTile(
-              activeColor: const Color(0xFF00E5FF),
-              title: const Text("Touch Controls", style: TextStyle(color: Colors.white)),
-              value: touchControlsEnabled,
-              onChanged: (val) => setState(() => touchControlsEnabled = val),
+            ValueListenableBuilder<bool>(
+              valueListenable: game.musicEnabled,
+              builder: (context, on, _) => SwitchListTile(
+                activeColor: const Color(0xFF00E5FF),
+                title: const Text("Music", style: TextStyle(color: Colors.white)),
+                value: on,
+                onChanged: (v) {
+                  game.musicEnabled.value = v;
+                  BroskieAudio.setMusicEnabled(v);
+                  game.savePrefs();
+                },
+              ),
+            ),
+
+            ValueListenableBuilder<bool>(
+              valueListenable: game.touchControlsEnabled,
+              builder: (context, on, _) => SwitchListTile(
+                activeColor: const Color(0xFF00E5FF),
+                title: const Text("Touch Controls", style: TextStyle(color: Colors.white)),
+                value: on,
+                onChanged: (v) {
+                  game.touchControlsEnabled.value = v;
+                  game.savePrefs();
+                },
+              ),
             ),
 
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Screen Shake", style: TextStyle(color: Colors.white)),
-                Text("${(shakeScale * 100).toInt()}%", style: const TextStyle(color: Colors.amber)),
-              ],
-            ),
-            Slider(
-              activeColor: Colors.amber,
-              value: shakeScale,
-              onChanged: (val) => setState(() => shakeScale = val),
+            ValueListenableBuilder<double>(
+              valueListenable: game.shakeScale,
+              builder: (context, scale, _) => Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Screen Shake", style: TextStyle(color: Colors.white)),
+                      Text("${(scale * 100).toInt()}%", style: const TextStyle(color: Colors.amber)),
+                    ],
+                  ),
+                  Slider(
+                    activeColor: Colors.amber,
+                    value: scale,
+                    min: 0,
+                    max: 1,
+                    divisions: 10,
+                    onChanged: (v) {
+                      game.shakeScale.value = v;
+                      game.savePrefs();
+                    },
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 20),
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF)),
-              onPressed: () => widget.game.overlays.remove('Settings'),
+              onPressed: () => game.overlays.remove('Settings'),
               child: const Text("SAVE & EXIT", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],

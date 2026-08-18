@@ -7,6 +7,7 @@ import 'game/broskie_game.dart';
 import 'game/ui/dialogue_box.dart';
 import 'game/ui/game_over.dart';
 import 'game/ui/level_complete.dart';
+import 'game/ui/main_menu_screen.dart';
 import 'game/ui/news_ticker.dart';
 import 'game/ui/touch_controls.dart';
 import 'game/ui/pause_menu.dart';
@@ -18,7 +19,6 @@ import 'game/ui/victory_overlay.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BroskieAudio.init();
-  BroskieAudio.startMusic();
   runApp(
     const ProviderScope(
       child: BroskieApp(),
@@ -54,6 +54,8 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
   void initState() {
     super.initState();
     game = BroskieGame(ref: ref);
+    // Load saved crew settings/unlocks, then start the chiptune.
+    game.loadPrefs().then((_) => BroskieAudio.startMusic());
   }
 
   @override
@@ -158,8 +160,12 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                 ),
               ),
 
-              // Floating Mobile Touch Controls Overlay
-              TouchControlsOverlay(game: game),
+              // Floating Mobile Touch Controls Overlay (settings-gated)
+              ValueListenableBuilder<bool>(
+                valueListenable: game.touchControlsEnabled,
+                builder: (context, enabled, _) =>
+                    enabled ? TouchControlsOverlay(game: game) : const SizedBox.shrink(),
+              ),
 
               // Bottom News Ticker
               const Positioned(
@@ -177,6 +183,8 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
               ),
             ],
           ),
+
+          'MainMenu': (context, game) => MainMenuOverlay(game: game),
 
           'LevelSelect': (context, game) => LevelSelectOverlay(game: game),
 
@@ -204,7 +212,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
             onNext: () => game.hideDialogue(),
           ),
         },
-        initialActiveOverlays: const ['HUD'],
+        initialActiveOverlays: const ['HUD', 'MainMenu'],
       ),
     );
   }
