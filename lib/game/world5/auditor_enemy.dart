@@ -3,10 +3,13 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/world4/hater_cloud.dart';
 
 class AuditorEnemy extends SpriteAnimationComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   double attackTimer = 0;
   final double attackCooldown = 4.0;
+  final double effectRange = 420;
 
   AuditorEnemy({required Vector2 position}) : super(position: position, size: Vector2(48, 64)) {
     add(RectangleHitbox());
@@ -24,7 +27,12 @@ class AuditorEnemy extends SpriteAnimationComponent with HasGameRef<BroskieGame>
   }
 
   void _iceSpikeAttack() {
-    gameRef.showDialogue("AUDITOR", "Your assets are FROZEN! Liquidity audit in progress!");
+    // Frozen Assets: a real slow debuff when Broskie is in audit range.
+    final player = gameRef.children.whereType<Player>().firstOrNull;
+    if (player == null) return;
+    if ((player.position.x - position.x).abs() > effectRange) return;
+    player.activeDebuffs.add(Debuff(DebuffType.slow, 2.0));
+    BroskieAudio.playGlitch();
   }
 
   @override

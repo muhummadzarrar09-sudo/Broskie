@@ -1,83 +1,71 @@
 import 'package:broskie_game/game/broskie_game.dart';
-import 'package:broskie_game/game/enemies/data_broker_boss.dart';
-import 'package:broskie_game/game/enemies/foreman_boss.dart';
-import 'package:broskie_game/game/models/game_hud_state.dart';
+import 'package:broskie_game/game/levels/level_exit.dart';
 import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/services/campaign_repository.dart';
-import 'package:broskie_game/game/services/game_feedback.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-BroskieGame _createGame() {
-  return BroskieGame(
-    campaignRepository: MemoryCampaignRepository(),
-    gameFeedback: SilentGameFeedback(),
-  );
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWithGame<BroskieGame>(
-    'loads the first campaign stage into the camera world',
-    _createGame,
+    'boots stage 1 with a player, floors and an exit',
+    BroskieGame.new,
     (game) async {
       await game.ready();
 
-      expect(game.phase, GamePhase.menu);
-      expect(game.player, isA<Player>());
-      expect(game.player.parent, same(game.world));
-      expect(game.solids.length, greaterThanOrEqualTo(10));
-      expect(game.exit.unlocked, isTrue);
+      expect(game.children.whereType<Player>(), hasLength(1));
+      expect(game.children.whereType<Floor>(), isNotEmpty);
+      expect(game.children.whereType<LevelExit>(), hasLength(1));
+      expect(game.currentStage.value, 1);
+      expect(game.hp.value, BroskieGame.maxHp);
     },
   );
 
   testWithGame<BroskieGame>(
-    'loads both campaign bosses on their intended stages',
-    _createGame,
+    'restart rebuilds the stage and restores hearts',
+    BroskieGame.new,
     (game) async {
-      await game.prepareStage(1);
-      expect(game.world.children.whereType<TheForeman>(), hasLength(1));
-      expect(game.exit.unlocked, isFalse);
+      await game.ready();
 
-      await game.prepareStage(3);
-      expect(game.world.children.whereType<DataBrokerBoss>(), hasLength(1));
-      expect(game.exit.unlocked, isFalse);
+      game.hp.value = 1;
+      game.restart();
+      await game.ready();
+      game.update(0.016);
+
+      expect(game.hp.value, BroskieGame.maxHp);
+      expect(game.children.whereType<Player>(), hasLength(1));
+      expect(game.children.whereType<Floor>(), isNotEmpty);
     },
   );
 
   testWithGame<BroskieGame>(
-    'camera follows Broskie through the side-scrolling world',
-    _createGame,
+    'falling off the world costs a heart and respawns the player',
+    BroskieGame.new,
     (game) async {
-      await game.prepareStage(0);
-      game.beginStage();
-      game.player.x = 1400;
+      await game.ready();
 
-      game
-        ..update(0.1)
-        ..update(0.1);
+      game.player.position.setValues(500, 500);
+      game.onPlayerFell();
 
-      expect(game.camera.viewfinder.position.x, greaterThan(600));
+      expect(game.hp.value, BroskieGame.maxHp - 1);
+      expect(game.player.position.x, game.playerSpawn.x);
+      expect(game.player.position.y, game.playerSpawn.y);
     },
   );
 
   testWithGame<BroskieGame>(
-    'rejects invalid cash and persists stage progression',
-    _createGame,
+    'advanceStage moves to the next stage and rebuilds it',
+    BroskieGame.new,
     (game) async {
-      await game.prepareStage(1);
-      game.beginStage();
-      game.collectCash(-500);
-      expect(game.cash, 0);
+      await game.ready();
 
-      game.bossDefeated();
-      expect(game.exit.unlocked, isTrue);
-      game.completeLevel();
+      game.advanceStage();
+      await game.ready();
+      game.update(0.016);
 
-      expect(game.phase, GamePhase.stageComplete);
-      expect(game.progress.highestUnlockedStage, 2);
-      expect(game.lastResult, isNotNull);
+      expect(game.currentStage.value, 2);
+      expect(game.children.whereType<Player>(), hasLength(1));
+      expect(game.children.whereType<LevelExit>(), hasLength(1));
     },
   );
 }

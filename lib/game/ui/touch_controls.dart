@@ -78,12 +78,7 @@ class TouchControlsOverlay extends StatelessWidget {
 
               // Jump (A)
               GestureDetector(
-                onTap: () {
-                  if (game.player.isGrounded) {
-                    game.player.velocity.y = -game.player.jumpStrength;
-                    game.player.isGrounded = false;
-                  }
-                },
+                onTap: () => game.player.requestJump(),
                 child: Container(
                   width: 70,
                   height: 70,

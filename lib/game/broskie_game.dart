@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'player.dart';
+import 'audio_manager.dart';
+import 'stage_backdrop.dart';
 import 'blocks/interactable_block.dart';
 import 'blocks/hazards.dart';
 import 'blocks/collectibles.dart';
@@ -23,18 +25,23 @@ import 'world5/auditor_enemy.dart';
 
 class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   late Player player;
-  final WidgetRef ref;
+  final WidgetRef? ref;
 
-  int currentStage = 1; // 1, 2, 3, 4
+  // Live HUD state: overlays listen to these and rebuild on change.
+  final ValueNotifier<int> currentStage = ValueNotifier(1); // 1..4
+  final ValueNotifier<int> scoreCoins = ValueNotifier(0);
+  final ValueNotifier<int> hp = ValueNotifier(maxHp);
+  static const int maxHp = 3;
+
   String activeSpeaker = 'BROSKIE CORP';
   String activeDialogue = '';
-  int scoreCoins = 0;
   int enemiesDefeated = 0;
   bool isPaused = false;
 
+  final Vector2 playerSpawn = Vector2(100, 300);
   double shakeIntensity = 0;
 
-  BroskieGame({required this.ref});
+  BroskieGame({this.ref});
 
   @override
   Future<void> onLoad() async {
@@ -49,9 +56,10 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
         baseVelocity: Vector2(20, 0),
         velocityMultiplierDelta: Vector2(1.5, 0),
       );
+      parallax.priority = -100;
       add(parallax);
     } catch (e) {
-      add(ProceduralSkylineParallax());
+      add(ProceduralSkylineParallax()..priority = -100);
     }
 
     _buildCurrentStage();
@@ -84,9 +92,11 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     }
   }
 
+  /// Called by the LevelComplete overlay's NEXT LEVEL button.
   void advanceStage() {
-    if (currentStage < 4) {
-      currentStage++;
+    overlays.remove('LevelComplete');
+    if (currentStage.value < 4) {
+      currentStage.value++;
       restart();
     } else {
       pauseEngine();
@@ -95,15 +105,15 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildCurrentStage() {
-    player = Player(position: Vector2(100, 300));
+    player = Player(position: playerSpawn.clone());
     add(player);
     camera.follow(player);
 
-    if (currentStage == 1) {
+    if (currentStage.value == 1) {
       _buildStage1GreyZone();
-    } else if (currentStage == 2) {
+    } else if (currentStage.value == 2) {
       _buildStage2NeonSlums();
-    } else if (currentStage == 3) {
+    } else if (currentStage.value == 3) {
       _buildStage3StockExchange();
     } else {
       _buildStage4ExecutiveArena();
@@ -111,6 +121,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage1GreyZone() {
+    add(StageBackdrop(imagePath: 'runtime/grey_zone_background.png', levelWidth: 2800));
+
     add(Floor(Vector2(-200, 480), Vector2(3000, 120)));
     add(InteractableBlock(position: Vector2(300, 340), type: BlockType.mystery));
     add(InteractableBlock(position: Vector2(332, 340), type: BlockType.brick));
@@ -120,17 +132,19 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(InteractableLore(
       position: Vector2(180, 432),
       speaker: "STAGE 1-1",
-      text: "THE GREY ZONE: Learn to run, jump, and throw Vinyl Boomerangs (J/F)!",
+      text: "THE GREY ZONE: Run (SHIFT), jump (SPACE), dash (K) and throw Vinyl Boomerangs (J/F)!",
     ));
 
-    add(GrumpyBrick(position: Vector2(800, 448)));
-    add(GrumpyBrick(position: Vector2(1200, 448)));
+    add(GrumpyBrick(position: Vector2(800, 448), patrolRange: 300));
+    add(GrumpyBrick(position: Vector2(1200, 448), patrolRange: 300));
     add(LevelExit(position: Vector2(2500, 352)));
   }
 
   void _buildStage2NeonSlums() {
+    add(StageBackdrop(imagePath: 'runtime/neon_slums_background.png', levelWidth: 3500));
+
     add(Floor(Vector2(-200, 480), Vector2(1500, 120)));
-    add(DataSpike(position: Vector2(1300, 480), size: Vector2(800, 32)));
+    add(DataSpike(position: Vector2(1301, 480), size: Vector2(699, 32)));
 
     add(MovingPlatform(
       position: Vector2(1450, 320),
@@ -147,11 +161,13 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage3StockExchange() {
-    add(Floor(Vector2(-200, 480), Vector2(1800, 120)));
-    add(WallStreetBull(position: Vector2(800, 432)));
-    add(WallStreetBull(position: Vector2(1400, 432)));
+    add(StageBackdrop(imagePath: 'runtime/factory_background.png', levelWidth: 3200));
 
-    add(DataSpike(position: Vector2(1600, 480), size: Vector2(1000, 32)));
+    add(Floor(Vector2(-200, 480), Vector2(1800, 120)));
+    add(WallStreetBull(position: Vector2(800, 432), patrolRange: 280));
+    add(WallStreetBull(position: Vector2(1400, 432), patrolRange: 150));
+
+    add(DataSpike(position: Vector2(1601, 480), size: Vector2(998, 32)));
 
     add(MovingPlatform(
       position: Vector2(1700, 400),
@@ -166,17 +182,34 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage4ExecutiveArena() {
+    add(StageBackdrop(imagePath: 'runtime/monopoly_core_background.png', levelWidth: 3800));
+
     add(Floor(Vector2(-200, 480), Vector2(4000, 120)));
 
     add(InteractableLore(
       position: Vector2(180, 432),
-      speaker: "STAGE 1-4",
-      text: "EXECUTIVE ARENA: Dual Boss Battle! Defeat The Foreman and Data-Broker!",
+      speaker: "FINAL STAGE",
+      text: "EXECUTIVE ARENA: Bait the Foreman's charge into the arena walls, then stomp him. Burn the Data-Broker with boomerangs!",
     ));
 
-    add(TheForeman(position: Vector2(1200, 384)));
-    add(DataBrokerBoss(position: Vector2(2500, 400)));
+    add(TheForeman(position: Vector2(900, 400), minX: 500, maxX: 1900));
+    add(DataBrokerBoss(position: Vector2(2600, 406), minX: 2300, maxX: 3200));
     add(LevelExit(position: Vector2(3600, 352)));
+  }
+
+  /// Falling off the world costs one heart and respawns at the stage start.
+  void onPlayerFell() {
+    BroskieAudio.playHit();
+    hp.value -= 1;
+    if (hp.value <= 0) {
+      triggerGameOver();
+      return;
+    }
+    player.position.setFrom(playerSpawn);
+    player.velocity.setZero();
+    player.isInvulnerable = true;
+    player.invulnerableTimer = 1.5;
+    triggerScreenShake(intensity: 0.6);
   }
 
   void triggerGameOver() {
@@ -186,8 +219,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void triggerLevelComplete() {
+    BroskieAudio.playStageComplete();
     pauseEngine();
-    advanceStage();
+    overlays.add('LevelComplete');
   }
 
   void showDialogue(String speaker, String text) {
@@ -208,7 +242,14 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     overlays.remove('Shop');
     overlays.remove('Victory');
 
-    children.where((c) => c is! ScreenHitbox && c is! ProceduralSkylineParallax).toList().forEach((c) => c.removeFromParent());
+    hp.value = maxHp;
+
+    // Keep the persistent shell: hitbox + whatever sky was loaded in onLoad.
+    // Everything else (player, stages, bosses, backdrops) is rebuilt fresh.
+    children
+        .where((c) => c is! ScreenHitbox && c is! ParallaxComponent && c is! ProceduralSkylineParallax)
+        .toList()
+        .forEach((c) => c.removeFromParent());
 
     _buildCurrentStage();
     resumeEngine();

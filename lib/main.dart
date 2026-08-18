@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'game/audio_manager.dart';
 import 'game/broskie_game.dart';
 import 'game/ui/dialogue_box.dart';
 import 'game/ui/game_over.dart';
@@ -14,7 +15,10 @@ import 'game/ui/level_select.dart';
 import 'game/ui/settings_overlay.dart';
 import 'game/ui/victory_overlay.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await BroskieAudio.init();
+  BroskieAudio.startMusic();
   runApp(
     const ProviderScope(
       child: BroskieApp(),
@@ -67,6 +71,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                 right: 20,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -75,13 +80,38 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                         border: Border.all(color: const Color(0xFF00E5FF), width: 2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.flash_on, color: Colors.amber, size: 20),
-                          const SizedBox(width: 6),
-                          Text(
-                            "STAGE ${game.currentStage} | BROSKIE",
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.flash_on, color: Colors.amber, size: 20),
+                              const SizedBox(width: 6),
+                              ValueListenableBuilder<int>(
+                                valueListenable: game.currentStage,
+                                builder: (context, stage, _) => Text(
+                                  "STAGE $stage | BROSKIE",
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          ValueListenableBuilder<int>(
+                            valueListenable: game.hp,
+                            builder: (context, hearts, _) => Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(
+                                BroskieGame.maxHp,
+                                (i) => Icon(
+                                  i < hearts ? Icons.favorite : Icons.favorite_border,
+                                  color: Colors.redAccent,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -95,9 +125,12 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                             border: Border.all(color: Colors.amber, width: 2),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(
-                            "CASH: \$${game.scoreCoins}",
-                            style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: game.scoreCoins,
+                            builder: (context, coins, _) => Text(
+                              "CASH: \$$coins",
+                              style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -160,9 +193,9 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
           ),
 
           'LevelComplete': (context, game) => LevelCompleteOverlay(
-            coins: game.scoreCoins,
+            coins: game.scoreCoins.value,
             enemiesStomped: game.enemiesDefeated,
-            onNextLevel: () => game.restart(),
+            onNextLevel: () => game.advanceStage(),
           ),
 
           'Dialogue': (context, game) => DialogueBox(

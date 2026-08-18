@@ -4,12 +4,15 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 
 enum DebuffType { slow, lowJump, invertedControls, noDash }
 
 class HaterCloud extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   double timer = 0;
+  double hoverTime = 0;
   final double attackInterval = 3.0;
+  final double effectRange = 340;
 
   HaterCloud({required Vector2 position}) : super(position: position, size: Vector2(64, 48)) {
     add(RectangleHitbox());
@@ -19,17 +22,23 @@ class HaterCloud extends SpriteComponent with HasGameRef<BroskieGame>, Collision
   void update(double dt) {
     super.update(dt);
     timer += dt;
+    hoverTime += dt;
 
+    // Toxic aura: players inside the splash zone get slowed, not just insulted.
     if (timer >= attackInterval) {
       timer = 0;
       _performRandomAttack();
     }
-    
-    position.x += sin(timer * 3) * 30 * dt;
+
+    position.x += sin(hoverTime * 3) * 30 * dt;
   }
 
   void _performRandomAttack() {
-    gameRef.showDialogue("HATER CLOUD", "L + Ratio + Get Standardized!");
+    final player = gameRef.children.whereType<Player>().firstOrNull;
+    if (player == null) return;
+    if ((player.position.x - position.x).abs() > effectRange) return;
+    player.activeDebuffs.add(Debuff(DebuffType.slow, 1.5));
+    BroskieAudio.playGlitch();
   }
 
   @override

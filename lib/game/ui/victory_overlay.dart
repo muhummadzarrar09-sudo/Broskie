@@ -40,7 +40,7 @@ class VictoryOverlay extends StatelessWidget {
             ),
             const Divider(color: Colors.white24, height: 30),
 
-            Text("TOTAL CASH: \$$game.scoreCoins", style: const TextStyle(color: Colors.greenAccent, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text("TOTAL CASH: \$${game.scoreCoins.value}", style: const TextStyle(color: Colors.greenAccent, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             Text("EXECUTIVES DEFEATED: ${game.enemiesDefeated}", style: const TextStyle(color: Colors.redAccent, fontSize: 18, fontWeight: FontWeight.bold)),
 

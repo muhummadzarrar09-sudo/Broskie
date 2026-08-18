@@ -11,9 +11,12 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
   double chargeSpeed = 260;
   int direction = -1; // -1 Left, 1 Right
   double stateTimer = 0;
+  final double patrolRange;
+  late final double _spawnX;
 
-  WallStreetBull({required Vector2 position}) : super(position: position, size: Vector2(64, 48)) {
-    add(RectangleHitbox());
+  WallStreetBull({required Vector2 position, this.patrolRange = 260})
+      : super(position: position, size: Vector2(64, 48)) {
+    _spawnX = position.x;
   }
 
   @override
@@ -36,6 +39,21 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
         startCharge();
       }
     }
+
+    // Stay inside the patrol corridor. Charging into the bound is a real
+    // wall crash: the bull goes dizzy and becomes stompable.
+    final minX = _spawnX - patrolRange;
+    final maxX = _spawnX + patrolRange;
+    if (position.x <= minX || position.x >= maxX) {
+      position.x = position.x.clamp(minX, maxX);
+      if (isCharging) {
+        getDizzy();
+        BroskieAudio.playBossHit();
+      } else if (!isDizzy) {
+        direction = -direction;
+      }
+    }
+
     super.update(dt);
   }
 

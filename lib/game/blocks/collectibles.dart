@@ -24,8 +24,8 @@ class DataBitCoin extends SpriteComponent with HasGameRef<BroskieGame>, Collisio
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Player) {
-      gameRef.scoreCoins += value;
-      BroskieAudio.playPowerup();
+      gameRef.scoreCoins.value += value;
+      BroskieAudio.playPickup();
       removeFromParent();
     }
     super.onCollision(intersectionPoints, other);

@@ -11,7 +11,13 @@ class ShopOverlay extends StatefulWidget {
 }
 
 class _ShopOverlayState extends State<ShopOverlay> {
-  int coins = 250;
+  void _tryBuy(int cost, void Function() apply) {
+    final wallet = widget.game.scoreCoins;
+    if (wallet.value >= cost) {
+      wallet.value -= cost;
+      apply();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +41,11 @@ class _ShopOverlayState extends State<ShopOverlay> {
                   "BLACK MARKET",
                   style: TextStyle(color: Colors.magentaAccent, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
                 ),
-                Text("\$$coins", style: const TextStyle(color: Colors.amber, fontSize: 20, fontWeight: FontWeight.bold)),
+                ValueListenableBuilder<int>(
+                  valueListenable: widget.game.scoreCoins,
+                  builder: (context, coins, _) =>
+                      Text("\$$coins", style: const TextStyle(color: Colors.amber, fontSize: 20, fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
             const Divider(color: Colors.white24, height: 20),
@@ -46,12 +56,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
               description: "2.0x Jump Boost & Dark Cyber Aura",
               cost: 100,
               icon: Icons.shield,
-              onBuy: () {
-                if (coins >= 100) {
-                  setState(() => coins -= 100);
-                  widget.game.player.grow(PowerUpType.juggernaut);
-                }
-              },
+              onBuy: () => _tryBuy(100, () => widget.game.player.grow(PowerUpType.juggernaut)),
             ),
 
             const SizedBox(height: 10),
@@ -62,12 +67,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
               description: "Records pierce through enemy shields",
               cost: 150,
               icon: Icons.disc_full,
-              onBuy: () {
-                if (coins >= 150) {
-                  setState(() => coins -= 150);
-                  widget.game.player.grow(PowerUpType.shockwave);
-                }
-              },
+              onBuy: () => _tryBuy(150, () => widget.game.player.grow(PowerUpType.shockwave)),
             ),
 
             const SizedBox(height: 20),

@@ -4,6 +4,7 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/blocks/interactable_block.dart';
 import 'package:broskie_game/game/world4/hater_cloud.dart';
 import 'package:broskie_game/game/weapons/vinyl_boomerang.dart';
@@ -12,7 +13,14 @@ enum PowerUpType { none, classic, juggernaut, shockwave }
 enum PlayerState { idle, walking, running, jumping, falling, vaulting }
 
 class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<BroskieGame>, CollisionCallbacks {
-  Player({required Vector2 position}) : super(position: position, size: Vector2(32, 48)) {
+  // Game-feel tuning
+  static const double _jumpBufferTime = 0.12;
+  static const double _coyoteTime = 0.10;
+  static const double _dashDuration = 0.16;
+  static const double _dashSpeed = 950;
+  static const double _dashCooldownTime = 0.7;
+
+  Player({required Vector2 position}) : super(position: position, size: Vector2(48, 48)) {
     add(RectangleHitbox());
   }
 
@@ -23,7 +31,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
   final double runSpeed = 600;
   final double acceleration = 2200;
   final double friction = 1600;
-  
+
   bool isGrounded = false;
   int horizontalDirection = 0;
   bool isRunning = false;
@@ -40,6 +48,20 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
   double vaultTimer = 0;
   double shootCooldown = 0;
 
+  // Jump assistance + dash state
+  double jumpBufferTimer = 0;
+  double coyoteTimer = 0;
+  double dashTimer = 0;
+  double dashCooldown = 0;
+
+  // Loaded AI sprite sheets (procedural painter is the fallback)
+  bool artLoaded = false;
+  bool artFlipped = false;
+  SpriteAnimation? idleAnim;
+  SpriteAnimation? walkAnim;
+  SpriteAnimation? voltIdleAnim;
+  SpriteAnimation? voltWalkAnim;
+
   // Modern State
   bool controlsInverted = false;
   double hackTimer = 0;
@@ -47,6 +69,38 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
 
   // Particle list for retro pixel effects
   final List<PixelParticle> particles = [];
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    try {
+      final walkSheet = await gameRef.images.load('runtime/broskie_walk_sheet.png');
+      final voltSheet = await gameRef.images.load('runtime/broskie_volt_walk_sheet.png');
+      const frameCount = 4;
+      final frameSize = Vector2(walkSheet.width / frameCount, walkSheet.height.toDouble());
+      final voltFrameSize = Vector2(voltSheet.width / frameCount, voltSheet.height.toDouble());
+      walkAnim = SpriteAnimation.fromFrameData(
+        walkSheet,
+        SpriteAnimationData.sequenced(amount: frameCount, stepTime: 0.12, textureSize: frameSize),
+      );
+      idleAnim = SpriteAnimation.fromFrameData(
+        walkSheet,
+        SpriteAnimationData.sequenced(amount: 1, stepTime: 1, textureSize: frameSize),
+      );
+      voltWalkAnim = SpriteAnimation.fromFrameData(
+        voltSheet,
+        SpriteAnimationData.sequenced(amount: frameCount, stepTime: 0.10, textureSize: voltFrameSize),
+      );
+      voltIdleAnim = SpriteAnimation.fromFrameData(
+        voltSheet,
+        SpriteAnimationData.sequenced(amount: 1, stepTime: 1, textureSize: voltFrameSize),
+      );
+      animation = idleAnim;
+      artLoaded = true;
+    } catch (_) {
+      // Sheets missing: the hand-drawn pixel Broskie keeps the game running.
+    }
+  }
 
   @override
   void update(double dt) {
@@ -61,6 +115,20 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     }
 
     if (shootCooldown > 0) shootCooldown -= dt;
+    if (dashCooldown > 0) dashCooldown -= dt;
+
+    // Coyote time: grounded refreshes the window, air time burns it down.
+    if (isGrounded) {
+      coyoteTimer = _coyoteTime;
+    } else if (coyoteTimer > 0) {
+      coyoteTimer -= dt;
+    }
+
+    // Jump buffer: a press just before landing still jumps.
+    if (jumpBufferTimer > 0) jumpBufferTimer -= dt;
+    if (jumpBufferTimer > 0 && (isGrounded || coyoteTimer > 0) && state != PlayerState.vaulting) {
+      _performJump();
+    }
 
     // Gravity
     if (!isGrounded && state != PlayerState.vaulting) {
@@ -77,17 +145,23 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
 
     double targetSpeed = (isRunning ? runSpeed : walkSpeed) * speedMod;
 
-    if (horizontalDirection != 0) {
-      velocity.x += horizontalDirection * acceleration * dt;
-      facing = horizontalDirection;
+    if (dashTimer > 0) {
+      // Dash owns the horizontal axis for its duration.
+      dashTimer -= dt;
+      velocity.x = facing * _dashSpeed;
     } else {
-      if (velocity.x.abs() < friction * dt) {
-        velocity.x = 0;
+      if (horizontalDirection != 0) {
+        velocity.x += horizontalDirection * acceleration * dt;
+        facing = horizontalDirection;
       } else {
-        velocity.x -= velocity.x.sign * friction * dt;
+        if (velocity.x.abs() < friction * dt) {
+          velocity.x = 0;
+        } else {
+          velocity.x -= velocity.x.sign * friction * dt;
+        }
       }
+      velocity.x = velocity.x.clamp(-targetSpeed, targetSpeed);
     }
-    velocity.x = velocity.x.clamp(-targetSpeed, targetSpeed);
 
     // Vaulting State Logic
     if (state == PlayerState.vaulting) {
@@ -108,12 +182,26 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
       }
     }
 
-    // Animation Frame Clock
+    // Animation Frame Clock (procedural painter path)
     animTimer += dt;
     double frameDuration = isRunning ? 0.06 : 0.12;
     if (animTimer >= frameDuration) {
       animTimer = 0;
       animFrame = (animFrame + 1) % 8;
+    }
+
+    // Sprite sheet selection when the AI art is loaded
+    if (artLoaded) {
+      final moving = state == PlayerState.walking || state == PlayerState.running || dashTimer > 0;
+      final volt = currentPower != PowerUpType.none;
+      final next = volt ? (moving ? voltWalkAnim : voltIdleAnim) : (moving ? walkAnim : idleAnim);
+      if (animation != next) animation = next;
+
+      final shouldFlip = facing == -1;
+      if (shouldFlip != artFlipped) {
+        flipHorizontallyAroundCenter();
+        artFlipped = shouldFlip;
+      }
     }
 
     // Running Dust/Trail Pixel Particles
@@ -126,6 +214,16 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
       ));
     }
 
+    // Dash afterimage trail
+    if (dashTimer > 0) {
+      particles.add(PixelParticle(
+        position: Vector2(position.x + (facing == 1 ? 0 : size.x - 4), position.y + 8 + Random().nextDouble() * size.y - 8),
+        velocity: Vector2(-facing * 60, 0),
+        color: const Color(0xFFFFD700),
+        lifetime: 0.2,
+      ));
+    }
+
     // Update Particles
     particles.forEach((p) => p.update(dt));
     particles.removeWhere((p) => p.isDead);
@@ -133,10 +231,40 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     position += velocity * dt;
 
     if (position.y > 1400) {
-      gameOver();
+      gameRef.onPlayerFell();
     }
 
     super.update(dt);
+  }
+
+  void _performJump() {
+    jumpBufferTimer = 0;
+    coyoteTimer = 0;
+    velocity.y = -jumpStrength;
+    isGrounded = false;
+    BroskieAudio.playJump();
+
+    // Jump Particle Burst
+    for (int i = 0; i < 6; i++) {
+      particles.add(PixelParticle(
+        position: Vector2(position.x + 8 + i * 3, position.y + size.y),
+        velocity: Vector2((i - 3) * 30, 20),
+        color: const Color(0xFF00E5FF),
+        lifetime: 0.3,
+      ));
+    }
+  }
+
+  /// Both keyboard and touch route through the buffer so press timing is fair.
+  void requestJump() {
+    jumpBufferTimer = _jumpBufferTime;
+  }
+
+  void tryDash() {
+    if (dashCooldown > 0) return;
+    dashTimer = _dashDuration;
+    dashCooldown = _dashCooldownTime;
+    BroskieAudio.playDash();
   }
 
   @override
@@ -149,23 +277,29 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     }
 
     horizontalDirection = controlsInverted ? -dir : dir;
-    isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) || keysPressed.contains(LogicalKeyboardKey.keyK);
+    isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) || keysPressed.contains(LogicalKeyboardKey.shiftRight);
 
-    if ((keysPressed.contains(LogicalKeyboardKey.space) || keysPressed.contains(LogicalKeyboardKey.arrowUp) || keysPressed.contains(LogicalKeyboardKey.keyW)) && event is KeyDownEvent) {
-      if (isGrounded) {
-        velocity.y = -jumpStrength;
-        isGrounded = false;
+    final jumpHeld = keysPressed.contains(LogicalKeyboardKey.space) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
+        keysPressed.contains(LogicalKeyboardKey.keyW);
 
-        // Jump Particle Burst
-        for (int i = 0; i < 6; i++) {
-          particles.add(PixelParticle(
-            position: Vector2(position.x + 8 + i * 3, position.y + size.y),
-            velocity: Vector2((i - 3) * 30, 20),
-            color: const Color(0xFF00E5FF),
-            lifetime: 0.3,
-          ));
-        }
-      }
+    if (jumpHeld && event is KeyDownEvent) {
+      requestJump();
+    }
+    // Variable jump height: releasing a JUMP key early cuts the rise short.
+    if (event is KeyUpEvent &&
+        (event.logicalKey == LogicalKeyboardKey.space ||
+            event.logicalKey == LogicalKeyboardKey.arrowUp ||
+            event.logicalKey == LogicalKeyboardKey.keyW) &&
+        !jumpHeld &&
+        velocity.y < -60) {
+      velocity.y *= 0.45;
+    }
+
+    // Dash: K or Ctrl.
+    if ((keysPressed.contains(LogicalKeyboardKey.keyK) || keysPressed.contains(LogicalKeyboardKey.controlLeft)) &&
+        event is KeyDownEvent) {
+      tryDash();
     }
 
     // Throw Vinyl Boomerang Weapon (Key J or Key F)
@@ -195,21 +329,40 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     if (isBig) return;
     isBig = true;
     currentPower = type;
-    size = Vector2(32, 64);
+    size = Vector2(48, 64);
     position.y -= 16;
   }
 
   void hit() {
     if (isInvulnerable) return;
+    BroskieAudio.playHit();
+
     if (isBig) {
+      // Power absorb: shrink back to small Broskie, keep the heart.
       isBig = false;
       currentPower = PowerUpType.none;
-      size = Vector2(32, 48);
+      size = Vector2(48, 48);
+      position.y += 16;
+      _applyKnockback();
       isInvulnerable = true;
-      invulnerableTimer = 2.0;
-    } else {
-      gameOver();
+      invulnerableTimer = 1.5;
+      return;
     }
+
+    gameRef.hp.value -= 1;
+    if (gameRef.hp.value <= 0) {
+      gameOver();
+      return;
+    }
+    _applyKnockback();
+    isInvulnerable = true;
+    invulnerableTimer = 1.5;
+    gameRef.triggerScreenShake(intensity: 0.7);
+  }
+
+  void _applyKnockback() {
+    velocity.y = -260;
+    velocity.x = -facing * 260;
   }
 
   void gameOver() {
@@ -229,7 +382,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
 
       if (velocity.y >= 0 && playerBottom >= otherTop && (playerBottom - velocity.y * 0.05) <= otherTop + 14) {
         velocity.y = 0;
-        position.y = otherTop - size.y;
+        // Rest 0.5px into the surface so grounding stays stable frame to frame.
+        position.y = otherTop - size.y + 0.5;
         isGrounded = true;
 
         if (other is CrumblingPlatform) {
@@ -238,6 +392,16 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
       } else if (velocity.y < 0 && playerTop <= otherBottom && (playerTop - velocity.y * 0.05) >= otherBottom - 14) {
         velocity.y = 0;
         position.y = otherBottom;
+      } else {
+        // Side hit: platforms and blocks are solid walls from the side too.
+        final playerCenterX = position.x + size.x / 2;
+        final otherCenterX = other.position.x + other.size.x / 2;
+        if (playerCenterX < otherCenterX) {
+          position.x = other.position.x - size.x;
+        } else {
+          position.x = other.position.x + other.size.x;
+        }
+        if (dashTimer <= 0) velocity.x = 0;
       }
     }
   }
@@ -255,12 +419,12 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     // Render Particles
     particles.forEach((p) => p.render(canvas, position));
 
-    if (animation != null) {
-      super.render(canvas);
+    if (isInvulnerable && (invulnerableTimer * 12).toInt() % 2 == 0) {
       return;
     }
 
-    if (isInvulnerable && (invulnerableTimer * 12).toInt() % 2 == 0) {
+    if (animation != null) {
+      super.render(canvas);
       return;
     }
 
@@ -268,9 +432,10 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     final double h = size.y;
 
     canvas.save();
+    canvas.scale(w / 32, 1); // Procedural art was authored for a 32px frame.
 
     if (facing == -1) {
-      canvas.translate(w, 0);
+      canvas.translate(32, 0);
       canvas.scale(-1, 1);
     }
 
@@ -348,15 +513,15 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     canvas.drawRect(Rect.fromLTWH(4, headY + 45 + legL, 12, 1), whitePaint);
     canvas.drawRect(Rect.fromLTWH(16, headY + 45 + legR, 12, 1), whitePaint);
 
+    canvas.restore();
+
     // Aura Powerup Effects
     if (currentPower != PowerUpType.none) {
-      final auraColor = currentPower == PowerUpType.juggernaut 
-          ? const Color(0xFFFFD700).withOpacity(0.5) 
+      final auraColor = currentPower == PowerUpType.juggernaut
+          ? const Color(0xFFFFD700).withOpacity(0.5)
           : const Color(0xFF00E5FF).withOpacity(0.5);
-      canvas.drawCircle(Offset(w / 2, h / 2), w * 0.9, Paint()..color = auraColor);
+      canvas.drawCircle(Offset(w / 2, h / 2 + 8), w * 0.8, Paint()..color = auraColor);
     }
-
-    canvas.restore();
   }
 }
 

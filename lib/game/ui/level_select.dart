@@ -38,7 +38,7 @@ class LevelSelectOverlay extends StatelessWidget {
               subtitle: "Concrete, Cubes & Intro",
               isUnlocked: true,
               onTap: () {
-                game.currentStage = 1;
+                game.currentStage.value = 1;
                 game.restart();
                 game.overlays.remove('LevelSelect');
               },
@@ -51,7 +51,7 @@ class LevelSelectOverlay extends StatelessWidget {
               subtitle: "Lasers & Moving Platforms",
               isUnlocked: true,
               onTap: () {
-                game.currentStage = 2;
+                game.currentStage.value = 2;
                 game.restart();
                 game.overlays.remove('LevelSelect');
               },
@@ -64,7 +64,7 @@ class LevelSelectOverlay extends StatelessWidget {
               subtitle: "Bull Run & Tower Climb",
               isUnlocked: true,
               onTap: () {
-                game.currentStage = 3;
+                game.currentStage.value = 3;
                 game.restart();
                 game.overlays.remove('LevelSelect');
               },
@@ -77,7 +77,7 @@ class LevelSelectOverlay extends StatelessWidget {
               subtitle: "The Foreman & Data Broker",
               isUnlocked: true,
               onTap: () {
-                game.currentStage = 4;
+                game.currentStage.value = 4;
                 game.restart();
                 game.overlays.remove('LevelSelect');
               },

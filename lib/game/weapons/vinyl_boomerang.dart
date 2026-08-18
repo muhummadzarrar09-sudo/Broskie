@@ -3,6 +3,8 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/enemies/enemy.dart';
+import 'package:broskie_game/game/enemies/foreman_boss.dart';
+import 'package:broskie_game/game/enemies/data_broker_boss.dart';
 
 class VinylBoomerang extends SpriteComponent with CollisionCallbacks {
   final double speed = 400;
@@ -11,7 +13,7 @@ class VinylBoomerang extends SpriteComponent with CollisionCallbacks {
   late Player owner;
   double rotationAngle = 0;
 
-  VinylBoomerang({required Vector2 position, required this.owner, required bool isLeft}) 
+  VinylBoomerang({required Vector2 position, required this.owner, required bool isLeft})
     : super(position: position, size: Vector2(24, 24)) {
     direction = isLeft ? Vector2(-1, 0) : Vector2(1, 0);
     add(CircleHitbox());
@@ -21,7 +23,7 @@ class VinylBoomerang extends SpriteComponent with CollisionCallbacks {
   void update(double dt) {
     super.update(dt);
     rotationAngle += 15 * dt;
-    
+
     if (!returning) {
       position += direction * speed * dt;
       if ((position - owner.position).length > 300) {
@@ -30,7 +32,7 @@ class VinylBoomerang extends SpriteComponent with CollisionCallbacks {
     } else {
       Vector2 toPlayer = (owner.position - position).normalized();
       position += toPlayer * speed * dt;
-      
+
       if ((position - owner.position).length < 20) {
         removeFromParent();
       }
@@ -41,6 +43,12 @@ class VinylBoomerang extends SpriteComponent with CollisionCallbacks {
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Enemy) {
       other.die();
+    } else if (other is TheForeman) {
+      other.hitByReflectedBrick();
+      removeFromParent();
+    } else if (other is DataBrokerBoss) {
+      other.hit();
+      removeFromParent();
     } else if (other is Player && returning) {
       removeFromParent();
     }

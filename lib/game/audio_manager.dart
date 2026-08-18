@@ -4,19 +4,23 @@ import 'package:flame_audio/flame_audio.dart';
 class BroskieAudio {
   static bool audioAvailable = false;
 
+  // Only files that actually exist in assets/audio/. Keep this list honest.
+  static const List<String> _sfxFiles = [
+    'jump.wav',
+    'dash.wav',
+    'hit.wav',
+    'pickup.wav',
+    'powerup.wav',
+    'stomp.wav',
+    'boss_hit.wav',
+    'stage_complete.wav',
+    'ui_click.wav',
+    'neon_loop.wav',
+  ];
+
   static Future<void> init() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'jump.wav',
-        'stomp.wav',
-        'powerup.wav',
-        'hit.wav',
-        'hell_na.wav',
-        'drone_hum.wav',
-        'glitch_static.wav',
-        'boss_theme_w1.mp3',
-        'boss_theme_w2.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_sfxFiles);
       audioAvailable = true;
     } catch (e) {
       debugPrint("BroskieAudio: Sound files missing or audio disabled: $e");
@@ -24,45 +28,35 @@ class BroskieAudio {
     }
   }
 
-  static void playJump() {
-    if (audioAvailable) {
-      try { FlameAudio.play('jump.wav', volume: 0.5); } catch (_) {}
-    }
+  static void _play(String file, double volume) {
+    if (!audioAvailable) return;
+    try {
+      FlameAudio.play(file, volume: volume);
+    } catch (_) {}
   }
 
-  static void playStomp() {
-    if (audioAvailable) {
-      try { FlameAudio.play('stomp.wav', volume: 0.7); } catch (_) {}
-    }
-  }
-
-  static void playPowerup() {
-    if (audioAvailable) {
-      try { FlameAudio.play('powerup.wav', volume: 0.8); } catch (_) {}
-    }
-  }
-
-  static void playDrone() {
-    if (audioAvailable) {
-      try { FlameAudio.play('drone_hum.wav', volume: 0.3); } catch (_) {}
-    }
-  }
-
-  static void playGlitch() {
-    if (audioAvailable) {
-      try { FlameAudio.play('glitch_static.wav', volume: 0.5); } catch (_) {}
-    }
-  }
-
-  static void playHellNa() {
-    if (audioAvailable) {
-      try { FlameAudio.play('hell_na.wav', volume: 0.8); } catch (_) {}
-    }
-  }
+  static void playJump() => _play('jump.wav', 0.5);
+  static void playDash() => _play('dash.wav', 0.6);
+  static void playHit() => _play('hit.wav', 0.7);
+  static void playPickup() => _play('pickup.wav', 0.7);
+  static void playPowerup() => _play('powerup.wav', 0.8);
+  static void playStomp() => _play('stomp.wav', 0.7);
+  static void playBossHit() => _play('boss_hit.wav', 0.8);
+  static void playGlitch() => _play('hit.wav', 0.45);
+  static void playStageComplete() => _play('stage_complete.wav', 0.85);
+  static void playUiClick() => _play('ui_click.wav', 0.6);
 
   static void startMusic() {
     if (audioAvailable) {
-      try { FlameAudio.bgm.play('main_theme.mp3', volume: 0.3); } catch (_) {}
+      try {
+        FlameAudio.bgm.play('neon_loop.wav', volume: 0.35);
+      } catch (_) {}
     }
+  }
+
+  static void stopMusic() {
+    try {
+      FlameAudio.bgm.stop();
+    } catch (_) {}
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
+import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/audio_manager.dart';
 
@@ -27,15 +28,50 @@ abstract class Enemy extends SpriteAnimationComponent with CollisionCallbacks {
   }
 }
 
-class GrumpyBrick extends Enemy {
+class GrumpyBrick extends Enemy with HasGameRef<BroskieGame> {
   double walkAnim = 0;
+  final double patrolRange;
+  late final double _spawnX;
+  bool _artLoaded = false;
+  int _artDir = -1;
 
-  GrumpyBrick({required Vector2 position}) : super(position: position, size: Vector2(32, 32));
+  GrumpyBrick({required Vector2 position, this.patrolRange = 160})
+      : super(position: position, size: Vector2(32, 32)) {
+    _spawnX = position.x;
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    try {
+      final image = await gameRef.images.load('runtime/corporate_cube.png');
+      animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
+      _artLoaded = true;
+    } catch (_) {
+      // Procedural corporate-cube painter stays active without the art.
+    }
+  }
 
   @override
   void update(double dt) {
     super.update(dt);
+    // Patrol between spawn bounds instead of drifting off the stage forever.
+    if (position.x < _spawnX - patrolRange) {
+      position.x = _spawnX - patrolRange;
+      speed = speed.abs();
+    } else if (position.x > _spawnX + patrolRange) {
+      position.x = _spawnX + patrolRange;
+      speed = -speed.abs();
+    }
     walkAnim += dt * 8;
+
+    if (_artLoaded) {
+      final dir = speed >= 0 ? 1 : -1;
+      if (dir != _artDir) {
+        flipHorizontallyAroundCenter();
+        _artDir = dir;
+      }
+    }
   }
 
   @override
@@ -43,10 +79,11 @@ class GrumpyBrick extends Enemy {
     if (other is Player && !isDead) {
       final playerBottom = other.position.y + other.size.y;
       final enemyTop = position.y;
-      
+
       if (other.velocity.y > 0 && playerBottom <= enemyTop + 14) {
         other.bounce();
         die();
+        gameRef.enemiesDefeated++;
       } else {
         other.hit();
       }

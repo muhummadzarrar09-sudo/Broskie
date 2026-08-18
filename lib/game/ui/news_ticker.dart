@@ -19,17 +19,25 @@ class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTicker
   }
 
   void _startScrolling() async {
-    while (true) {
+    while (mounted) {
       await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
       if (_scrollController.hasClients) {
         await _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: Duration(seconds: widget.headlines.length * 5),
           curve: Curves.linear,
         );
+        if (!mounted) return;
         _scrollController.jumpTo(0);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
