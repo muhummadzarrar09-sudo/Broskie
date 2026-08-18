@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 
 class ShopOverlay extends StatefulWidget {
   final BroskieGame game;
@@ -13,6 +15,7 @@ class ShopOverlay extends StatefulWidget {
 class _ShopOverlayState extends State<ShopOverlay> {
   void _tryBuy(int cost, void Function() apply) {
     final wallet = widget.game.scoreCoins;
+    BroskieAudio.playUiClick();
     if (wallet.value >= cost) {
       wallet.value -= cost;
       apply();
@@ -37,10 +40,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "BLACK MARKET",
-                  style: TextStyle(color: Colors.magentaAccent, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
-                ),
+                Text("BLACK MARKET", style: broskieHeadline(color: BroskieColors.magenta)),
                 ValueListenableBuilder<int>(
                   valueListenable: widget.game.scoreCoins,
                   builder: (context, coins, _) =>
@@ -52,8 +52,8 @@ class _ShopOverlayState extends State<ShopOverlay> {
 
             // Item 1: Shadow Broskie Skin
             _buildShopItem(
-              title: "Shadow Broskie Skin",
-              description: "2.0x Jump Boost & Dark Cyber Aura",
+              title: "Juggernaut Volt-Cola",
+              description: "Size up + golden aura + absorbs one hit
               cost: 100,
               icon: Icons.shield,
               onBuy: () => _tryBuy(100, () => widget.game.player.grow(PowerUpType.juggernaut)),
@@ -63,8 +63,8 @@ class _ShopOverlayState extends State<ShopOverlay> {
 
             // Item 2: Boomerang Piercing Upgrade
             _buildShopItem(
-              title: "Vinyl Boomerang Piercing",
-              description: "Records pierce through enemy shields",
+              title: "Shockwave Volt-Cola",
+              description: "Size up + cyan aura + absorbs one hit
               cost: 150,
               icon: Icons.disc_full,
               onBuy: () => _tryBuy(150, () => widget.game.player.grow(PowerUpType.shockwave)),
@@ -74,7 +74,10 @@ class _ShopOverlayState extends State<ShopOverlay> {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF)),
-              onPressed: () => widget.game.overlays.remove('Shop'),
+              onPressed: () {
+                BroskieAudio.playUiClick();
+                widget.game.overlays.remove('Shop');
+              },
               child: const Text("CLOSE SHOP", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],

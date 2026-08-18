@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 
 class PauseMenuOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -21,16 +23,7 @@ class PauseMenuOverlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "SYSTEM PAUSED",
-              style: TextStyle(
-                color: Color(0xFF00E5FF),
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'monospace',
-                letterSpacing: 2,
-              ),
-            ),
+            Text("SYSTEM PAUSED", style: broskieHeadline(size: 24)),
             const SizedBox(height: 8),
             const Text(
               "BROSKIE CORP OVERRIDE",
@@ -44,7 +37,10 @@ class PauseMenuOverlay extends StatelessWidget {
                 backgroundColor: const Color(0xFF00E5FF),
                 minimumSize: const Size(double.infinity, 45),
               ),
-              onPressed: () => game.togglePause(),
+              onPressed: () {
+                BroskieAudio.playUiClick();
+                game.togglePause();
+              },
               child: const Text("RESUME GAME", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
             ),
             const SizedBox(height: 12),
@@ -56,6 +52,7 @@ class PauseMenuOverlay extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 45),
               ),
               onPressed: () {
+                BroskieAudio.playUiClick();
                 game.togglePause();
                 game.restart();
               },
@@ -70,6 +67,7 @@ class PauseMenuOverlay extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 45),
               ),
               onPressed: () {
+                BroskieAudio.playUiClick();
                 game.togglePause();
                 game.overlays.add('Shop');
               },

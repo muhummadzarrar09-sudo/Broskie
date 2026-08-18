@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 
 class LevelCompleteOverlay extends StatelessWidget {
   final int coins;
@@ -38,10 +40,7 @@ class LevelCompleteOverlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "LEVEL CLEARED!",
-              style: TextStyle(color: Colors.amber, fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Courier'),
-            ),
+            Text("LEVEL CLEARED!", style: broskieHeadline(size: 24, color: BroskieColors.amber)),
             const SizedBox(height: 6),
             const Text(
               "HELL NAAAAA, BROSKIE COOKED!",
@@ -78,7 +77,10 @@ class LevelCompleteOverlay extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-              onPressed: onNextLevel,
+              onPressed: () {
+                BroskieAudio.playUiClick();
+                onNextLevel();
+              },
               child: const Text("NEXT LEVEL", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],

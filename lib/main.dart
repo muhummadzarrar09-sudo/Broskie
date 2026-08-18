@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'game/audio_manager.dart';
 import 'game/broskie_game.dart';
+import 'game/ui/broskie_style.dart';
 import 'game/ui/dialogue_box.dart';
 import 'game/ui/game_over.dart';
 import 'game/ui/level_complete.dart';
@@ -65,7 +66,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
       body: GameWidget<BroskieGame>(
         game: game,
         overlayBuilderMap: {
-          'HUD': (context, game) => Stack(
+          'HUD': (context, game) => broskieOverlayScan(Stack(
             children: [
               // Top Bar Status HUD
               Positioned(
@@ -108,10 +109,12 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: List.generate(
                                 BroskieGame.maxHp,
-                                (i) => Icon(
-                                  i < hearts ? Icons.favorite : Icons.favorite_border,
-                                  color: Colors.redAccent,
-                                  size: 18,
+                                (i) => Padding(
+                                  padding: const EdgeInsets.only(right: 3),
+                                  child: CustomPaint(
+                                    size: const Size(21, 16),
+                                    painter: PixelHeartPainter(filled: i < hearts),
+                                  ),
                                 ),
                               ),
                             ),
@@ -130,9 +133,15 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                           ),
                           child: ValueListenableBuilder<int>(
                             valueListenable: game.scoreCoins,
-                            builder: (context, coins, _) => Text(
-                              "CASH: \$$coins",
-                              style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                            builder: (context, coins, _) => Row(
+                              children: [
+                                const CustomPaint(size: Size(16, 16), painter: PixelVinylPainter()),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "CASH: \$$coins",
+                                  style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -141,19 +150,28 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                         // Stage Select Button
                         IconButton(
                           icon: const Icon(Icons.map, color: Colors.amber, size: 32),
-                          onPressed: () => game.overlays.add('LevelSelect'),
+                          onPressed: () {
+                            BroskieAudio.playUiClick();
+                            game.overlays.add('LevelSelect');
+                          },
                         ),
 
                         // Settings Button
                         IconButton(
                           icon: const Icon(Icons.settings, color: Colors.grey, size: 32),
-                          onPressed: () => game.overlays.add('Settings'),
+                          onPressed: () {
+                            BroskieAudio.playUiClick();
+                            game.overlays.add('Settings');
+                          },
                         ),
 
                         // Pause Button
                         IconButton(
                           icon: const Icon(Icons.pause_circle_filled, color: Color(0xFF00E5FF), size: 36),
-                          onPressed: () => game.togglePause(),
+                          onPressed: () {
+                            BroskieAudio.playUiClick();
+                            game.togglePause();
+                          },
                         ),
                       ],
                     ),
@@ -183,37 +201,46 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                 ),
               ),
             ],
-          ),
+          )),
 
-          'MainMenu': (context, game) => MainMenuOverlay(game: game),
+          'MainMenu': (context, game) => broskieOverlayScan(MainMenuOverlay(game: game)),
 
-          'LevelSelect': (context, game) => LevelSelectOverlay(game: game),
+          'LevelSelect': (context, game) => broskieOverlayScan(LevelSelectOverlay(game: game)),
 
-          'Settings': (context, game) => SettingsOverlay(game: game),
+          'Settings': (context, game) => broskieOverlayScan(SettingsOverlay(game: game)),
 
-          'PauseMenu': (context, game) => PauseMenuOverlay(game: game),
+          'PauseMenu': (context, game) => broskieOverlayScan(PauseMenuOverlay(game: game)),
 
-          'Shop': (context, game) => ShopOverlay(game: game),
+          'Shop': (context, game) => broskieOverlayScan(ShopOverlay(game: game)),
 
-          'Victory': (context, game) => VictoryOverlay(game: game),
+          'Victory': (context, game) => broskieOverlayScan(VictoryOverlay(game: game)),
 
-          'GameOver': (context, game) => GameOverOverlay(
-            onRestart: () => game.restart(),
-          ),
+          'GameOver': (context, game) => broskieOverlayScan(GameOverOverlay(
+            onRestart: () {
+              BroskieAudio.playUiClick();
+              game.restart();
+            },
+          )),
 
-          'LevelComplete': (context, game) => LevelCompleteOverlay(
+          'LevelComplete': (context, game) => broskieOverlayScan(LevelCompleteOverlay(
             coins: game.scoreCoins.value,
             enemiesStomped: game.enemiesDefeated,
             rank: game.lastRank,
             bestRank: game.bestRankLabelFor(game.currentStage.value),
-            onNextLevel: () => game.advanceStage(),
-          ),
+            onNextLevel: () {
+              BroskieAudio.playUiClick();
+              game.advanceStage();
+            },
+          )),
 
-          'Dialogue': (context, game) => DialogueBox(
+          'Dialogue': (context, game) => broskieOverlayScan(DialogueBox(
             speakerName: game.activeSpeaker,
             text: game.activeDialogue,
-            onNext: () => game.hideDialogue(),
-          ),
+            onNext: () {
+              BroskieAudio.playUiClick();
+              game.hideDialogue();
+            },
+          )),
         },
         initialActiveOverlays: const ['HUD', 'MainMenu'],
       ),

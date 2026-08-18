@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 
 class VictoryOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -51,7 +52,10 @@ class VictoryOverlay extends StatelessWidget {
                 backgroundColor: Colors.amber,
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
               ),
-              onPressed: () => game.restart(),
+              onPressed: () {
+                BroskieAudio.playUiClick();
+                game.restart();
+              },
               child: const Text("PLAY AGAIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18)),
             ),
           ],

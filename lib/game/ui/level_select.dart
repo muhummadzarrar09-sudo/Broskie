@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 
 class LevelSelectOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -21,15 +23,7 @@ class LevelSelectOverlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "CAMPAIGN STAGE SELECT",
-              style: TextStyle(
-                color: Color(0xFF00E5FF),
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'monospace',
-              ),
-            ),
+            Text("CAMPAIGN STAGE SELECT", style: broskieHeadline(size: 20)),
             const Divider(color: Colors.white24, height: 20),
 
             ValueListenableBuilder<int>(
@@ -79,7 +73,10 @@ class LevelSelectOverlay extends StatelessWidget {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-              onPressed: () => game.overlays.remove('LevelSelect'),
+              onPressed: () {
+                BroskieAudio.playUiClick();
+                game.overlays.remove('LevelSelect');
+              },
               child: const Text("CLOSE SELECT", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],
@@ -89,6 +86,7 @@ class LevelSelectOverlay extends StatelessWidget {
   }
 
   void _launch(int stage) {
+    BroskieAudio.playUiClick();
     game.currentStage.value = stage;
     game.restart();
     game.overlays.remove('LevelSelect');

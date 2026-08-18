@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 
 class MainMenuOverlay extends StatefulWidget {
   final BroskieGame game;
@@ -169,7 +170,10 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
           backgroundColor: bg,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
-        onPressed: onTap,
+        onPressed: () {
+          BroskieAudio.playUiClick();
+          onTap();
+        },
         child: Text(
           label,
           style: TextStyle(color: fg, fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'monospace', letterSpacing: 2),

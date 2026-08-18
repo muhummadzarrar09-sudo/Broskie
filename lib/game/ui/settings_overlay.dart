@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 
 class SettingsOverlay extends StatelessWidget {
@@ -22,15 +23,7 @@ class SettingsOverlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "SYSTEM SETTINGS",
-              style: TextStyle(
-                color: Color(0xFF00E5FF),
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'monospace',
-              ),
-            ),
+            Text("SYSTEM SETTINGS", style: broskieHeadline()),
             const Divider(color: Colors.white24, height: 20),
 
             ValueListenableBuilder<bool>(
@@ -105,7 +98,10 @@ class SettingsOverlay extends StatelessWidget {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF)),
-              onPressed: () => game.overlays.remove('Settings'),
+              onPressed: () {
+                BroskieAudio.playUiClick();
+                game.overlays.remove('Settings');
+              },
               child: const Text("SAVE & EXIT", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],
