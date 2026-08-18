@@ -1,130 +1,333 @@
-import 'package:flame/components.dart';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:broskie_game/game/broskie_game.dart';
-import 'package:broskie_game/game/blocks/interactable_block.dart';
-import 'package:broskie_game/game/world4/hater_cloud.dart';
 
-enum PowerUpType { none, classic, juggernaut, shockwave }
+import 'broskie_game.dart';
+import 'models/runtime_assets.dart';
+import 'services/game_feedback.dart';
 
-class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<BroskieGame>, CollisionCallbacks {
-  Player({required Vector2 position}) : super(position: position, size: Vector2(48, 48)) {
+class Player extends PositionComponent
+    with KeyboardHandler, CollisionCallbacks, HasGameReference<BroskieGame> {
+  Player({required super.position})
+    : super(size: Vector2(42, 58), priority: 10) {
     add(RectangleHitbox());
   }
 
-  final Vector2 velocity = Vector2.zero();
-  final double gravity = 1800;
-  final double jumpStrength = 650;
-  final double walkSpeed = 300;
-  final double runSpeed = 550;
-  final double acceleration = 1500;
-  final double friction = 1200;
-  
-  bool isGrounded = false;
-  int horizontalDirection = 0;
-  bool isRunning = false;
-  bool isBig = false;
-  bool isInvulnerable = false;
-  PowerUpType currentPower = PowerUpType.none;
+  static const double gravity = 1900;
+  static const double jumpSpeed = 700;
+  static const double walkSpeed = 320;
+  static const double runSpeed = 430;
+  static const double voltSpeed = 520;
+  static const double acceleration = 2100;
+  static const double groundFriction = 2600;
+  static const double terminalVelocity = 1050;
 
-  // Modern State (Hacker Gimmicks)
-  bool controlsInverted = false;
-  double hackTimer = 0;
-  List<Debuff> activeDebuffs = [];
+  final Vector2 velocity = Vector2.zero();
+  late final Sprite _sprite;
+  late final List<Sprite> _walkFrames;
+  late final List<Sprite> _voltWalkFrames;
+
+  bool isGrounded = false;
+  bool powered = false;
+  int facing = 1;
+  double previousBottom = 0;
+
+  double _coyoteTimer = 0;
+  double _jumpBufferTimer = 0;
+  double _invulnerabilityTimer = 0;
+  double _dashCooldown = 0;
+  double _visualTime = 0;
+  double _walkFrameTimer = 0;
+  int _walkFrameIndex = 0;
+  bool _fallHandled = false;
+
+  bool get isInvulnerable => _invulnerabilityTimer > 0;
+
+  double get bottom => y + height;
 
   @override
-  void update(double dt) {
-    if (controlsInverted) {
-      hackTimer -= dt;
-      if (hackTimer <= 0) controlsInverted = false;
-    }
+  Future<void> onLoad() async {
+    await super.onLoad();
+    _sprite = Sprite(game.images.fromCache(RuntimeAssets.player));
+    _walkFrames = _sliceRunSheet(
+      game.images.fromCache(RuntimeAssets.playerWalk),
+    );
+    _voltWalkFrames = _sliceRunSheet(
+      game.images.fromCache(RuntimeAssets.playerVoltWalk),
+    );
+  }
 
-    if (!isGrounded) {
-      velocity.y += gravity * dt;
-    }
-
-    double speedMod = 1.0;
-    activeDebuffs.removeWhere((d) {
-      d.duration -= dt;
-      if (d.type == DebuffType.slow) speedMod = 0.5;
-      return d.duration <= 0;
-    });
-
-    double targetSpeed = (isRunning ? runSpeed : walkSpeed) * speedMod;
-
-    if (horizontalDirection != 0) {
-      velocity.x += horizontalDirection * acceleration * dt;
-    } else {
-      if (velocity.x.abs() < friction * dt) {
-        velocity.x = 0;
-      } else {
-        velocity.x -= velocity.x.sign * friction * dt;
-      }
-    }
-    velocity.x = velocity.x.clamp(-targetSpeed, targetSpeed);
-
-    position += velocity * dt;
-    super.update(dt);
+  List<Sprite> _sliceRunSheet(ui.Image image) {
+    final frameWidth = image.width / 4;
+    final frameSize = Vector2(frameWidth, image.height.toDouble());
+    return List.generate(
+      4,
+      (index) => Sprite(
+        image,
+        srcPosition: Vector2(frameWidth * index, 0),
+        srcSize: frameSize,
+      ),
+      growable: false,
+    );
   }
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    int dir = 0;
-    if (keysPressed.contains(LogicalKeyboardKey.keyA) || keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
-      dir = -1;
-    } else if (keysPressed.contains(LogicalKeyboardKey.keyD) || keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
-      dir = 1;
-    }
+    game.input.setKeyboard(
+      left:
+          keysPressed.contains(LogicalKeyboardKey.keyA) ||
+          keysPressed.contains(LogicalKeyboardKey.arrowLeft),
+      right:
+          keysPressed.contains(LogicalKeyboardKey.keyD) ||
+          keysPressed.contains(LogicalKeyboardKey.arrowRight),
+      running:
+          keysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
+          keysPressed.contains(LogicalKeyboardKey.shiftRight),
+    );
 
-    horizontalDirection = controlsInverted ? -dir : dir;
-    isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) || keysPressed.contains(LogicalKeyboardKey.keyK);
-
-    if (keysPressed.contains(LogicalKeyboardKey.space) && event is KeyDownEvent) {
-      if (isGrounded) {
-        velocity.y = -jumpStrength;
-        isGrounded = false;
-      }
+    final jumpKey =
+        event.logicalKey == LogicalKeyboardKey.space ||
+        event.logicalKey == LogicalKeyboardKey.keyW ||
+        event.logicalKey == LogicalKeyboardKey.arrowUp;
+    if (event is KeyDownEvent && jumpKey) {
+      game.input.queueJump();
     }
-    return super.onKeyEvent(event, keysPressed);
+    final dashKey =
+        event.logicalKey == LogicalKeyboardKey.keyK ||
+        event.logicalKey == LogicalKeyboardKey.controlLeft ||
+        event.logicalKey == LogicalKeyboardKey.controlRight;
+    if (event is KeyDownEvent && dashKey) {
+      game.input.queueDash();
+    }
+    return true;
   }
 
-  void grow(PowerUpType type) {
-    if (isBig) return;
-    isBig = true;
-    currentPower = type;
-    size = Vector2(48, 96);
-    position.y -= 48;
-  }
+  @override
+  void update(double dt) {
+    if (!game.isPlaying) {
+      super.update(dt);
+      return;
+    }
 
-  void hit() {
-    if (isInvulnerable) return;
-    if (isBig) {
-      isBig = false;
-      size = Vector2(48, 48);
-      isInvulnerable = true;
-      Future.delayed(const Duration(seconds: 2), () => isInvulnerable = false);
+    final frameDt = math.min(dt, 1 / 30);
+    _visualTime += frameDt;
+    previousBottom = bottom;
+    _invulnerabilityTimer = math.max(0.0, _invulnerabilityTimer - frameDt);
+    _dashCooldown = math.max(0.0, _dashCooldown - frameDt);
+
+    if (game.input.takeJump()) {
+      _jumpBufferTimer = 0.12;
     } else {
-      gameRef.overlays.add('GameOver');
+      _jumpBufferTimer = math.max(0.0, _jumpBufferTimer - frameDt);
+    }
+
+    if (isGrounded) {
+      _coyoteTimer = 0.1;
+    } else {
+      _coyoteTimer = math.max(0.0, _coyoteTimer - frameDt);
+    }
+
+    final rawDirection = game.input.horizontalDirection;
+    final direction = game.controlsInverted ? -rawDirection : rawDirection;
+    if (direction != 0) {
+      facing = direction;
+    }
+    final baseSpeed = powered
+        ? voltSpeed
+        : (game.input.isRunning ? runSpeed : walkSpeed);
+    final maxSpeed = baseSpeed + game.flow * 0.35;
+    final targetX = direction * maxSpeed;
+    final changeRate = direction == 0 ? groundFriction : acceleration;
+    velocity.x = _moveTowards(velocity.x, targetX, changeRate * frameDt);
+
+    if (game.input.takeDash() && _dashCooldown <= 0) {
+      velocity.x = facing * 760.0;
+      _dashCooldown = 0.8;
+      game.emitFeedback(FeedbackCue.dash);
+      game.addFlow(4);
+    }
+
+    if (velocity.x.abs() > 35 && isGrounded) {
+      _walkFrameTimer += frameDt * (0.75 + velocity.x.abs() / walkSpeed);
+      if (_walkFrameTimer >= 0.1) {
+        _walkFrameTimer = 0;
+        _walkFrameIndex = (_walkFrameIndex + 1) % _walkFrames.length;
+      }
+    } else {
+      _walkFrameTimer = 0;
+      _walkFrameIndex = 0;
+    }
+
+    if (_jumpBufferTimer > 0 && _coyoteTimer > 0) {
+      velocity.y = -jumpSpeed;
+      isGrounded = false;
+      game.emitFeedback(FeedbackCue.jump);
+      _coyoteTimer = 0;
+      _jumpBufferTimer = 0;
+    }
+
+    velocity.y = math.min(terminalVelocity, velocity.y + gravity * frameDt);
+
+    final maxMovement = math.max(
+      velocity.x.abs() * frameDt,
+      velocity.y.abs() * frameDt,
+    );
+    final steps = math.max<int>(1, (maxMovement / 8).ceil());
+    final stepDt = frameDt / steps;
+    isGrounded = false;
+    for (var i = 0; i < steps; i++) {
+      _moveHorizontal(velocity.x * stepDt);
+      _moveVertical(velocity.y * stepDt);
+    }
+
+    x = x.clamp(0.0, game.levelWidth - width).toDouble();
+    if (y > BroskieGame.logicalHeight + 160 && !_fallHandled) {
+      _fallHandled = true;
+      game.playerFell();
+    }
+
+    super.update(dt);
+  }
+
+  void _moveHorizontal(double delta) {
+    if (delta == 0) {
+      return;
+    }
+    x += delta;
+    for (final surface in game.solids) {
+      if (surface.isRemoving || !_bounds.overlaps(surface.collisionBounds)) {
+        continue;
+      }
+      if (delta > 0) {
+        x = surface.x - width;
+      } else {
+        x = surface.x + surface.width;
+      }
+      velocity.x = 0;
     }
   }
 
-  void bounce() => velocity.y = -jumpStrength * 0.5;
+  void _moveVertical(double delta) {
+    if (delta == 0) {
+      return;
+    }
 
-  @override
-  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
-    super.onCollision(intersectionPoints, other);
-    if (other is Floor || other is InteractableBlock) {
-      if (velocity.y > 0 && (position.y + size.y) < (other.position.y + 10)) {
+    final oldTop = y;
+    final oldBottom = bottom;
+    y += delta;
+    for (final surface in game.solids) {
+      if (surface.isRemoving || !_bounds.overlaps(surface.collisionBounds)) {
+        continue;
+      }
+
+      if (delta > 0 && oldBottom <= surface.y + 2) {
+        y = surface.y - height;
         velocity.y = 0;
-        position.y = other.position.y - size.y;
         isGrounded = true;
+      } else if (delta < 0 && oldTop >= surface.y + surface.height - 2) {
+        y = surface.y + surface.height;
+        velocity.y = 0;
+        surface.onHeadBump(this);
       }
     }
   }
 
+  Rect get _bounds => Rect.fromLTWH(x, y, width, height);
+
+  void activateVoltCola() {
+    powered = true;
+    game.emitFeedback(FeedbackCue.powerUp);
+    game.publishHud();
+  }
+
+  void losePower() {
+    powered = false;
+    _invulnerabilityTimer = 1.5;
+    game.publishHud();
+  }
+
+  void takeHit({required int sourceDirection}) {
+    if (isInvulnerable || !game.isPlaying) {
+      return;
+    }
+    if (powered) {
+      losePower();
+    } else {
+      game.damagePlayer();
+      _invulnerabilityTimer = 1.5;
+    }
+    velocity.setValues(-sourceDirection * 330.0, -360);
+  }
+
+  void bounce() {
+    velocity.y = -jumpSpeed * 0.62;
+    isGrounded = false;
+  }
+
+  void respawn(Vector2 checkpoint) {
+    position.setFrom(checkpoint);
+    velocity.setZero();
+    isGrounded = false;
+    _fallHandled = false;
+    _invulnerabilityTimer = 2;
+  }
+
   @override
-  void onCollisionEnd(PositionComponent other) {
-    super.onCollisionEnd(other);
-    if (other is Floor) isGrounded = false;
+  void render(Canvas canvas) {
+    if (isInvulnerable && (_invulnerabilityTimer * 12).floor().isOdd) {
+      return;
+    }
+
+    if (powered) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(-5, -4, width + 10, height + 8),
+          const Radius.circular(10),
+        ),
+        Paint()..color = const Color(0x334CF9FF),
+      );
+    }
+
+    final moving = velocity.x.abs() > 30 && isGrounded;
+    final bob = moving ? math.sin(_visualTime * 15) * 1.8 : 0.0;
+    if (_dashCooldown > 0.62) {
+      final trail = Paint()
+        ..color = const Color(0x9947F8FF)
+        ..strokeWidth = 3;
+      final startX = facing > 0 ? -28.0 : width + 28.0;
+      final endX = facing > 0 ? 4.0 : width - 4.0;
+      for (double y = 17; y < height; y += 11) {
+        canvas.drawLine(Offset(startX, y), Offset(endX, y), trail);
+      }
+    }
+    final animated = moving || powered;
+    final activeSprite = powered
+        ? _voltWalkFrames[_walkFrameIndex]
+        : (moving ? _walkFrames[_walkFrameIndex] : _sprite);
+    canvas.save();
+    if (facing < 0) {
+      canvas.translate(width, 0);
+      canvas.scale(-1, 1);
+    }
+    activeSprite.render(
+      canvas,
+      position: Vector2(animated ? -10 : -5, -9 + bob),
+      size: Vector2(
+        width + (animated ? 20 : 10),
+        height + (animated ? 14 : 12),
+      ),
+    );
+    canvas.restore();
+  }
+
+  double _moveTowards(double current, double target, double maxDelta) {
+    if ((target - current).abs() <= maxDelta) {
+      return target;
+    }
+    return current + (target - current).sign * maxDelta;
   }
 }
