@@ -1,92 +1,94 @@
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 
-import '../broskie_game.dart';
-import '../models/runtime_assets.dart';
-import '../player.dart';
-
-class GrumpyBrick extends PositionComponent
-    with CollisionCallbacks, HasGameReference<BroskieGame> {
-  GrumpyBrick({
-    required super.position,
-    required this.patrolStart,
-    required this.patrolEnd,
-  }) : super(size: Vector2(38, 38), priority: 7) {
+abstract class Enemy extends SpriteAnimationComponent with CollisionCallbacks {
+  Enemy({required Vector2 position, required Vector2 size}) : super(position: position, size: size) {
     add(RectangleHitbox());
   }
 
-  final double patrolStart;
-  final double patrolEnd;
-  double speed = 75;
-  late final Sprite _sprite;
-  int direction = -1;
-  bool defeated = false;
-
-  @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-    _sprite = Sprite(game.images.fromCache(RuntimeAssets.corporateCube));
-  }
+  double speed = -60;
+  bool isDead = false;
 
   @override
   void update(double dt) {
-    if (game.isPlaying && !defeated) {
-      final stageMultiplier = 1 + game.currentStageIndex * 0.2;
-      final distanceToPlayer = game.player.center.x - center.x;
-      final chasing =
-          game.currentStageIndex >= 2 && distanceToPlayer.abs() < 300;
-      if (chasing) {
-        direction = distanceToPlayer.sign.toInt();
-      }
-      final movementSpeed = speed * stageMultiplier * (chasing ? 1.65 : 1);
-      x += direction * movementSpeed * dt;
-      if (x <= patrolStart) {
-        x = patrolStart;
-        direction = 1;
-      } else if (x + width >= patrolEnd) {
-        x = patrolEnd - width;
-        direction = -1;
-      }
+    if (!isDead) {
+      position.x += speed * dt;
     }
     super.update(dt);
   }
 
-  @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
-    if (defeated || other is! Player) {
-      return;
-    }
+  void die() {
+    isDead = true;
+    BroskieAudio.playStomp();
+    removeFromParent();
+  }
+}
 
-    final stomped =
-        other.velocity.y > 0 && other.previousBottom <= y + height * 0.55;
-    if (stomped) {
-      defeated = true;
-      other.bounce();
-      game.collectCash(150);
-      game.enemyDefeated();
-      removeFromParent();
-    } else {
-      other.takeHit(sourceDirection: x > other.x ? 1 : -1);
+class GrumpyBrick extends Enemy {
+  double walkAnim = 0;
+
+  GrumpyBrick({required Vector2 position}) : super(position: position, size: Vector2(32, 32));
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    walkAnim += dt * 8;
+  }
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    if (other is Player && !isDead) {
+      final playerBottom = other.position.y + other.size.y;
+      final enemyTop = position.y;
+      
+      if (other.velocity.y > 0 && playerBottom <= enemyTop + 14) {
+        other.bounce();
+        die();
+      } else {
+        other.hit();
+      }
     }
+    super.onCollision(intersectionPoints, other);
   }
 
   @override
   void render(Canvas canvas) {
-    canvas.save();
-    if (direction > 0) {
-      canvas.translate(width, 0);
-      canvas.scale(-1, 1);
+    if (animation != null) {
+      super.render(canvas);
+      return;
     }
-    _sprite.render(
-      canvas,
-      position: Vector2(-4, -7),
-      size: Vector2(width + 8, height + 10),
-    );
-    canvas.restore();
+
+    final rect = size.toRect();
+    final brickColor = Paint()..color = const Color(0xFFD32F2F);
+    final darkOutline = Paint()..color = const Color(0xFF800000)..style = PaintingStyle.stroke..strokeWidth = 2;
+    final eyePaint = Paint()..color = Colors.white;
+    final pupilPaint = Paint()..color = Colors.black;
+    final mouthPaint = Paint()..color = Colors.black..strokeWidth = 2;
+
+    // Body
+    canvas.drawRect(rect, brickColor);
+    canvas.drawRect(rect, darkOutline);
+
+    // Angry Brows & Eyes
+    canvas.drawRect(const Rect.fromLTWH(6, 8, 7, 7), eyePaint);
+    canvas.drawRect(const Rect.fromLTWH(19, 8, 7, 7), eyePaint);
+
+    canvas.drawRect(const Rect.fromLTWH(8, 10, 3, 4), pupilPaint);
+    canvas.drawRect(const Rect.fromLTWH(21, 10, 3, 4), pupilPaint);
+
+    // Angry eyebrows angled down
+    canvas.drawLine(const Offset(4, 6), const Offset(14, 10), darkOutline);
+    canvas.drawLine(const Offset(28, 6), const Offset(18, 10), darkOutline);
+
+    // Grumpy Mouth
+    canvas.drawLine(const Offset(10, 22), const Offset(22, 20), mouthPaint);
+
+    // Walking Feet
+    double legShift = (walkAnim.toInt() % 2 == 0) ? 3 : -3;
+    canvas.drawRect(Rect.fromLTWH(4, 28, 8, 4 + legShift), pupilPaint);
+    canvas.drawRect(Rect.fromLTWH(20, 28, 8, 4 - legShift), pupilPaint);
   }
 }

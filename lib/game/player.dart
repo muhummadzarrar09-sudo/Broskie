@@ -1,333 +1,384 @@
-import 'dart:math' as math;
-import 'dart:ui' as ui;
-
-import 'package:flame/collisions.dart';
+import 'dart:math';
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/blocks/interactable_block.dart';
+import 'package:broskie_game/game/world4/hater_cloud.dart';
+import 'package:broskie_game/game/weapons/vinyl_boomerang.dart';
 
-import 'broskie_game.dart';
-import 'models/runtime_assets.dart';
-import 'services/game_feedback.dart';
+enum PowerUpType { none, classic, juggernaut, shockwave }
+enum PlayerState { idle, walking, running, jumping, falling, vaulting }
 
-class Player extends PositionComponent
-    with KeyboardHandler, CollisionCallbacks, HasGameReference<BroskieGame> {
-  Player({required super.position})
-    : super(size: Vector2(42, 58), priority: 10) {
+class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<BroskieGame>, CollisionCallbacks {
+  Player({required Vector2 position}) : super(position: position, size: Vector2(32, 48)) {
     add(RectangleHitbox());
   }
 
-  static const double gravity = 1900;
-  static const double jumpSpeed = 700;
-  static const double walkSpeed = 320;
-  static const double runSpeed = 430;
-  static const double voltSpeed = 520;
-  static const double acceleration = 2100;
-  static const double groundFriction = 2600;
-  static const double terminalVelocity = 1050;
-
   final Vector2 velocity = Vector2.zero();
-  late final Sprite _sprite;
-  late final List<Sprite> _walkFrames;
-  late final List<Sprite> _voltWalkFrames;
-
+  final double gravity = 1900;
+  final double jumpStrength = 700;
+  final double walkSpeed = 320;
+  final double runSpeed = 600;
+  final double acceleration = 2200;
+  final double friction = 1600;
+  
   bool isGrounded = false;
-  bool powered = false;
-  int facing = 1;
-  double previousBottom = 0;
+  int horizontalDirection = 0;
+  bool isRunning = false;
+  bool isBig = false;
+  bool isInvulnerable = false;
+  double invulnerableTimer = 0;
+  PowerUpType currentPower = PowerUpType.none;
 
-  double _coyoteTimer = 0;
-  double _jumpBufferTimer = 0;
-  double _invulnerabilityTimer = 0;
-  double _dashCooldown = 0;
-  double _visualTime = 0;
-  double _walkFrameTimer = 0;
-  int _walkFrameIndex = 0;
-  bool _fallHandled = false;
+  // Pixel Animation Engine State
+  PlayerState state = PlayerState.idle;
+  int facing = 1; // 1 Right, -1 Left
+  double animTimer = 0;
+  int animFrame = 0;
+  double vaultTimer = 0;
+  double shootCooldown = 0;
 
-  bool get isInvulnerable => _invulnerabilityTimer > 0;
+  // Modern State
+  bool controlsInverted = false;
+  double hackTimer = 0;
+  List<Debuff> activeDebuffs = [];
 
-  double get bottom => y + height;
-
-  @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-    _sprite = Sprite(game.images.fromCache(RuntimeAssets.player));
-    _walkFrames = _sliceRunSheet(
-      game.images.fromCache(RuntimeAssets.playerWalk),
-    );
-    _voltWalkFrames = _sliceRunSheet(
-      game.images.fromCache(RuntimeAssets.playerVoltWalk),
-    );
-  }
-
-  List<Sprite> _sliceRunSheet(ui.Image image) {
-    final frameWidth = image.width / 4;
-    final frameSize = Vector2(frameWidth, image.height.toDouble());
-    return List.generate(
-      4,
-      (index) => Sprite(
-        image,
-        srcPosition: Vector2(frameWidth * index, 0),
-        srcSize: frameSize,
-      ),
-      growable: false,
-    );
-  }
-
-  @override
-  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    game.input.setKeyboard(
-      left:
-          keysPressed.contains(LogicalKeyboardKey.keyA) ||
-          keysPressed.contains(LogicalKeyboardKey.arrowLeft),
-      right:
-          keysPressed.contains(LogicalKeyboardKey.keyD) ||
-          keysPressed.contains(LogicalKeyboardKey.arrowRight),
-      running:
-          keysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
-          keysPressed.contains(LogicalKeyboardKey.shiftRight),
-    );
-
-    final jumpKey =
-        event.logicalKey == LogicalKeyboardKey.space ||
-        event.logicalKey == LogicalKeyboardKey.keyW ||
-        event.logicalKey == LogicalKeyboardKey.arrowUp;
-    if (event is KeyDownEvent && jumpKey) {
-      game.input.queueJump();
-    }
-    final dashKey =
-        event.logicalKey == LogicalKeyboardKey.keyK ||
-        event.logicalKey == LogicalKeyboardKey.controlLeft ||
-        event.logicalKey == LogicalKeyboardKey.controlRight;
-    if (event is KeyDownEvent && dashKey) {
-      game.input.queueDash();
-    }
-    return true;
-  }
+  // Particle list for retro pixel effects
+  final List<PixelParticle> particles = [];
 
   @override
   void update(double dt) {
-    if (!game.isPlaying) {
-      super.update(dt);
-      return;
+    if (controlsInverted) {
+      hackTimer -= dt;
+      if (hackTimer <= 0) controlsInverted = false;
     }
 
-    final frameDt = math.min(dt, 1 / 30);
-    _visualTime += frameDt;
-    previousBottom = bottom;
-    _invulnerabilityTimer = math.max(0.0, _invulnerabilityTimer - frameDt);
-    _dashCooldown = math.max(0.0, _dashCooldown - frameDt);
+    if (isInvulnerable) {
+      invulnerableTimer -= dt;
+      if (invulnerableTimer <= 0) isInvulnerable = false;
+    }
 
-    if (game.input.takeJump()) {
-      _jumpBufferTimer = 0.12;
+    if (shootCooldown > 0) shootCooldown -= dt;
+
+    // Gravity
+    if (!isGrounded && state != PlayerState.vaulting) {
+      velocity.y += gravity * dt;
+    }
+
+    // Debuffs & Speed
+    double speedMod = 1.0;
+    activeDebuffs.removeWhere((d) {
+      d.duration -= dt;
+      if (d.type == DebuffType.slow) speedMod *= 0.5;
+      return d.duration <= 0;
+    });
+
+    double targetSpeed = (isRunning ? runSpeed : walkSpeed) * speedMod;
+
+    if (horizontalDirection != 0) {
+      velocity.x += horizontalDirection * acceleration * dt;
+      facing = horizontalDirection;
     } else {
-      _jumpBufferTimer = math.max(0.0, _jumpBufferTimer - frameDt);
+      if (velocity.x.abs() < friction * dt) {
+        velocity.x = 0;
+      } else {
+        velocity.x -= velocity.x.sign * friction * dt;
+      }
     }
+    velocity.x = velocity.x.clamp(-targetSpeed, targetSpeed);
 
-    if (isGrounded) {
-      _coyoteTimer = 0.1;
-    } else {
-      _coyoteTimer = math.max(0.0, _coyoteTimer - frameDt);
-    }
-
-    final rawDirection = game.input.horizontalDirection;
-    final direction = game.controlsInverted ? -rawDirection : rawDirection;
-    if (direction != 0) {
-      facing = direction;
-    }
-    final baseSpeed = powered
-        ? voltSpeed
-        : (game.input.isRunning ? runSpeed : walkSpeed);
-    final maxSpeed = baseSpeed + game.flow * 0.35;
-    final targetX = direction * maxSpeed;
-    final changeRate = direction == 0 ? groundFriction : acceleration;
-    velocity.x = _moveTowards(velocity.x, targetX, changeRate * frameDt);
-
-    if (game.input.takeDash() && _dashCooldown <= 0) {
-      velocity.x = facing * 760.0;
-      _dashCooldown = 0.8;
-      game.emitFeedback(FeedbackCue.dash);
-      game.addFlow(4);
-    }
-
-    if (velocity.x.abs() > 35 && isGrounded) {
-      _walkFrameTimer += frameDt * (0.75 + velocity.x.abs() / walkSpeed);
-      if (_walkFrameTimer >= 0.1) {
-        _walkFrameTimer = 0;
-        _walkFrameIndex = (_walkFrameIndex + 1) % _walkFrames.length;
+    // Vaulting State Logic
+    if (state == PlayerState.vaulting) {
+      vaultTimer -= dt;
+      velocity.x = facing * 400;
+      velocity.y = -150;
+      if (vaultTimer <= 0) {
+        state = PlayerState.idle;
       }
     } else {
-      _walkFrameTimer = 0;
-      _walkFrameIndex = 0;
+      // Determine Animation State
+      if (!isGrounded) {
+        state = velocity.y < 0 ? PlayerState.jumping : PlayerState.falling;
+      } else if (velocity.x.abs() > 30) {
+        state = isRunning ? PlayerState.running : PlayerState.walking;
+      } else {
+        state = PlayerState.idle;
+      }
     }
 
-    if (_jumpBufferTimer > 0 && _coyoteTimer > 0) {
-      velocity.y = -jumpSpeed;
-      isGrounded = false;
-      game.emitFeedback(FeedbackCue.jump);
-      _coyoteTimer = 0;
-      _jumpBufferTimer = 0;
+    // Animation Frame Clock
+    animTimer += dt;
+    double frameDuration = isRunning ? 0.06 : 0.12;
+    if (animTimer >= frameDuration) {
+      animTimer = 0;
+      animFrame = (animFrame + 1) % 8;
     }
 
-    velocity.y = math.min(terminalVelocity, velocity.y + gravity * frameDt);
-
-    final maxMovement = math.max(
-      velocity.x.abs() * frameDt,
-      velocity.y.abs() * frameDt,
-    );
-    final steps = math.max<int>(1, (maxMovement / 8).ceil());
-    final stepDt = frameDt / steps;
-    isGrounded = false;
-    for (var i = 0; i < steps; i++) {
-      _moveHorizontal(velocity.x * stepDt);
-      _moveVertical(velocity.y * stepDt);
+    // Running Dust/Trail Pixel Particles
+    if (isGrounded && velocity.x.abs() > 200 && animFrame % 2 == 0) {
+      particles.add(PixelParticle(
+        position: Vector2(position.x + (facing == 1 ? 4 : 24), position.y + size.y - 4),
+        velocity: Vector2(-facing * 40, -20 - Random().nextDouble() * 30),
+        color: const Color(0xFF888888),
+        lifetime: 0.25,
+      ));
     }
 
-    x = x.clamp(0.0, game.levelWidth - width).toDouble();
-    if (y > BroskieGame.logicalHeight + 160 && !_fallHandled) {
-      _fallHandled = true;
-      game.playerFell();
+    // Update Particles
+    particles.forEach((p) => p.update(dt));
+    particles.removeWhere((p) => p.isDead);
+
+    position += velocity * dt;
+
+    if (position.y > 1400) {
+      gameOver();
     }
 
     super.update(dt);
   }
 
-  void _moveHorizontal(double delta) {
-    if (delta == 0) {
-      return;
-    }
-    x += delta;
-    for (final surface in game.solids) {
-      if (surface.isRemoving || !_bounds.overlaps(surface.collisionBounds)) {
-        continue;
-      }
-      if (delta > 0) {
-        x = surface.x - width;
-      } else {
-        x = surface.x + surface.width;
-      }
-      velocity.x = 0;
-    }
-  }
-
-  void _moveVertical(double delta) {
-    if (delta == 0) {
-      return;
+  @override
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    int dir = 0;
+    if (keysPressed.contains(LogicalKeyboardKey.keyA) || keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
+      dir = -1;
+    } else if (keysPressed.contains(LogicalKeyboardKey.keyD) || keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
+      dir = 1;
     }
 
-    final oldTop = y;
-    final oldBottom = bottom;
-    y += delta;
-    for (final surface in game.solids) {
-      if (surface.isRemoving || !_bounds.overlaps(surface.collisionBounds)) {
-        continue;
-      }
+    horizontalDirection = controlsInverted ? -dir : dir;
+    isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) || keysPressed.contains(LogicalKeyboardKey.keyK);
 
-      if (delta > 0 && oldBottom <= surface.y + 2) {
-        y = surface.y - height;
-        velocity.y = 0;
-        isGrounded = true;
-      } else if (delta < 0 && oldTop >= surface.y + surface.height - 2) {
-        y = surface.y + surface.height;
-        velocity.y = 0;
-        surface.onHeadBump(this);
+    if ((keysPressed.contains(LogicalKeyboardKey.space) || keysPressed.contains(LogicalKeyboardKey.arrowUp) || keysPressed.contains(LogicalKeyboardKey.keyW)) && event is KeyDownEvent) {
+      if (isGrounded) {
+        velocity.y = -jumpStrength;
+        isGrounded = false;
+
+        // Jump Particle Burst
+        for (int i = 0; i < 6; i++) {
+          particles.add(PixelParticle(
+            position: Vector2(position.x + 8 + i * 3, position.y + size.y),
+            velocity: Vector2((i - 3) * 30, 20),
+            color: const Color(0xFF00E5FF),
+            lifetime: 0.3,
+          ));
+        }
       }
     }
-  }
 
-  Rect get _bounds => Rect.fromLTWH(x, y, width, height);
-
-  void activateVoltCola() {
-    powered = true;
-    game.emitFeedback(FeedbackCue.powerUp);
-    game.publishHud();
-  }
-
-  void losePower() {
-    powered = false;
-    _invulnerabilityTimer = 1.5;
-    game.publishHud();
-  }
-
-  void takeHit({required int sourceDirection}) {
-    if (isInvulnerable || !game.isPlaying) {
-      return;
+    // Throw Vinyl Boomerang Weapon (Key J or Key F)
+    if ((keysPressed.contains(LogicalKeyboardKey.keyJ) || keysPressed.contains(LogicalKeyboardKey.keyF)) && event is KeyDownEvent) {
+      throwVinylBoomerang();
     }
-    if (powered) {
-      losePower();
+
+    return super.onKeyEvent(event, keysPressed);
+  }
+
+  void throwVinylBoomerang() {
+    if (shootCooldown > 0) return;
+    shootCooldown = 0.4;
+    gameRef.add(VinylBoomerang(
+      position: Vector2(position.x + (facing == 1 ? size.x : -24), position.y + 12),
+      owner: this,
+      isLeft: facing == -1,
+    ));
+  }
+
+  void triggerParkourVault() {
+    state = PlayerState.vaulting;
+    vaultTimer = 0.35;
+  }
+
+  void grow(PowerUpType type) {
+    if (isBig) return;
+    isBig = true;
+    currentPower = type;
+    size = Vector2(32, 64);
+    position.y -= 16;
+  }
+
+  void hit() {
+    if (isInvulnerable) return;
+    if (isBig) {
+      isBig = false;
+      currentPower = PowerUpType.none;
+      size = Vector2(32, 48);
+      isInvulnerable = true;
+      invulnerableTimer = 2.0;
     } else {
-      game.damagePlayer();
-      _invulnerabilityTimer = 1.5;
+      gameOver();
     }
-    velocity.setValues(-sourceDirection * 330.0, -360);
   }
 
-  void bounce() {
-    velocity.y = -jumpSpeed * 0.62;
-    isGrounded = false;
+  void gameOver() {
+    gameRef.triggerGameOver();
   }
 
-  void respawn(Vector2 checkpoint) {
-    position.setFrom(checkpoint);
-    velocity.setZero();
-    isGrounded = false;
-    _fallHandled = false;
-    _invulnerabilityTimer = 2;
+  void bounce() => velocity.y = -jumpStrength * 0.75;
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+    if (other is Floor || other is InteractableBlock || other is MovingPlatform) {
+      final playerBottom = position.y + size.y;
+      final playerTop = position.y;
+      final otherTop = other.position.y;
+      final otherBottom = other.position.y + other.size.y;
+
+      if (velocity.y >= 0 && playerBottom >= otherTop && (playerBottom - velocity.y * 0.05) <= otherTop + 14) {
+        velocity.y = 0;
+        position.y = otherTop - size.y;
+        isGrounded = true;
+
+        if (other is CrumblingPlatform) {
+          other.stepOn();
+        }
+      } else if (velocity.y < 0 && playerTop <= otherBottom && (playerTop - velocity.y * 0.05) >= otherBottom - 14) {
+        velocity.y = 0;
+        position.y = otherBottom;
+      }
+    }
+  }
+
+  @override
+  void onCollisionEnd(PositionComponent other) {
+    super.onCollisionEnd(other);
+    if (other is Floor || other is InteractableBlock || other is MovingPlatform) {
+      isGrounded = false;
+    }
   }
 
   @override
   void render(Canvas canvas) {
-    if (isInvulnerable && (_invulnerabilityTimer * 12).floor().isOdd) {
+    // Render Particles
+    particles.forEach((p) => p.render(canvas, position));
+
+    if (animation != null) {
+      super.render(canvas);
       return;
     }
 
-    if (powered) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(-5, -4, width + 10, height + 8),
-          const Radius.circular(10),
-        ),
-        Paint()..color = const Color(0x334CF9FF),
-      );
+    if (isInvulnerable && (invulnerableTimer * 12).toInt() % 2 == 0) {
+      return;
     }
 
-    final moving = velocity.x.abs() > 30 && isGrounded;
-    final bob = moving ? math.sin(_visualTime * 15) * 1.8 : 0.0;
-    if (_dashCooldown > 0.62) {
-      final trail = Paint()
-        ..color = const Color(0x9947F8FF)
-        ..strokeWidth = 3;
-      final startX = facing > 0 ? -28.0 : width + 28.0;
-      final endX = facing > 0 ? 4.0 : width - 4.0;
-      for (double y = 17; y < height; y += 11) {
-        canvas.drawLine(Offset(startX, y), Offset(endX, y), trail);
-      }
-    }
-    final animated = moving || powered;
-    final activeSprite = powered
-        ? _voltWalkFrames[_walkFrameIndex]
-        : (moving ? _walkFrames[_walkFrameIndex] : _sprite);
+    final double w = size.x;
+    final double h = size.y;
+
     canvas.save();
-    if (facing < 0) {
-      canvas.translate(width, 0);
+
+    if (facing == -1) {
+      canvas.translate(w, 0);
       canvas.scale(-1, 1);
     }
-    activeSprite.render(
-      canvas,
-      position: Vector2(animated ? -10 : -5, -9 + bob),
-      size: Vector2(
-        width + (animated ? 20 : 10),
-        height + (animated ? 14 : 12),
-      ),
-    );
+
+    // Palette Colors
+    final Paint redPaint = Paint()..color = const Color(0xFFE52521);
+    final Paint darkRedPaint = Paint()..color = const Color(0xFF990000);
+    final Paint skinPaint = Paint()..color = const Color(0xFFFFCC99);
+    final Paint blackPaint = Paint()..color = const Color(0xFF111111);
+    final Paint whitePaint = Paint()..color = const Color(0xFFFFFFFF);
+    final Paint denimPaint = Paint()..color = const Color(0xFF1F4287);
+    final Paint bluePantsPaint = Paint()..color = const Color(0xFF0D47A1);
+
+    // Dynamic Frame Calculations
+    double headY = 2.0;
+    double armShift = 0.0;
+    double legL = 0.0;
+    double legR = 0.0;
+
+    switch (state) {
+      case PlayerState.idle:
+        headY = (animFrame % 4 == 0) ? 3.0 : 2.0; // Idle breathing bounce
+        legL = 0; legR = 0;
+        break;
+      case PlayerState.walking:
+      case PlayerState.running:
+        armShift = sin(animFrame * pi / 4) * 8;
+        legL = sin(animFrame * pi / 4) * 10;
+        legR = -legL;
+        break;
+      case PlayerState.jumping:
+        headY = 0.0;
+        armShift = -10;
+        legL = -6; legR = 6;
+        break;
+      case PlayerState.falling:
+        headY = 4.0;
+        armShift = 10;
+        legL = 6; legR = -6;
+        break;
+      case PlayerState.vaulting:
+        headY = 6.0;
+        armShift = -14;
+        legL = 12; legR = 12;
+        break;
+    }
+
+    // Head & Cap
+    canvas.drawRect(Rect.fromLTWH(4, headY, 24, 14), skinPaint);
+    canvas.drawRect(Rect.fromLTWH(2, headY - 2, 28, 6), redPaint);
+    canvas.drawRect(Rect.fromLTWH(-2, headY + 3, 18, 3), darkRedPaint); // Backwards Cap Brim
+
+    // Sunglasses
+    canvas.drawRect(Rect.fromLTWH(10, headY + 5, 14, 5), blackPaint);
+    canvas.drawRect(Rect.fromLTWH(20, headY + 6, 3, 2), whitePaint);
+
+    // Smile / Expression
+    canvas.drawRect(Rect.fromLTWH(14, headY + 12, 8, 2), blackPaint);
+
+    // Upper Body / Vest / White Tee
+    canvas.drawRect(Rect.fromLTWH(6, headY + 14, 20, 16), whitePaint);
+    canvas.drawRect(Rect.fromLTWH(4, headY + 14, 6, 16), denimPaint);
+    canvas.drawRect(Rect.fromLTWH(22, headY + 14, 6, 16), denimPaint);
+
+    // Arms
+    canvas.drawRect(Rect.fromLTWH(-2 + armShift * 0.5, headY + 16, 6, 12), skinPaint);
+    canvas.drawRect(Rect.fromLTWH(28 - armShift * 0.5, headY + 16, 6, 12), skinPaint);
+
+    // Legs & Pants
+    canvas.drawRect(Rect.fromLTWH(6, headY + 30, 8, 12 + legL), bluePantsPaint);
+    canvas.drawRect(Rect.fromLTWH(18, headY + 30, 8, 12 + legR), bluePantsPaint);
+
+    // Red Sneakers
+    canvas.drawRect(Rect.fromLTWH(4, headY + 42 + legL, 12, 4), redPaint);
+    canvas.drawRect(Rect.fromLTWH(16, headY + 42 + legR, 12, 4), redPaint);
+    canvas.drawRect(Rect.fromLTWH(4, headY + 45 + legL, 12, 1), whitePaint);
+    canvas.drawRect(Rect.fromLTWH(16, headY + 45 + legR, 12, 1), whitePaint);
+
+    // Aura Powerup Effects
+    if (currentPower != PowerUpType.none) {
+      final auraColor = currentPower == PowerUpType.juggernaut 
+          ? const Color(0xFFFFD700).withOpacity(0.5) 
+          : const Color(0xFF00E5FF).withOpacity(0.5);
+      canvas.drawCircle(Offset(w / 2, h / 2), w * 0.9, Paint()..color = auraColor);
+    }
+
     canvas.restore();
   }
+}
 
-  double _moveTowards(double current, double target, double maxDelta) {
-    if ((target - current).abs() <= maxDelta) {
-      return target;
-    }
-    return current + (target - current).sign * maxDelta;
+class PixelParticle {
+  Vector2 position;
+  Vector2 velocity;
+  Color color;
+  double lifetime;
+  double age = 0;
+
+  PixelParticle({required this.position, required this.velocity, required this.color, required this.lifetime});
+
+  void update(double dt) {
+    age += dt;
+    position += velocity * dt;
+  }
+
+  bool get isDead => age >= lifetime;
+
+  void render(Canvas canvas, Vector2 playerPos) {
+    double alpha = (1.0 - age / lifetime).clamp(0.0, 1.0);
+    final paint = Paint()..color = color.withOpacity(alpha);
+    canvas.drawRect(Rect.fromLTWH(position.x - playerPos.x, position.y - playerPos.y, 3, 3), paint);
   }
 }

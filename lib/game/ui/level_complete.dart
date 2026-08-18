@@ -1,157 +1,52 @@
 import 'package:flutter/material.dart';
 
-import '../models/campaign_progress.dart';
-import '../models/game_hud_state.dart';
-
 class LevelCompleteOverlay extends StatelessWidget {
+  final int coins;
+  final int enemiesStomped;
+  final VoidCallback onNextLevel;
+
   const LevelCompleteOverlay({
     super.key,
-    required this.result,
-    required this.finalStage,
-    required this.onNext,
-    required this.onReplay,
-    required this.onMenu,
+    required this.coins,
+    required this.enemiesStomped,
+    required this.onNextLevel,
   });
-
-  final StageResult result;
-  final bool finalStage;
-  final VoidCallback onNext;
-  final VoidCallback onReplay;
-  final VoidCallback onMenu;
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0xD9050711),
-      child: SafeArea(
-        child: Center(
-          child: Semantics(
-            namesRoute: true,
-            label: 'Stage complete with rank ${result.rank.label}',
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF11172A),
-                    border: Border.all(
-                      color: const Color(0xFFFFC12E),
-                      width: 4,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: const [
-                      BoxShadow(color: Color(0x55FFC12E), blurRadius: 28),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(28),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          result.rank.label,
-                          style: const TextStyle(
-                            color: Color(0xFFFFEC3D),
-                            fontSize: 68,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const Text(
-                          'STAGE LIBERATED',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFFFFC12E),
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        _ResultRow(
-                          label: 'CASH EXTRACTED',
-                          value: '\$${result.cash}',
-                          color: const Color(0xFF6CFF83),
-                        ),
-                        _ResultRow(
-                          label: 'OPPS STOMPED',
-                          value: '${result.enemiesDefeated}',
-                          color: const Color(0xFFFF5474),
-                        ),
-                        _ResultRow(
-                          label: 'RUN TIME',
-                          value: _clock(result.elapsedSeconds),
-                          color: const Color(0xFF47F8FF),
-                        ),
-                        const SizedBox(height: 24),
-                        FilledButton.icon(
-                          onPressed: onNext,
-                          icon: Icon(
-                            finalStage ? Icons.flag : Icons.arrow_forward,
-                          ),
-                          label: Text(
-                            finalStage ? 'FINISH THE STORY' : 'NEXT STAGE',
-                          ),
-                        ),
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          children: [
-                            TextButton(
-                              onPressed: onReplay,
-                              child: const Text('REPLAY'),
-                            ),
-                            TextButton(
-                              onPressed: onMenu,
-                              child: const Text('MENU'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+    return Center(
+      child: Container(
+        width: 300,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.9),
+          border: Border.all(color: Colors.amber, width: 4),
+          borderRadius: BorderRadius.circular(20),
         ),
-      ),
-    );
-  }
-
-  String _clock(int seconds) {
-    final minutes = seconds ~/ 60;
-    return '$minutes:${(seconds % 60).toString().padLeft(2, '0')}';
-  }
-}
-
-class _ResultRow extends StatelessWidget {
-  const _ResultRow({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(label, style: const TextStyle(color: Colors.white70)),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "LEVEL CLEARED!",
+              style: TextStyle(color: Colors.amber, fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Courier'),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            const Text(
+              "HELL NAAAAA, BROSKIE COOKED!",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white, fontSize: 16, fontStyle: FontStyle.italic),
+            ),
+            const Divider(color: Colors.white24),
+            Text("CASH: \$$coins", style: const TextStyle(color: Colors.greenAccent, fontSize: 18)),
+            Text("CUBES STOMPED: $enemiesStomped", style: const TextStyle(color: Colors.redAccent, fontSize: 18)),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+              onPressed: onNextLevel,
+              child: const Text("NEXT LEVEL", style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        ),
       ),
     );
   }
