@@ -23,6 +23,7 @@ class CampaignProgress {
     this.highestUnlockedStage = 0,
     this.bestRanks = const [0, 0, 0, 0],
     this.hapticsEnabled = true,
+    this.audioEnabled = true,
     this.showTouchControls = true,
     this.reducedEffects = false,
   });
@@ -31,6 +32,7 @@ class CampaignProgress {
   final int highestUnlockedStage;
   final List<int> bestRanks;
   final bool hapticsEnabled;
+  final bool audioEnabled;
   final bool showTouchControls;
   final bool reducedEffects;
 
@@ -46,6 +48,7 @@ class CampaignProgress {
     int? highestUnlockedStage,
     List<int>? bestRanks,
     bool? hapticsEnabled,
+    bool? audioEnabled,
     bool? showTouchControls,
     bool? reducedEffects,
   }) {
@@ -54,6 +57,7 @@ class CampaignProgress {
       highestUnlockedStage: highestUnlockedStage ?? this.highestUnlockedStage,
       bestRanks: List.unmodifiable(bestRanks ?? this.bestRanks),
       hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
+      audioEnabled: audioEnabled ?? this.audioEnabled,
       showTouchControls: showTouchControls ?? this.showTouchControls,
       reducedEffects: reducedEffects ?? this.reducedEffects,
     );

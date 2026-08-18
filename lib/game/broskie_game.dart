@@ -19,18 +19,22 @@ import 'models/runtime_assets.dart';
 import 'models/stage_catalog.dart';
 import 'player.dart';
 import 'services/campaign_repository.dart';
+import 'services/game_feedback.dart';
 
 class BroskieGame extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
-  BroskieGame({CampaignRepository? campaignRepository})
-    : _campaignRepository =
-          campaignRepository ?? SharedPreferencesCampaignRepository(),
-      super(
-        camera: CameraComponent.withFixedResolution(
-          width: logicalWidth,
-          height: logicalHeight,
-        ),
-      );
+  BroskieGame({
+    CampaignRepository? campaignRepository,
+    GameFeedback? gameFeedback,
+  }) : _campaignRepository =
+           campaignRepository ?? SharedPreferencesCampaignRepository(),
+       feedback = gameFeedback ?? DeviceGameFeedback(),
+       super(
+         camera: CameraComponent.withFixedResolution(
+           width: logicalWidth,
+           height: logicalHeight,
+         ),
+       );
 
   static const double logicalWidth = 960;
   static const double logicalHeight = 540;
@@ -47,6 +51,7 @@ class BroskieGame extends FlameGame
   static const String endingOverlay = 'Ending';
 
   final CampaignRepository _campaignRepository;
+  final GameFeedback feedback;
   final InputController input = InputController();
   final ValueNotifier<GameHudState> hud = ValueNotifier(
     const GameHudState.initial(),
@@ -95,6 +100,10 @@ class BroskieGame extends FlameGame
   bool get hapticsEnabled => progress.hapticsEnabled;
   bool get showTouchControls => progress.showTouchControls;
 
+  void emitFeedback(FeedbackCue cue) {
+    feedback.emit(cue, hapticsEnabled: progress.hapticsEnabled);
+  }
+
   @override
   void onGameResize(Vector2 canvasSize) {
     super.onGameResize(canvasSize);
@@ -118,6 +127,7 @@ class BroskieGame extends FlameGame
     await super.onLoad();
     await images.loadAll(RuntimeAssets.all);
     progress = await _campaignRepository.load();
+    await feedback.initialize(audioEnabled: progress.audioEnabled);
     campaign.value = progress;
     await _buildStage();
     phase = GamePhase.menu;
@@ -590,6 +600,7 @@ class BroskieGame extends FlameGame
       return;
     }
     cash += amount;
+    emitFeedback(FeedbackCue.pickup);
     addFlow(3);
     publishHud();
   }
@@ -606,6 +617,7 @@ class BroskieGame extends FlameGame
 
   void enemyDefeated() {
     enemiesDefeated++;
+    emitFeedback(FeedbackCue.stomp);
     addFlow(18);
   }
 
@@ -614,6 +626,7 @@ class BroskieGame extends FlameGame
       return;
     }
     health = (health - 1).clamp(0, 3).toInt();
+    emitFeedback(FeedbackCue.hit);
     flow = (flow * 0.45).clamp(0.0, 100.0).toDouble();
     publishHud();
     if (health == 0) {
@@ -626,6 +639,7 @@ class BroskieGame extends FlameGame
       return;
     }
     health = (health - 1).clamp(0, 3).toInt();
+    emitFeedback(FeedbackCue.hit);
     flow = 0;
     if (health == 0) {
       publishHud();
@@ -652,11 +666,13 @@ class BroskieGame extends FlameGame
   void bossDamaged(int remainingHealth, int maxHealth) {
     bossMaxHealth = maxHealth;
     bossHealth = remainingHealth.clamp(0, maxHealth).toInt();
+    emitFeedback(FeedbackCue.bossHit);
     publishHud();
   }
 
   void bossDefeated() {
     bossHealth = 0;
+    emitFeedback(FeedbackCue.powerUp);
     cash += currentStageIndex == stages.length - 1 ? 2000 : 1200;
     enemiesDefeated++;
     exit.unlocked = true;
@@ -678,6 +694,7 @@ class BroskieGame extends FlameGame
       return;
     }
     cash += 500;
+    emitFeedback(FeedbackCue.stageComplete);
     final targetTime = [75, 95, 110, 130][currentStageIndex];
     var rank = CampaignRank.c;
     if (health == 3 && stageTime <= targetTime && _peakFlow >= 80) {
@@ -780,6 +797,12 @@ class BroskieGame extends FlameGame
     _saveSettings();
   }
 
+  void setAudio(bool enabled) {
+    progress = progress.copyWith(audioEnabled: enabled);
+    feedback.setAudioEnabled(enabled);
+    _saveSettings();
+  }
+
   void setTouchControls(bool enabled) {
     progress = progress.copyWith(showTouchControls: enabled);
     input.reset();
@@ -826,6 +849,7 @@ class BroskieGame extends FlameGame
   void onRemove() {
     hud.dispose();
     campaign.dispose();
+    unawaited(feedback.dispose());
     super.onRemove();
   }
 }

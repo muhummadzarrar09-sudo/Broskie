@@ -10,6 +10,7 @@ void main() {
       highestUnlockedStage: 2,
       bestRanks: [CampaignRank.a.index, CampaignRank.s.index, 0, 0],
       hapticsEnabled: false,
+      audioEnabled: false,
       reducedEffects: true,
     );
 
@@ -21,6 +22,7 @@ void main() {
     expect(restored.rankFor(0), CampaignRank.a);
     expect(restored.rankFor(1), CampaignRank.s);
     expect(restored.hapticsEnabled, isFalse);
+    expect(restored.audioEnabled, isFalse);
     expect(restored.reducedEffects, isTrue);
   });
 

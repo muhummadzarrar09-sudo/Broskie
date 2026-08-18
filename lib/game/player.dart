@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 import 'broskie_game.dart';
 import 'models/runtime_assets.dart';
+import 'services/game_feedback.dart';
 
 class Player extends PositionComponent
     with KeyboardHandler, CollisionCallbacks, HasGameReference<BroskieGame> {
@@ -121,12 +122,14 @@ class Player extends PositionComponent
     if (game.input.takeDash() && _dashCooldown <= 0) {
       velocity.x = facing * 760.0;
       _dashCooldown = 0.8;
+      game.emitFeedback(FeedbackCue.dash);
       game.addFlow(4);
     }
 
     if (_jumpBufferTimer > 0 && _coyoteTimer > 0) {
       velocity.y = -jumpSpeed;
       isGrounded = false;
+      game.emitFeedback(FeedbackCue.jump);
       _coyoteTimer = 0;
       _jumpBufferTimer = 0;
     }
@@ -201,6 +204,7 @@ class Player extends PositionComponent
 
   void activateVoltCola() {
     powered = true;
+    game.emitFeedback(FeedbackCue.powerUp);
     game.publishHud();
   }
 

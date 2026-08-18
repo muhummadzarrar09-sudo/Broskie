@@ -13,6 +13,7 @@ class SharedPreferencesCampaignRepository implements CampaignRepository {
   static const _unlockedKey = 'campaign.highestUnlocked';
   static const _ranksKey = 'campaign.bestRanks';
   static const _hapticsKey = 'settings.haptics';
+  static const _audioKey = 'settings.audio';
   static const _controlsKey = 'settings.touchControls';
   static const _effectsKey = 'settings.reducedEffects';
 
@@ -33,6 +34,7 @@ class SharedPreferencesCampaignRepository implements CampaignRepository {
           .toInt(),
       bestRanks: ranks,
       hapticsEnabled: preferences.getBool(_hapticsKey) ?? true,
+      audioEnabled: preferences.getBool(_audioKey) ?? true,
       showTouchControls: preferences.getBool(_controlsKey) ?? true,
       reducedEffects: preferences.getBool(_effectsKey) ?? false,
     );
@@ -49,6 +51,7 @@ class SharedPreferencesCampaignRepository implements CampaignRepository {
         progress.bestRanks.map((rank) => '$rank').toList(growable: false),
       ),
       preferences.setBool(_hapticsKey, progress.hapticsEnabled),
+      preferences.setBool(_audioKey, progress.audioEnabled),
       preferences.setBool(_controlsKey, progress.showTouchControls),
       preferences.setBool(_effectsKey, progress.reducedEffects),
     ]);

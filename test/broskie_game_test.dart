@@ -4,15 +4,23 @@ import 'package:broskie_game/game/enemies/foreman_boss.dart';
 import 'package:broskie_game/game/models/game_hud_state.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/services/campaign_repository.dart';
+import 'package:broskie_game/game/services/game_feedback.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+BroskieGame _createGame() {
+  return BroskieGame(
+    campaignRepository: MemoryCampaignRepository(),
+    gameFeedback: SilentGameFeedback(),
+  );
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWithGame<BroskieGame>(
     'loads the first campaign stage into the camera world',
-    () => BroskieGame(campaignRepository: MemoryCampaignRepository()),
+    _createGame,
     (game) async {
       await game.ready();
 
@@ -26,7 +34,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'loads both campaign bosses on their intended stages',
-    () => BroskieGame(campaignRepository: MemoryCampaignRepository()),
+    _createGame,
     (game) async {
       await game.prepareStage(1);
       expect(game.world.children.whereType<TheForeman>(), hasLength(1));
@@ -40,7 +48,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'camera follows Broskie through the side-scrolling world',
-    () => BroskieGame(campaignRepository: MemoryCampaignRepository()),
+    _createGame,
     (game) async {
       await game.prepareStage(0);
       game.beginStage();
@@ -56,7 +64,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'rejects invalid cash and persists stage progression',
-    () => BroskieGame(campaignRepository: MemoryCampaignRepository()),
+    _createGame,
     (game) async {
       await game.prepareStage(1);
       game.beginStage();

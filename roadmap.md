@@ -27,7 +27,8 @@ This roadmap reports only integrated code as complete. Runtime certification on 
 - [x] Data Broker final boss with escalating attacks and control inversion
 - [x] Locked exits, stage completion, pause, restart and game-over flows
 - [x] Responsive and accessible HUD overlays
-- [x] Haptics, touch-control and reduced-effects settings
+- [x] Event-driven haptics and persisted audio/touch/effects settings
+- [x] Original generated placeholder SFX and looping neon chiptune
 - [x] Input, persistence and Flame game tests
 - [ ] Run `flutter analyze` and `flutter test` on Flutter 3.41+
 - [ ] Hosted CI workflow (blocked by current GitHub App workflow permission)

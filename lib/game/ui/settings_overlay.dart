@@ -53,6 +53,14 @@ class SettingsOverlay extends StatelessWidget {
                           SwitchListTile.adaptive(
                             dense: true,
                             contentPadding: EdgeInsets.zero,
+                            title: const Text('Music & sound effects'),
+                            subtitle: const Text('Placeholder neon audio'),
+                            value: progress.audioEnabled,
+                            onChanged: game.setAudio,
+                          ),
+                          SwitchListTile.adaptive(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
                             title: const Text('On-screen controls'),
                             subtitle: const Text(
                               'Hide for keyboard/controller',

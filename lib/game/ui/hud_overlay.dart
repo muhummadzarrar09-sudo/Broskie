@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../broskie_game.dart';
 import '../models/game_hud_state.dart';
@@ -351,9 +348,6 @@ class _TouchControls extends StatelessWidget {
           accent: const Color(0xFFFFEC3D),
           onChanged: (pressed) {
             if (pressed) {
-              if (game.hapticsEnabled) {
-                unawaited(HapticFeedback.selectionClick());
-              }
               game.dash();
             }
           },
@@ -366,9 +360,6 @@ class _TouchControls extends StatelessWidget {
           accent: const Color(0xFFFF3EC8),
           onChanged: (pressed) {
             if (pressed) {
-              if (game.hapticsEnabled) {
-                unawaited(HapticFeedback.lightImpact());
-              }
               game.jump();
             }
           },

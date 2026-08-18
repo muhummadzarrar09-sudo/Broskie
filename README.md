@@ -32,7 +32,8 @@ Broskie breaks out of corporate orientation, crosses the Factory and Neon Slums,
 - Stage briefings, reactive broadcasts, pause/restart and game-over flows
 - C/B/A/S stage ranks based on health, time and peak Flow
 - Responsive HUD with semantic labels and optional touch controls
-- Haptic and reduced-effects preferences
+- Event-driven haptics plus generated chiptune music and placeholder SFX
+- Persisted audio, haptic, touch-control and reduced-effects preferences
 - AI-assisted production backgrounds and character sprites backed by reliable code collision geometry
 - Stage-specific rain, sparks, steam/data particles and distant moving traffic
 - Native launch artwork plus a full branded loading/error presentation
