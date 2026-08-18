@@ -19,6 +19,16 @@ class HaterCloud extends SpriteComponent with HasGameRef<BroskieGame>, Collision
   }
 
   @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    try {
+      sprite = Sprite(await gameRef.images.load('runtime/hater_drone.png'));
+    } catch (_) {
+      // Procedural cloud painter stays active without the art.
+    }
+  }
+
+  @override
   void update(double dt) {
     super.update(dt);
     timer += dt;

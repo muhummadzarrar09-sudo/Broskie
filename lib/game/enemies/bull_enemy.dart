@@ -15,15 +15,36 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameRef<BroskieGam
   double stateTimer = 0;
   final double patrolRange;
   late final double _spawnX;
+  // Sprite art faces RIGHT (+1). _artDir tracks which way the SPRITE is
+  // flipped so we never double-flip or skip a flip.
+  int _artDir = 1;
 
   WallStreetBull({required Vector2 position, this.patrolRange = 260})
       : super(position: position, size: Vector2(64, 48)) {
     _spawnX = position.x;
+    add(RectangleHitbox());
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    try {
+      final image = await gameRef.images.load('runtime/bulldozer_drone.png');
+      animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
+    } catch (_) {
+      // Procedural bull painter stays active without the art.
+    }
   }
 
   @override
   void update(double dt) {
     stateTimer += dt;
+
+    // Sprite-art facing flip (the procedural painter flips itself in render).
+    if (animation != null && direction != _artDir) {
+      flipHorizontallyAroundCenter();
+      _artDir = direction;
+    }
 
     if (isDizzy) {
       if (stateTimer > 3.0) {

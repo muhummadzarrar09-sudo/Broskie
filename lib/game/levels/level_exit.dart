@@ -3,6 +3,7 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 
 class LevelExit extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   /// When provided, the portal stays locked while this returns true
@@ -59,11 +60,14 @@ class LevelExit extends PositionComponent with HasGameRef<BroskieGame>, Collisio
     canvas.drawRect(rect, portalPaint.withOpacity(glow));
     canvas.drawRect(rect, borderPaint);
 
-    // Locked portals get cross-chains
+    // Locked portals carry the corporate seal: a barcode customs strip.
+    // The machine barcodes everything it owns. It does not own Broskie.
     if (locked) {
       final chainPaint = Paint()..color = Colors.white38..strokeWidth = 4;
       canvas.drawLine(const Offset(4, 4), Offset(size.x - 4, size.y - 4), chainPaint);
       canvas.drawLine(Offset(size.x - 4, 4), Offset(4, size.y - 4), chainPaint);
+      canvas.drawRect(Rect.fromLTWH(4, size.y - 26, size.x - 8, 18), Paint()..color = Colors.black87);
+      drawBarcode(canvas, Rect.fromLTWH(7, size.y - 24, size.x - 14, 14), seed: 404, color: BroskieColors.bone);
     }
 
     final textPainter = TextPainter(

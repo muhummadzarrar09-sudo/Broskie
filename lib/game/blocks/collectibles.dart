@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 
 class DataBitCoin extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   double floatTimer = 0;
@@ -33,8 +34,18 @@ class DataBitCoin extends SpriteComponent with HasGameRef<BroskieGame>, Collisio
 
   @override
   void render(Canvas canvas) {
-    canvas.drawCircle(const Offset(10, 10), 10, Paint()..color = Colors.amber);
-    canvas.drawCircle(const Offset(10, 10), 6, Paint()..color = const Color(0xFF00E5FF));
-    canvas.drawCircle(const Offset(10, 10), 2, Paint()..color = Colors.white);
+    // DATA-VINYL: a tiny black 7-inch, magenta label, bone spindle hole.
+    // Underground crews trade records, not coins.
+    const c = Offset(10, 10);
+    canvas.drawCircle(c, 10, Paint()..color = Colors.black);
+    canvas.drawCircle(
+        c,
+        8.5,
+        Paint()
+          ..color = BroskieColors.bone.withOpacity(0.22)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5); // groove sheen
+    canvas.drawCircle(c, 4.5, Paint()..color = BroskieColors.magenta);
+    canvas.drawCircle(c, 1.8, Paint()..color = BroskieColors.bone);
   }
 }

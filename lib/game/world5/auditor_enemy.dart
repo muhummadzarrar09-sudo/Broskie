@@ -16,6 +16,17 @@ class AuditorEnemy extends SpriteAnimationComponent with HasGameRef<BroskieGame>
   }
 
   @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    try {
+      final image = await gameRef.images.load('runtime/audit_drone.png');
+      animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
+    } catch (_) {
+      // Procedural auditor painter stays active without the art.
+    }
+  }
+
+  @override
   void update(double dt) {
     super.update(dt);
     attackTimer += dt;

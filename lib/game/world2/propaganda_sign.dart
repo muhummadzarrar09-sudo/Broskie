@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 
 class PropagandaSign extends SpriteComponent with HasGameRef<BroskieGame> {
   bool isHacked = false;
@@ -40,6 +41,9 @@ class PropagandaSign extends SpriteComponent with HasGameRef<BroskieGame> {
     );
 
     textPainter.layout();
-    textPainter.paint(canvas, Offset((size.x - textPainter.width) / 2, (size.y - textPainter.height) / 2));
+    textPainter.paint(canvas, Offset((size.x - textPainter.width) / 2, (size.y - textPainter.height) / 2 - 4));
+
+    // Every corporate ad carries its own barcode — product goes out the door.
+    drawBarcode(canvas, const Rect.fromLTWH(8, 30, 26, 8), seed: 11, color: Colors.black87);
   }
 }

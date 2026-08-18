@@ -20,6 +20,9 @@ class SplashScreen extends StatefulWidget {
     'runtime/corporate_cube.png',
     'runtime/foreman_boss.png',
     'runtime/data_broker_boss.png',
+    'runtime/bulldozer_drone.png',
+    'runtime/audit_drone.png',
+    'runtime/hater_drone.png',
     'runtime/grey_zone_background.png',
     'runtime/neon_slums_background.png',
     'runtime/factory_background.png',
@@ -53,6 +56,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final overlayArt = <String>[
       'assets/images/runtime/menu_keyart.png',
       'assets/images/runtime/splash_keyart.png',
+      'assets/images/runtime/foreman_intro.png',
+      'assets/images/runtime/broker_intro.png',
     ];
     final total = SplashScreen.flameAssets.length + overlayArt.length;
 
