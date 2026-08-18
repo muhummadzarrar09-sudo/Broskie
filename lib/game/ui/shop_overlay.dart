@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+
+class ShopOverlay extends StatefulWidget {
+  final BroskieGame game;
+
+  const ShopOverlay({super.key, required this.game});
+
+  @override
+  State<ShopOverlay> createState() => _ShopOverlayState();
+}
+
+class _ShopOverlayState extends State<ShopOverlay> {
+  int coins = 250;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 360,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.95),
+          border: Border.all(color: Colors.magentaAccent, width: 4),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [BoxShadow(color: Colors.magentaAccent, blurRadius: 15)],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "BLACK MARKET",
+                  style: TextStyle(color: Colors.magentaAccent, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                ),
+                Text("\$$coins", style: const TextStyle(color: Colors.amber, fontSize: 20, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const Divider(color: Colors.white24, height: 20),
+
+            // Item 1: Shadow Broskie Skin
+            _buildShopItem(
+              title: "Shadow Broskie Skin",
+              description: "2.0x Jump Boost & Dark Cyber Aura",
+              cost: 100,
+              icon: Icons.shield,
+              onBuy: () {
+                if (coins >= 100) {
+                  setState(() => coins -= 100);
+                  widget.game.player.grow(PowerUpType.juggernaut);
+                }
+              },
+            ),
+
+            const SizedBox(height: 10),
+
+            // Item 2: Boomerang Piercing Upgrade
+            _buildShopItem(
+              title: "Vinyl Boomerang Piercing",
+              description: "Records pierce through enemy shields",
+              cost: 150,
+              icon: Icons.disc_full,
+              onBuy: () {
+                if (coins >= 150) {
+                  setState(() => coins -= 150);
+                  widget.game.player.grow(PowerUpType.shockwave);
+                }
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF)),
+              onPressed: () => widget.game.overlays.remove('Shop'),
+              child: const Text("CLOSE SHOP", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShopItem({
+    required String title,
+    required String description,
+    required int cost,
+    required IconData icon,
+    required VoidCallback onBuy,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.cyanAccent, size: 30),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(description, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, padding: const EdgeInsets.symmetric(horizontal: 10)),
+            onPressed: onBuy,
+            child: Text("\$$cost", style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+}

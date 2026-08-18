@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flame/parallax.dart';
@@ -27,6 +28,10 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   String activeDialogue = '';
   int scoreCoins = 0;
   int enemiesDefeated = 0;
+  bool isPaused = false;
+
+  // Camera Shake Effect State
+  double shakeIntensity = 0;
 
   BroskieGame({required this.ref});
 
@@ -34,7 +39,6 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   Future<void> onLoad() async {
     add(ScreenHitbox());
 
-    // Safe Parallax Background
     try {
       final parallax = await loadParallaxComponent(
         [
@@ -52,16 +56,41 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     _buildMassiveHardLevel();
   }
 
+  @override
+  void update(double dt) {
+    if (shakeIntensity > 0) {
+      shakeIntensity -= dt * 10;
+      if (shakeIntensity < 0) shakeIntensity = 0;
+      double offsetX = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
+      double offsetY = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
+      camera.snapTo(Vector2(player.position.x + offsetX, player.position.y + offsetY));
+    }
+    super.update(dt);
+  }
+
+  void triggerScreenShake({double intensity = 1.0}) {
+    shakeIntensity = intensity;
+  }
+
+  void togglePause() {
+    isPaused = !isPaused;
+    if (isPaused) {
+      pauseEngine();
+      overlays.add('PauseMenu');
+    } else {
+      overlays.remove('PauseMenu');
+      resumeEngine();
+    }
+  }
+
   void _buildMassiveHardLevel() {
-    // 1. Spawning Player
     player = Player(position: Vector2(100, 300));
     add(player);
     camera.follow(player);
 
-    // --- SECTOR 1: THE GREY ZONE ENTRY (X: -200 to 2,500) ---
+    // --- SECTOR 1: THE GREY ZONE ENTRY ---
     add(Floor(Vector2(-200, 480), Vector2(2200, 120)));
 
-    // Early Mystery Blocks & Lore Terminal
     add(InteractableBlock(position: Vector2(300, 340), type: BlockType.mystery));
     add(InteractableBlock(position: Vector2(332, 340), type: BlockType.brick));
     add(InteractableBlock(position: Vector2(364, 340), type: BlockType.mystery));
@@ -72,16 +101,13 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       text: "SYSTEM ALERT: Monopoly forces are restructuring Neo-City! Use 'J' or 'F' to throw Vinyl Boomerangs!",
     ));
 
-    // Enemy Patrol 1
     add(GrumpyBrick(position: Vector2(500, 448)));
     add(GrumpyBrick(position: Vector2(800, 448)));
     add(WallStreetBull(position: Vector2(1200, 432)));
 
-    // --- SECTOR 2: THE LASER & MOVING PLATFORM PARKOUR RUN (X: 2,200 to 5,000) ---
-    // Ground Pit with Data Spikes!
+    // --- SECTOR 2: THE LASER & MOVING PLATFORM PARKOUR RUN ---
     add(DataSpike(position: Vector2(2200, 480), size: Vector2(800, 32)));
 
-    // High Platforms & Moving Platforms
     add(Floor(Vector2(2100, 360), Vector2(180, 24)));
     add(MovingPlatform(
       position: Vector2(2350, 320),
@@ -91,7 +117,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     ));
 
     add(Floor(Vector2(2900, 280), Vector2(200, 24)));
-    add(LaserHazard(position: Vector2(3000, 160), size: Vector2(12, 120))); // Pulsing Laser Barrier
+    add(LaserHazard(position: Vector2(3000, 160), size: Vector2(12, 120)));
 
     add(CrumblingPlatform(position: Vector2(3150, 280), size: Vector2(100, 24)));
     add(CrumblingPlatform(position: Vector2(3300, 280), size: Vector2(100, 24)));
@@ -100,7 +126,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(HaterCloud(position: Vector2(3500, 180)));
     add(AuditorEnemy(position: Vector2(3600, 276)));
 
-    // Mid-Level Ground Floor (X: 3,800 to 6,500)
+    // Mid-Level Ground Floor
     add(Floor(Vector2(3800, 480), Vector2(2700, 120)));
     add(PropagandaSign(position: Vector2(4000, 416)));
 
@@ -112,11 +138,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(GrumpyBrick(position: Vector2(4800, 448)));
     add(GrumpyBrick(position: Vector2(5100, 448)));
 
-    // --- SECTOR 3: VERTICAL TOWER CLIMB (X: 6,500 to 8,500) ---
-    // Deep Spike Pit
+    // --- SECTOR 3: VERTICAL TOWER CLIMB ---
     add(DataSpike(position: Vector2(6500, 480), size: Vector2(1200, 32)));
 
-    // Vertical Moving Platforms
     add(MovingPlatform(
       position: Vector2(6600, 400),
       size: Vector2(120, 24),
@@ -138,7 +162,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(AuditorEnemy(position: Vector2(7900, 176)));
     add(HaterCloud(position: Vector2(8000, 100)));
 
-    // --- SECTOR 4: BOSS ARENA - THE FOREMAN & DATA BROKER (X: 8,500 to 12,000) ---
+    // --- SECTOR 4: BOSS ARENA ---
     add(Floor(Vector2(8500, 480), Vector2(3500, 120)));
 
     add(InteractableLore(
@@ -147,22 +171,19 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       text: "WARNING: Entering High-Security Executive Arena! Restructuring Boss Ahead!",
     ));
 
-    // Boss 1: The Foreman Excavator Mech
     add(TheForeman(position: Vector2(9500, 384)));
 
-    // Secret Reward Cache
     add(InteractableBlock(position: Vector2(10200, 340), type: BlockType.mystery));
     add(InteractableBlock(position: Vector2(10232, 340), type: BlockType.mystery));
     add(InteractableBlock(position: Vector2(10264, 340), type: BlockType.mystery));
 
-    // Boss 2: Data Broker Spider Mech
     add(DataBrokerBoss(position: Vector2(10800, 400)));
 
-    // Final Victory Portal Exit
     add(LevelExit(position: Vector2(11600, 352)));
   }
 
   void triggerGameOver() {
+    triggerScreenShake(intensity: 1.5);
     pauseEngine();
     overlays.add('GameOver');
   }
@@ -186,6 +207,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     overlays.remove('GameOver');
     overlays.remove('LevelComplete');
     overlays.remove('Dialogue');
+    overlays.remove('PauseMenu');
+    overlays.remove('Shop');
 
     children.where((c) => c is! ScreenHitbox && c is! ProceduralSkylineParallax).toList().forEach((c) => c.removeFromParent());
 

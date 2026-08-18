@@ -7,6 +7,9 @@ import 'game/ui/dialogue_box.dart';
 import 'game/ui/game_over.dart';
 import 'game/ui/level_complete.dart';
 import 'game/ui/news_ticker.dart';
+import 'game/ui/touch_controls.dart';
+import 'game/ui/pause_menu.dart';
+import 'game/ui/shop_overlay.dart';
 
 void main() {
   runApp(
@@ -80,21 +83,35 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.8),
-                        border: Border.all(color: Colors.amber, width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        "DEFEATED: ${game.enemiesDefeated}",
-                        style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.8),
+                            border: Border.all(color: Colors.amber, width: 2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            "STOMPED: ${game.enemiesDefeated}",
+                            style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+
+                        // Pause Button
+                        IconButton(
+                          icon: const Icon(Icons.pause_circle_filled, color: Color(0xFF00E5FF), size: 36),
+                          onPressed: () => game.togglePause(),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+
+              // Floating Mobile Touch Controls Overlay
+              TouchControlsOverlay(game: game),
 
               // Bottom News Ticker
               const Positioned(
@@ -112,6 +129,10 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
               ),
             ],
           ),
+
+          'PauseMenu': (context, game) => PauseMenuOverlay(game: game),
+
+          'Shop': (context, game) => ShopOverlay(game: game),
 
           'GameOver': (context, game) => GameOverOverlay(
             onRestart: () => game.restart(),
