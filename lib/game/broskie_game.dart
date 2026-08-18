@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
@@ -105,12 +106,12 @@ class BroskieGame extends FlameGame
   }
 
   @override
-  void onGameResize(Vector2 canvasSize) {
-    super.onGameResize(canvasSize);
-    if (canvasSize.y <= 0) {
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    if (size.y <= 0) {
       return;
     }
-    final responsiveWidth = (logicalHeight * canvasSize.x / canvasSize.y)
+    final responsiveWidth = (logicalHeight * size.x / size.y)
         .clamp(logicalWidth, 1280.0)
         .toDouble();
     if ((responsiveWidth - _visibleWorldWidth).abs() < 1) {
