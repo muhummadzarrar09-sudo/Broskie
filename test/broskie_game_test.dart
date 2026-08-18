@@ -8,6 +8,8 @@ import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   testWithGame<BroskieGame>(
     'loads the first campaign stage into the camera world',
     () => BroskieGame(campaignRepository: MemoryCampaignRepository()),
