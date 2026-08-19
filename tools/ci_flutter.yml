@@ -1,3 +1,9 @@
+
+# ─────────────────────────────────────────────────────────────
+# PASTE THIS FILE as .github/workflows/flutter.yml in the GitHub
+# web UI (Add file → create new file). The Arena GitHub App can
+# push code but NOT workflow files (missing "workflows" scope).
+# ─────────────────────────────────────────────────────────────
 name: BROSKIE verify
 
 on:
