@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 /// "STAGE 1-2 — NEON SLUMS" slams on, rides the stage accent, leaves.
 class StageBannerOverlay extends StatefulWidget {

@@ -1,13 +1,13 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
 /// Touching the flag moves Broskie's respawn point to this spot.
 /// The next fall or stage hazard sends him back here instead of the start.
-class CheckpointFlag extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class CheckpointFlag extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool activated = false;
   double waveTimer = 0;
 
@@ -35,7 +35,7 @@ class CheckpointFlag extends PositionComponent with HasGameRef<BroskieGame>, Col
   void render(Canvas canvas) {
     final polePaint = Paint()..color = const Color(0xFF9E9E9E);
     final flagPaint = Paint()
-      ..color = activated ? const Color(0xFF00FF66) : const Color(0xFF00E5FF).withOpacity(0.55);
+      ..color = activated ? const Color(0xFF00FF66) : const Color(0xFF00E5FF).withValues(alpha: 0.55);
 
     // Base + pole
     canvas.drawRect(Rect.fromLTWH(0, size.y - 6, size.x, 6), Paint()..color = Colors.black54);
@@ -52,7 +52,7 @@ class CheckpointFlag extends PositionComponent with HasGameRef<BroskieGame>, Col
 
     // Activated glow ring
     if (activated) {
-      canvas.drawCircle(Offset(size.x / 2, 12), 10, Paint()..color = const Color(0xFF00FF66).withOpacity(0.25));
+      canvas.drawCircle(Offset(size.x / 2, 12), 10, Paint()..color = const Color(0xFF00FF66).withValues(alpha: 0.25));
     }
   }
 }

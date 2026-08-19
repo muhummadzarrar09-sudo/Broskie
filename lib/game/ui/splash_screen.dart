@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _startLoading() async {
-    final minDisplay = Future.delayed(const Duration(milliseconds: 2400));
+    final minDisplay = Future<void>.delayed(const Duration(milliseconds: 2400));
 
     // Overlay key art goes into Flutter's image cache.
     final overlayArt = <String>[
@@ -94,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void _goNext() {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
+      PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 700),
         pageBuilder: (_, __, ___) => widget.next,
         transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
@@ -148,7 +148,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.black.withOpacity(0.15), Colors.black.withOpacity(0.82)],
+                colors: [Colors.black.withValues(alpha: 0.15), Colors.black.withValues(alpha: 0.82)],
                 stops: const [0.45, 1.0],
               ),
             ),
@@ -203,7 +203,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 const SizedBox(height: 24),
                 const Text(
                   "CODE + AI ART",
-                  style: TextStyle(color: Colors.white16, fontSize: 9, fontFamily: 'monospace', letterSpacing: 2),
+                  style: TextStyle(color: Color(0x29FFFFFF), fontSize: 9, fontFamily: 'monospace', letterSpacing: 2),
                 ),
                 const SizedBox(height: 16),
               ],

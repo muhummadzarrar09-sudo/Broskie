@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 class LevelSelectOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -15,7 +15,7 @@ class LevelSelectOverlay extends StatelessWidget {
         width: 380,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.95),
+          color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: const Color(0xFF00E5FF), width: 4),
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)],

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 /// Fighting-game boss nameplate: amber frame, draining red core,
 /// boss serial name lit up like a marque. Lives at the top of the HUD.
@@ -73,7 +73,7 @@ class ScreenFlashOverlay extends StatelessWidget {
         valueListenable: game.screenFlash,
         builder: (context, v, child) => v <= 0
             ? const SizedBox.shrink()
-            : Container(color: Colors.white.withOpacity(v.clamp(0.0, 1.0))),
+            : Container(color: Colors.white.withValues(alpha: v.clamp(0.0, 1.0))),
       ),
     );
   }

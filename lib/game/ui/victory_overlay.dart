@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:flutter/material.dart';
 
 class VictoryOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -14,7 +14,7 @@ class VictoryOverlay extends StatelessWidget {
         width: 360,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.95),
+          color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: Colors.amber, width: 5),
           borderRadius: BorderRadius.circular(20),
           boxShadow: const [BoxShadow(color: Colors.amber, blurRadius: 20)],

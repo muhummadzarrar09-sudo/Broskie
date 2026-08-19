@@ -21,7 +21,7 @@ class DialogueBox extends StatelessWidget {
         padding: const EdgeInsets.all(15),
         height: 150,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.8),
+          color: Colors.black.withValues(alpha: 0.8),
           border: Border.all(color: const Color(0xFF00FFFF), width: 3), // Neon Cyan Border
           borderRadius: BorderRadius.circular(10),
         ),

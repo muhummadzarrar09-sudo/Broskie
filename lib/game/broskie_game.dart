@@ -1,9 +1,9 @@
 import 'dart:math';
-import 'package:flame/game.dart';
-import 'package:flame/components.dart';
-import 'package:flame/parallax.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flame/game.dart';
 import 'package:flame/input.dart';
+import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -181,7 +181,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       if (shakeIntensity < 0) shakeIntensity = 0;
       double offsetX = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
       double offsetY = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
-      camera.snapTo(Vector2(player.position.x + offsetX, player.position.y + offsetY));
+      camera.viewfinder.position = Vector2(player.position.x + offsetX, player.position.y + offsetY);
     }
     super.update(dt);
   }
@@ -503,10 +503,11 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
     // Keep the persistent shell: hitbox + whatever sky was loaded in onLoad.
     // Everything else (player, stages, bosses, backdrops) is rebuilt fresh.
-    children
+    for (final c in children
         .where((c) => c is! ScreenHitbox && c is! ParallaxComponent && c is! ProceduralSkylineParallax)
-        .toList()
-        .forEach((c) => c.removeFromParent());
+        .toList()) {
+      c.removeFromParent();
+    }
 
     _buildCurrentStage();
     resumeEngine();
@@ -516,7 +517,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   Color backgroundColor() => const Color(0xFF0F0C20);
 }
 
-class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class Floor extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   Floor(Vector2 position, Vector2 size) : super(position: position, size: size) {
     add(RectangleHitbox());
   }
@@ -526,7 +527,7 @@ class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCal
     final rect = size.toRect();
     final darkConcrete = Paint()..color = const Color(0xFF222533);
     // The neon edge breathes on the stage beat.
-    final topNeonLine = Paint()..color = const Color(0xFF00E5FF).withOpacity(0.45 + 0.55 * gameRef.beatPulse);
+    final topNeonLine = Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.45 + 0.55 * gameRef.beatPulse);
     final gridLine = Paint()..color = const Color(0xFF33384A)..strokeWidth = 1;
 
     canvas.drawRect(rect, darkConcrete);
@@ -541,7 +542,7 @@ class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCal
   }
 }
 
-class ProceduralSkylineParallax extends Component with HasGameRef<BroskieGame> {
+class ProceduralSkylineParallax extends Component with HasGameReference<BroskieGame> {
   double scrollX = 0;
 
   @override

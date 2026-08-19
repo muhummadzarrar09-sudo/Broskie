@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:broskie_game/game/audio_manager.dart';
-import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 class SettingsOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -15,7 +15,7 @@ class SettingsOverlay extends StatelessWidget {
         width: 340,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.95),
+          color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: const Color(0xFF00E5FF), width: 4),
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)],
@@ -29,7 +29,7 @@ class SettingsOverlay extends StatelessWidget {
             ValueListenableBuilder<bool>(
               valueListenable: game.sfxEnabled,
               builder: (context, on, _) => SwitchListTile(
-                activeColor: const Color(0xFF00E5FF),
+                activeThumbColor: const Color(0xFF00E5FF),
                 title: const Text("Sound FX", style: TextStyle(color: Colors.white)),
                 value: on,
                 onChanged: (v) {
@@ -43,7 +43,7 @@ class SettingsOverlay extends StatelessWidget {
             ValueListenableBuilder<bool>(
               valueListenable: game.musicEnabled,
               builder: (context, on, _) => SwitchListTile(
-                activeColor: const Color(0xFF00E5FF),
+                activeThumbColor: const Color(0xFF00E5FF),
                 title: const Text("Music", style: TextStyle(color: Colors.white)),
                 value: on,
                 onChanged: (v) {
@@ -57,7 +57,7 @@ class SettingsOverlay extends StatelessWidget {
             ValueListenableBuilder<bool>(
               valueListenable: game.touchControlsEnabled,
               builder: (context, on, _) => SwitchListTile(
-                activeColor: const Color(0xFF00E5FF),
+                activeThumbColor: const Color(0xFF00E5FF),
                 title: const Text("Touch Controls", style: TextStyle(color: Colors.white)),
                 value: on,
                 onChanged: (v) {
@@ -70,7 +70,7 @@ class SettingsOverlay extends StatelessWidget {
             ValueListenableBuilder<bool>(
               valueListenable: game.hapticsEnabled,
               builder: (context, on, _) => SwitchListTile(
-                activeColor: const Color(0xFFFF3FA4),
+                activeThumbColor: const Color(0xFFFF3FA4),
                 title: const Text("Haptics", style: TextStyle(color: Colors.white)),
                 subtitle: const Text("Rumble on dashes, stomps and boss kills", style: TextStyle(color: Colors.white38, fontSize: 11)),
                 value: on,
@@ -94,7 +94,7 @@ class SettingsOverlay extends StatelessWidget {
                     ],
                   ),
                   Slider(
-                    activeColor: Colors.amber,
+                    activeThumbColor: Colors.amber,
                     value: scale,
                     min: 0,
                     max: 1,

@@ -1,8 +1,8 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
 enum BlockType { brick, mystery, solid }
 
@@ -47,7 +47,7 @@ class InteractableBlock extends SpriteComponent with CollisionCallbacks {
   void _bounceEffect() {
     final originalY = position.y;
     position.y -= 8;
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future<void>.delayed(const Duration(milliseconds: 100), () {
       position.y = originalY;
     });
   }

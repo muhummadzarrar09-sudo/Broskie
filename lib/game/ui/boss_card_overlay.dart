@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 /// Fighting-game boss intro card: banner art, name, corporate serial number,
 /// barcode stamp. Auto-dismisses — it's cinema, not a roadblock.

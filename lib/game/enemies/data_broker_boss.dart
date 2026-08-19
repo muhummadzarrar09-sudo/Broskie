@@ -1,13 +1,14 @@
 import 'dart:math';
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/haptics.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   int health = 8;
   static const int maxHealth = 8;
   double attackTimer = 0;
@@ -168,7 +169,7 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGam
     if (attackTimer > 3.4) {
       final jx = sin(attackTimer * 90) * 3;
       final jy = cos(attackTimer * 70) * 3;
-      final glitchPaint = Paint()..color = const Color(0xFFFF3FA4).withOpacity(0.85);
+      final glitchPaint = Paint()..color = const Color(0xFFFF3FA4).withValues(alpha: 0.85);
       canvas.drawRect(Rect.fromLTWH(jx - 6, 6 + jy, 16, 6), glitchPaint);
       canvas.drawRect(Rect.fromLTWH(size.x + jx - 10, size.y - 14 + jy, 16, 6), glitchPaint);
     }
@@ -204,7 +205,7 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGam
 }
 
 /// A glowing packet of stolen bandwidth aimed at Broskie.
-class DataBolt extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class DataBolt extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   final Vector2 velocity;
   double lifetime = 4.0;
   double pulse = 0;
@@ -236,11 +237,11 @@ class DataBolt extends PositionComponent with HasGameRef<BroskieGame>, Collision
 
   @override
   void render(Canvas canvas) {
-    final glow = Paint()..color = Colors.magentaAccent.withOpacity(0.9);
+    final glow = Paint()..color = BroskieColors.magenta.withValues(alpha: 0.9);
     final core = Paint()..color = Colors.white;
     final radius = 7 + sin(pulse) * 1.5;
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius + 3, glow..color = glow.color.withOpacity(0.35));
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius, glow..color = Colors.magentaAccent);
+    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius + 3, glow..color = glow.color.withValues(alpha: 0.35));
+    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius, glow..color = BroskieColors.magenta);
     canvas.drawCircle(Offset(size.x / 2, size.y / 2), 2.5, core);
   }
 }

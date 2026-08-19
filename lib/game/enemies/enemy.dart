@@ -1,11 +1,11 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/effects/kill_burst.dart';
 import 'package:broskie_game/game/haptics.dart';
 import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/audio_manager.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
 abstract class Enemy extends SpriteAnimationComponent with CollisionCallbacks {
   Enemy({required Vector2 position, required Vector2 size}) : super(position: position, size: size) {
@@ -30,7 +30,7 @@ abstract class Enemy extends SpriteAnimationComponent with CollisionCallbacks {
   }
 }
 
-class GrumpyBrick extends Enemy with HasGameRef<BroskieGame> {
+class GrumpyBrick extends Enemy with HasGameReference<BroskieGame> {
   double walkAnim = 0;
   final double patrolRange;
   late final double _spawnX;
@@ -115,11 +115,11 @@ class GrumpyBrick extends Enemy with HasGameRef<BroskieGame> {
     canvas.drawRect(rect, darkOutline);
 
     // Angry Brows & Eyes
-    canvas.drawRect(const Rect.fromLTWH(6, 8, 7, 7), eyePaint);
-    canvas.drawRect(const Rect.fromLTWH(19, 8, 7, 7), eyePaint);
+    canvas.drawRect(const const Rect.fromLTWH(6, 8, 7, 7), eyePaint);
+    canvas.drawRect(const const Rect.fromLTWH(19, 8, 7, 7), eyePaint);
 
-    canvas.drawRect(const Rect.fromLTWH(8, 10, 3, 4), pupilPaint);
-    canvas.drawRect(const Rect.fromLTWH(21, 10, 3, 4), pupilPaint);
+    canvas.drawRect(const const Rect.fromLTWH(8, 10, 3, 4), pupilPaint);
+    canvas.drawRect(const const Rect.fromLTWH(21, 10, 3, 4), pupilPaint);
 
     // Angry eyebrows angled down
     canvas.drawLine(const Offset(4, 6), const Offset(14, 10), darkOutline);

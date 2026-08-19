@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 class ShopOverlay extends StatefulWidget {
   final BroskieGame game;
@@ -29,10 +30,10 @@ class _ShopOverlayState extends State<ShopOverlay> {
         width: 360,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.95),
-          border: Border.all(color: Colors.magentaAccent, width: 4),
+          color: Colors.black.withValues(alpha: 0.95),
+          border: Border.all(color: BroskieColors.magenta, width: 4),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Colors.magentaAccent, blurRadius: 15)],
+          boxShadow: const [BoxShadow(color: BroskieColors.magenta, blurRadius: 15)],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -50,10 +51,10 @@ class _ShopOverlayState extends State<ShopOverlay> {
             ),
             const Divider(color: Colors.white24, height: 20),
 
-            // Item 1: Shadow Broskie Skin
+            // Item 1: the golden 2x4
             _buildShopItem(
               title: "Juggernaut Volt-Cola",
-              description: "Size up + golden aura + absorbs one hit
+              description: "Size up + golden aura + absorbs one hit",
               cost: 100,
               icon: Icons.shield,
               onBuy: () => _tryBuy(100, () => widget.game.player.grow(PowerUpType.juggernaut)),
@@ -61,10 +62,10 @@ class _ShopOverlayState extends State<ShopOverlay> {
 
             const SizedBox(height: 10),
 
-            // Item 2: Boomerang Piercing Upgrade
+            // Item 2: the cyan thunder
             _buildShopItem(
               title: "Shockwave Volt-Cola",
-              description: "Size up + cyan aura + absorbs one hit
+              description: "Size up + cyan aura + absorbs one hit",
               cost: 150,
               icon: Icons.disc_full,
               onBuy: () => _tryBuy(150, () => widget.game.player.grow(PowerUpType.shockwave)),

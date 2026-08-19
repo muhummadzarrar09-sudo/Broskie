@@ -1,14 +1,14 @@
 import 'dart:math';
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
 enum DebuffType { slow, lowJump, invertedControls, noDash }
 
-class HaterCloud extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class HaterCloud extends SpriteComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   double timer = 0;
   double hoverTime = 0;
   final double attackInterval = 3.0;

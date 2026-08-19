@@ -30,7 +30,7 @@ TextStyle broskieHeadline({
 /// Kit border: 3px chunky, radius never above 8.
 BoxDecoration broskiePanel({Color border = BroskieColors.cyan, Color background = Colors.black}) {
   return BoxDecoration(
-    color: background.withOpacity(0.92),
+    color: background.withValues(alpha: 0.92),
     border: Border.all(color: border, width: 3),
     borderRadius: BorderRadius.circular(8),
   );
@@ -44,7 +44,7 @@ class ScanlinesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black.withOpacity(opacity);
+    final paint = Paint()..color = Colors.black.withValues(alpha: opacity);
     for (double y = 0; y < size.height; y += 3) {
       canvas.drawRect(Rect.fromLTWH(0, y, size.width, 1), paint);
     }
@@ -114,7 +114,7 @@ class PixelVinylPainter extends CustomPainter {
     final r = size.width / 2;
     canvas.drawCircle(c, r, Paint()..color = Colors.black);
     canvas.drawCircle(c, r, Paint()
-      ..color = BroskieColors.bone.withOpacity(0.35)
+      ..color = BroskieColors.bone.withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1);
     canvas.drawCircle(c, r * 0.42, Paint()..color = BroskieColors.magenta);

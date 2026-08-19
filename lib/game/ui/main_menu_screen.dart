@@ -1,7 +1,7 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:flutter/material.dart';
 
 class MainMenuOverlay extends StatefulWidget {
   final BroskieGame game;
@@ -86,7 +86,7 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.black.withOpacity(0.35), Colors.black.withOpacity(0.62)],
+                      colors: [Colors.black.withValues(alpha: 0.35), Colors.black.withValues(alpha: 0.62)],
                     ),
                   ),
                 ),
@@ -206,7 +206,7 @@ class _MenuRainPainter extends CustomPainter {
       final x = seedX * size.width + seedLean * cycle * size.height;
       final y = cycle * size.height * 1.1 - size.height * 0.05;
 
-      paint.color = (i % 9 == 0 ? const Color(0xFF00E5FF) : Colors.white).withOpacity(brightness);
+      paint.color = (i % 9 == 0 ? const Color(0xFF00E5FF) : Colors.white).withValues(alpha: brightness);
       canvas.drawLine(Offset(x, y), Offset(x - seedLean * 14, y - 13), paint);
     }
   }

@@ -20,7 +20,7 @@ class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTicker
 
   void _startScrolling() async {
     while (mounted) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
       if (_scrollController.hasClients) {
         await _scrollController.animateTo(
@@ -46,7 +46,7 @@ class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTicker
       alignment: Alignment.bottomCenter,
       child: Container(
         height: 30,
-        color: Colors.red.withOpacity(0.8),
+        color: Colors.red.withValues(alpha: 0.8),
         child: ListView(
           controller: _scrollController,
           scrollDirection: Axis.horizontal,

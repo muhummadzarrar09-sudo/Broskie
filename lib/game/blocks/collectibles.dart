@@ -1,13 +1,13 @@
 import 'dart:math';
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class DataBitCoin extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class DataBitCoin extends SpriteComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   double floatTimer = 0;
   final int value;
 
@@ -31,8 +31,8 @@ class DataBitCoin extends SpriteComponent with HasGameRef<BroskieGame>, Collisio
     }
     super.onCollision(intersectionPoints, other);
   }
-
-  @override
+@override
+  // ignore: must_call_super — we paint the whole sprite ourselves
   void render(Canvas canvas) {
     // DATA-VINYL: a tiny black 7-inch, magenta label, bone spindle hole.
     // Underground crews trade records, not coins.
@@ -42,7 +42,7 @@ class DataBitCoin extends SpriteComponent with HasGameRef<BroskieGame>, Collisio
         c,
         8.5,
         Paint()
-          ..color = BroskieColors.bone.withOpacity(0.22)
+          ..color = BroskieColors.bone.withValues(alpha: 0.22)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5); // groove sheen
     canvas.drawCircle(c, 4.5, Paint()..color = BroskieColors.magenta);

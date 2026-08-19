@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:flutter/material.dart';
 
 class TouchControlsOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -24,7 +24,7 @@ class TouchControlsOverlay extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     border: Border.all(color: const Color(0xFF00E5FF), width: 3),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -40,7 +40,7 @@ class TouchControlsOverlay extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     border: Border.all(color: const Color(0xFF00E5FF), width: 3),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -64,7 +64,7 @@ class TouchControlsOverlay extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.pinkAccent.withOpacity(0.8),
+                    color: Colors.pinkAccent.withValues(alpha: 0.8),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
                     boxShadow: const [BoxShadow(color: Colors.pink, blurRadius: 8)],
@@ -83,7 +83,7 @@ class TouchControlsOverlay extends StatelessWidget {
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.9),
+                    color: Colors.amber.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
                     boxShadow: const [BoxShadow(color: Colors.amber, blurRadius: 10)],

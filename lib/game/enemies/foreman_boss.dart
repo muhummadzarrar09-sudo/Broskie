@@ -1,14 +1,14 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/haptics.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
 enum BossPhase { chilling, mad, berserk }
 
-class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   BossPhase phase = BossPhase.chilling;
   int health = 6;
   static const int maxHealth = 6;

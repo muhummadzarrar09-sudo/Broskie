@@ -1,12 +1,12 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/world4/hater_cloud.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class AuditorEnemy extends SpriteAnimationComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class AuditorEnemy extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   double attackTimer = 0;
   final double attackCooldown = 4.0;
   final double effectRange = 420;
@@ -65,8 +65,8 @@ class AuditorEnemy extends SpriteAnimationComponent with HasGameRef<BroskieGame>
     final icePaint = Paint()..color = Colors.cyanAccent;
 
     // Auditor Suit
-    canvas.drawRect(Rect.fromLTWH(8, 16, 32, 40), suitPaint);
-    canvas.drawRect(const Rect.fromLTWH(12, 4, 24, 16), icePaint); // Frozen Head
-    canvas.drawRect(const Rect.fromLTWH(16, 12, 16, 4), Paint()..color = Colors.white); // Sunglasses
+    canvas.drawRect(const Rect.fromLTWH(8, 16, 32, 40), suitPaint);
+    canvas.drawRect(const const Rect.fromLTWH(12, 4, 24, 16), icePaint); // Frozen Head
+    canvas.drawRect(const const Rect.fromLTWH(16, 12, 16, 4), Paint()..color = Colors.white); // Sunglasses
   }
 }

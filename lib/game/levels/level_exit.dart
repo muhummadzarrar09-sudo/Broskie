@@ -1,11 +1,11 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class LevelExit extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class LevelExit extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   /// When provided, the portal stays locked while this returns true
   /// (e.g. Stage 4: both executives must be defeated first).
   final bool Function()? lockCondition;
@@ -57,7 +57,7 @@ class LevelExit extends PositionComponent with HasGameRef<BroskieGame>, Collisio
 
     // Unlocked portals thump on the beat — the door IS the drop.
     final glow = locked ? 0.45 : 0.55 + 0.45 * gameRef.beatPulse;
-    canvas.drawRect(rect, portalPaint.withOpacity(glow));
+    canvas.drawRect(rect, Paint()..color = portalPaint.color.withValues(alpha: glow));
     canvas.drawRect(rect, borderPaint);
 
     // Locked portals carry the corporate seal: a barcode customs strip.

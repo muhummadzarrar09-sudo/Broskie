@@ -9,7 +9,7 @@ import 'package:broskie_game/game/broskie_game.dart';
 ///
 /// If the image fails to load the component renders nothing and the
 /// parallax sky remains visible, so stages always have a background.
-class StageBackdrop extends PositionComponent with HasGameRef<BroskieGame> {
+class StageBackdrop extends PositionComponent with HasGameReference<BroskieGame> {
   static const double tileHeight = 700;
   static const double groundBottom = 600;
 
@@ -35,14 +35,14 @@ class StageBackdrop extends PositionComponent with HasGameRef<BroskieGame> {
   }
 
   @override
-  void render(Canvas canvas) {
+  void render(ui.Canvas canvas) {
     final img = _image;
     if (img == null) return;
     final tileWidth = img.width * (tileHeight / img.height);
-    final src = Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
-    final paint = Paint()..filterQuality = FilterQuality.low;
+    final src = ui.Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
+    final paint = ui.Paint()..filterQuality = ui.FilterQuality.low;
     for (double x = 0; x < size.x; x += tileWidth) {
-      canvas.drawImageRect(img, src, Rect.fromLTWH(x, 0, tileWidth, tileHeight), paint);
+      canvas.drawImageRect(img, src, ui.Rect.fromLTWH(x, 0, tileWidth, tileHeight), paint);
     }
   }
 }

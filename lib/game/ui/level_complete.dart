@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 class LevelCompleteOverlay extends StatelessWidget {
   final int coins;
@@ -32,10 +32,10 @@ class LevelCompleteOverlay extends StatelessWidget {
         width: 320,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.92),
+          color: Colors.black.withValues(alpha: 0.92),
           border: Border.all(color: Colors.amber, width: 4),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: _rankColor.withOpacity(0.6), blurRadius: 24)],
+          boxShadow: [BoxShadow(color: _rankColor.withValues(alpha: 0.6), blurRadius: 24)],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -59,7 +59,7 @@ class LevelCompleteOverlay extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: _rankColor, width: 5),
-                  boxShadow: [BoxShadow(color: _rankColor.withOpacity(0.5), blurRadius: 18)],
+                  boxShadow: [BoxShadow(color: _rankColor.withValues(alpha: 0.5), blurRadius: 18)],
                 ),
                 child: Center(
                   child: Text(
@@ -118,7 +118,7 @@ class _GoldRecordBadge extends StatelessWidget {
         ),
         border: Border.all(color: const Color(0xFFFFF3C4), width: 2),
         boxShadow: [
-          BoxShadow(color: BroskieColors.amber.withOpacity(0.75), blurRadius: 26, spreadRadius: 2),
+          BoxShadow(color: BroskieColors.amber.withValues(alpha: 0.75), blurRadius: 26, spreadRadius: 2),
         ],
       ),
       child: Center(
@@ -128,7 +128,7 @@ class _GoldRecordBadge extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.black,
-            border: Border.all(color: BroskieColors.bone.withOpacity(0.6), width: 1.5),
+            border: Border.all(color: BroskieColors.bone.withValues(alpha: 0.6), width: 1.5),
           ),
           child: const Center(
             child: Text(

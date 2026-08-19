@@ -83,7 +83,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.8),
+                        color: Colors.black.withValues(alpha: 0.8),
                         border: Border.all(color: const Color(0xFF00E5FF), width: 2),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -130,7 +130,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.8),
+                            color: Colors.black.withValues(alpha: 0.8),
                             border: Border.all(color: Colors.amber, width: 2),
                             borderRadius: BorderRadius.circular(8),
                           ),

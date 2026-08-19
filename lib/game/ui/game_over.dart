@@ -25,7 +25,7 @@ class GameOverOverlay extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.red,
                   fontSize: 80,
-                  fontWeight: FontWeight.black,
+                  fontWeight: FontWeight.w900,
                   fontFamily: 'Impact',
                 ),
               ),

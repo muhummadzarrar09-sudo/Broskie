@@ -1,12 +1,12 @@
 import 'dart:math';
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
 // Moving Platform (Horizontal or Vertical)
-class MovingPlatform extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class MovingPlatform extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   final Vector2 startPos;
   final Vector2 targetPos;
   final double speed;
@@ -36,7 +36,10 @@ class MovingPlatform extends PositionComponent with HasGameRef<BroskieGame>, Col
       direction = 1;
     }
 
-    position = Vector2.zero()..setFrom(startPos).lerp(targetPos, progress);
+    position = Vector2(
+      startPos.x + (targetPos.x - startPos.x) * progress,
+      startPos.y + (targetPos.y - startPos.y) * progress,
+    );
   }
 
   @override
@@ -48,7 +51,7 @@ class MovingPlatform extends PositionComponent with HasGameRef<BroskieGame>, Col
 }
 
 // Crumbling Platform (Collapses 1s after player steps on it)
-class CrumblingPlatform extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class CrumblingPlatform extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isStepped = false;
   double timer = 0;
 
@@ -88,7 +91,7 @@ class CrumblingPlatform extends PositionComponent with HasGameRef<BroskieGame>, 
 }
 
 // Laser Hazard (Pulsing deadly laser barrier)
-class LaserHazard extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class LaserHazard extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isActive = true;
   double pulseTimer = 0;
 
@@ -117,7 +120,7 @@ class LaserHazard extends PositionComponent with HasGameRef<BroskieGame>, Collis
     if (!isActive) return;
 
     final rect = size.toRect();
-    canvas.drawRect(rect, Paint()..color = Colors.redAccent.withOpacity(0.8));
+    canvas.drawRect(rect, Paint()..color = Colors.redAccent.withValues(alpha: 0.8));
     canvas.drawRect(rect, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
 
     // Sparkling electrical particles
@@ -129,7 +132,7 @@ class LaserHazard extends PositionComponent with HasGameRef<BroskieGame>, Collis
 }
 
 // Data Spikes Hazard
-class DataSpike extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class DataSpike extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   DataSpike({required Vector2 position, required Vector2 size}) : super(position: position, size: size) {
     add(RectangleHitbox());
   }

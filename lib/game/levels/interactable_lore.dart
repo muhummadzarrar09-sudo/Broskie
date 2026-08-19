@@ -1,10 +1,10 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class InteractableLore extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class InteractableLore extends SpriteComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   final String text;
   final String speaker;
   bool _hasTriggered = false;
@@ -42,7 +42,7 @@ class InteractableLore extends SpriteComponent with HasGameRef<BroskieGame>, Col
     final screenPaint = Paint()..color = const Color(0xFF00E5FF);
 
     canvas.drawRect(rect, terminalPaint);
-    canvas.drawRect(const Rect.fromLTWH(4, 4, 24, 24), screenPaint);
+    canvas.drawRect(const const Rect.fromLTWH(4, 4, 24, 24), screenPaint);
 
     // Terminal blinking cursor / icon
     final textPainter = TextPainter(

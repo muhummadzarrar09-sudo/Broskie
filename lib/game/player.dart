@@ -1,19 +1,20 @@
 import 'dart:math';
-import 'package:flame/components.dart';
+import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/blocks/hazards.dart';
+import 'package:broskie_game/game/blocks/interactable_block.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/haptics.dart';
+import 'package:broskie_game/game/weapons/vinyl_boomerang.dart';
+import 'package:broskie_game/game/world4/hater_cloud.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:broskie_game/game/broskie_game.dart';
-import 'package:broskie_game/game/audio_manager.dart';
-import 'package:broskie_game/game/haptics.dart';
-import 'package:broskie_game/game/blocks/interactable_block.dart';
-import 'package:broskie_game/game/world4/hater_cloud.dart';
-import 'package:broskie_game/game/weapons/vinyl_boomerang.dart';
 
 enum PowerUpType { none, classic, juggernaut, shockwave }
 enum PlayerState { idle, walking, running, jumping, falling, vaulting }
 
-class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<BroskieGame>, CollisionCallbacks {
+class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameReference<BroskieGame>, CollisionCallbacks {
   // Game-feel tuning
   static const double _jumpBufferTime = 0.12;
   static const double _coyoteTime = 0.10;
@@ -226,7 +227,9 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     }
 
     // Update Particles
-    particles.forEach((p) => p.update(dt));
+    for (final p in particles) {
+      p.update(dt);
+    }
     particles.removeWhere((p) => p.isDead);
 
     position += velocity * dt;
@@ -420,7 +423,9 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
   @override
   void render(Canvas canvas) {
     // Render Particles
-    particles.forEach((p) => p.render(canvas, position));
+    for (final p in particles) {
+      p.render(canvas, position);
+    }
 
     if (isInvulnerable && (invulnerableTimer * 12).toInt() % 2 == 0) {
       return;
@@ -521,8 +526,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     // Aura Powerup Effects
     if (currentPower != PowerUpType.none) {
       final auraColor = currentPower == PowerUpType.juggernaut
-          ? const Color(0xFFFFD700).withOpacity(0.5)
-          : const Color(0xFF00E5FF).withOpacity(0.5);
+          ? const Color(0xFFFFD700).withValues(alpha: 0.5)
+          : const Color(0xFF00E5FF).withValues(alpha: 0.5);
       canvas.drawCircle(Offset(w / 2, h / 2 + 8), w * 0.8, Paint()..color = auraColor);
     }
   }
@@ -546,7 +551,7 @@ class PixelParticle {
 
   void render(Canvas canvas, Vector2 playerPos) {
     double alpha = (1.0 - age / lifetime).clamp(0.0, 1.0);
-    final paint = Paint()..color = color.withOpacity(alpha);
+    final paint = Paint()..color = color.withValues(alpha: alpha);
     canvas.drawRect(Rect.fromLTWH(position.x - playerPos.x, position.y - playerPos.y, 3, 3), paint);
   }
 }

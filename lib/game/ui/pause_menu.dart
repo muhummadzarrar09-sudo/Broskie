@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
+import 'package:flutter/material.dart';
 
 class PauseMenuOverlay extends StatelessWidget {
   final BroskieGame game;
@@ -15,7 +15,7 @@ class PauseMenuOverlay extends StatelessWidget {
         width: 320,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.95),
+          color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: const Color(0xFF00E5FF), width: 4),
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)],
@@ -63,7 +63,7 @@ class PauseMenuOverlay extends StatelessWidget {
             // Open Shop
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.magentaAccent,
+                backgroundColor: BroskieColors.magenta,
                 minimumSize: const Size(double.infinity, 45),
               ),
               onPressed: () {

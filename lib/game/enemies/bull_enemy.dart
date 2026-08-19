@@ -1,13 +1,13 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
+import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/effects/kill_burst.dart';
 import 'package:broskie_game/game/haptics.dart';
 import 'package:broskie_game/game/player.dart';
-import 'package:broskie_game/game/audio_manager.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class WallStreetBull extends SpriteAnimationComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class WallStreetBull extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isCharging = false;
   bool isDizzy = false;
   double patrolSpeed = 60;
@@ -132,23 +132,23 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameRef<BroskieGam
     }
 
     // Bull Body
-    canvas.drawRect(Rect.fromLTWH(12, 12, 44, 28), bullBody);
-    canvas.drawRect(const Rect.fromLTWH(0, 16, 16, 20), bullBody); // Head
+    canvas.drawRect(const Rect.fromLTWH(12, 12, 44, 28), bullBody);
+    canvas.drawRect(const const Rect.fromLTWH(0, 16, 16, 20), bullBody); // Head
 
     // Gold Horns
-    canvas.drawRect(const Rect.fromLTWH(2, 4, 6, 14), hornPaint);
-    canvas.drawRect(const Rect.fromLTWH(8, 2, 4, 16), hornPaint);
+    canvas.drawRect(const const Rect.fromLTWH(2, 4, 6, 14), hornPaint);
+    canvas.drawRect(const const Rect.fromLTWH(8, 2, 4, 16), hornPaint);
 
     // Eyes
-    canvas.drawRect(const Rect.fromLTWH(4, 20, 5, 5), eyePaint);
+    canvas.drawRect(const const Rect.fromLTWH(4, 20, 5, 5), eyePaint);
 
     // Snort Nose Ring
     canvas.drawCircle(const Offset(2, 28), 3, Paint()..color = Colors.amber);
 
     // Legs
     final legPaint = Paint()..color = Colors.black;
-    canvas.drawRect(const Rect.fromLTWH(16, 40, 6, 8), legPaint);
-    canvas.drawRect(const Rect.fromLTWH(44, 40, 6, 8), legPaint);
+    canvas.drawRect(const const Rect.fromLTWH(16, 40, 6, 8), legPaint);
+    canvas.drawRect(const const Rect.fromLTWH(44, 40, 6, 8), legPaint);
 
     // Dizzy Stars Above Head
     if (isDizzy) {
