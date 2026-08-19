@@ -30,3 +30,7 @@ android/gradlew.bat
 # Arena smoke-test harness (local preview only — not a build input)
 tools/smoke/
 /index.html
+
+# sandbox-side upload shields
+arena/files/
+download_response_body*

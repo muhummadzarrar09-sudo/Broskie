@@ -8,6 +8,11 @@ import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Tests run the game headless: there is no GameWidget, so Flame has no
+/// overlay builders registered. Muting keeps overlay calls as no-ops while
+/// every notifier (bossBar, hp, screenFlash) stays fully observable.
+BroskieGame createMutedGame() => BroskieGame()..overlaysMuted = true;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -20,7 +25,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'boots stage 1 with a player, floors and an exit',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 
@@ -34,7 +39,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'restart rebuilds the stage and restores hearts',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 
@@ -51,7 +56,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'falling off the world costs a heart and respawns the player',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 
@@ -66,7 +71,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'advanceStage moves to the next stage, unlocks it and rebuilds',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 
@@ -83,7 +88,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'checkpoints move the respawn point',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 
@@ -99,7 +104,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'the stage 4 exit stays locked until both executives are down',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 
@@ -150,7 +155,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'hit-stop freezes stage time, then releases it',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 
@@ -165,7 +170,7 @@ void main() {
 
   testWithGame<BroskieGame>(
     'boss bar and screen flash have a clean lifecycle',
-    BroskieGame.new,
+    createMutedGame,
     (game) async {
       await game.ready();
 

@@ -246,7 +246,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
 
     // Crane Arm & Wrecking Ball
     final chainPaint = Paint()..color = Colors.grey..strokeWidth = 3;
-    canvas.drawLine(Offset(20 * scaleX, 30), Offset(-10, -10), chainPaint);
+    canvas.drawLine(Offset(20 * scaleX, 30), const Offset(-10, -10), chainPaint);
     canvas.drawCircle(const Offset(-10, 15), 14, Paint()..color = Colors.black); // Wrecking ball
 
     canvas.restore();

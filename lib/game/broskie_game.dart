@@ -98,15 +98,30 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     BroskieAudio.playGlitch();
     triggerScreenShake(intensity: 0.5);
     if (hapticsEnabled.value) BroskieHaptics.medium();
-    overlays.add('BossCard');
+    _showOverlay('BossCard');
   }
 
   void hideBossCard() {
-    overlays.remove('BossCard');
+    _hideOverlay('BossCard');
+  }
+
+  /// When true, every overlay request becomes a no-op. Unit tests run the
+  /// game headless — no GameWidget, so no overlay builders are registered and
+  /// Flame would assert on add. Production leaves this off.
+  bool overlaysMuted = false;
+
+  void _showOverlay(String name) {
+    if (overlaysMuted) return;
+    overlays.add(name);
+  }
+
+  void _hideOverlay(String name) {
+    if (overlaysMuted) return;
+    overlays.remove(name);
   }
 
   void hideStageBanner() {
-    overlays.remove('StageBanner');
+    _hideOverlay('StageBanner');
   }
 
   // ——— Boss HUD nameplate bar (fighting-game style) ———
@@ -116,7 +131,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   void showBossBar(String name) {
     bossBarName = name;
     bossBar.value = 1;
-    overlays.add('BossBar');
+    _showOverlay('BossBar');
   }
 
   void updateBossBar(double fraction) {
@@ -124,7 +139,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void hideBossBar() {
-    overlays.remove('BossBar');
+    _hideOverlay('BossBar');
     bossBar.value = -1;
   }
 
@@ -260,7 +275,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   /// Main menu / stage select entry point.
   void startRun(int stage) {
     currentStage.value = max(1, min(4, stage));
-    overlays.remove('MainMenu');
+    _hideOverlay('MainMenu');
     restart();
   }
 
@@ -268,16 +283,16 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     isPaused = !isPaused;
     if (isPaused) {
       pauseEngine();
-      overlays.add('PauseMenu');
+      _showOverlay('PauseMenu');
     } else {
-      overlays.remove('PauseMenu');
+      _hideOverlay('PauseMenu');
       resumeEngine();
     }
   }
 
   /// Called by the LevelComplete overlay's NEXT LEVEL button.
   void advanceStage() {
-    overlays.remove('LevelComplete');
+    _hideOverlay('LevelComplete');
     if (currentStage.value < 4) {
       currentStage.value++;
       if (currentStage.value > unlockedStage.value) {
@@ -288,7 +303,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     } else {
       savePrefs();
       pauseEngine();
-      overlays.add('Victory');
+      _showOverlay('Victory');
     }
   }
 
@@ -303,7 +318,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     // Stage theme swap (the boot build sits silently paused behind the menu).
     if (!overlays.isActive('MainMenu')) {
       BroskieAudio.playStageTheme(currentStage.value);
-      overlays.add('StageBanner');
+      _showOverlay('StageBanner');
     }
 
     if (currentStage.value == 1) {
@@ -457,7 +472,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   void triggerGameOver() {
     triggerScreenShake(intensity: 1.5);
     pauseEngine();
-    overlays.add('GameOver');
+    _showOverlay('GameOver');
   }
 
   void triggerLevelComplete() {
@@ -474,28 +489,28 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       BroskieAudio.playStageComplete();
     }
     pauseEngine();
-    overlays.add('LevelComplete');
+    _showOverlay('LevelComplete');
   }
 
   void showDialogue(String speaker, String text) {
     activeSpeaker = speaker;
     activeDialogue = text;
-    overlays.add('Dialogue');
+    _showOverlay('Dialogue');
   }
 
   void hideDialogue() {
-    overlays.remove('Dialogue');
+    _hideOverlay('Dialogue');
   }
 
   void restart() {
-    overlays.remove('GameOver');
-    overlays.remove('LevelComplete');
-    overlays.remove('Dialogue');
-    overlays.remove('PauseMenu');
-    overlays.remove('Shop');
-    overlays.remove('Victory');
-    overlays.remove('BossCard');
-    overlays.remove('StageBanner');
+    _hideOverlay('GameOver');
+    _hideOverlay('LevelComplete');
+    _hideOverlay('Dialogue');
+    _hideOverlay('PauseMenu');
+    _hideOverlay('Shop');
+    _hideOverlay('Victory');
+    _hideOverlay('BossCard');
+    _hideOverlay('StageBanner');
     hideBossBar();
     screenFlash.value = 0;
 
