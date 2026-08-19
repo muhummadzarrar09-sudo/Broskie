@@ -183,10 +183,13 @@ class BroskieGame extends FlameGame
 
   @override
   void update(double dt) {
-    // Hit-stop window: the whole world holds its breath for the impact.
+    // Hit-stop window: only the frozen share of dt is consumed; the spill
+    // rolls into the world on the frame the freeze burns through.
     if (_hitStopTimer > 0) {
       _hitStopTimer -= dt;
-      return;
+      if (_hitStopTimer > 0) return; // still frozen solid
+      dt = -_hitStopTimer; // thawed mid-frame: pass the unfrozen slice down
+      _hitStopTimer = 0;
     }
     stageTime += dt;
     if (screenFlash.value > 0) {
