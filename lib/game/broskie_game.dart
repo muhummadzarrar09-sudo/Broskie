@@ -1,40 +1,160 @@
 import 'dart:math';
-import 'package:flame/game.dart';
-import 'package:flame/components.dart';
-import 'package:flame/parallax.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flame/game.dart';
 import 'package:flame/input.dart';
+import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'player.dart';
-import 'blocks/interactable_block.dart';
-import 'blocks/hazards.dart';
+import 'audio_manager.dart';
+import 'blocks/checkpoint.dart';
 import 'blocks/collectibles.dart';
-import 'enemies/enemy.dart';
+import 'blocks/hazards.dart';
+import 'blocks/interactable_block.dart';
 import 'enemies/bull_enemy.dart';
-import 'enemies/foreman_boss.dart';
 import 'enemies/data_broker_boss.dart';
+import 'enemies/enemy.dart';
+import 'enemies/foreman_boss.dart';
+import 'haptics.dart';
+import 'levels/boss_intro_trigger.dart';
 import 'levels/interactable_lore.dart';
 import 'levels/level_exit.dart';
+import 'player.dart';
+import 'stage_backdrop.dart';
 import 'world2/propaganda_sign.dart';
 import 'world4/hater_cloud.dart';
 import 'world5/auditor_enemy.dart';
 
-class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
+class BroskieGame extends FlameGame
+    with HasKeyboardHandlerComponents, HasCollisionDetection {
   late Player player;
-  final WidgetRef ref;
+  final WidgetRef? ref;
 
-  int currentStage = 1; // 1, 2, 3, 4
+  // Live HUD state: overlays listen to these and rebuild on change.
+  final ValueNotifier<int> currentStage = ValueNotifier(1); // 1..4
+  final ValueNotifier<int> scoreCoins = ValueNotifier(0);
+  final ValueNotifier<int> hp = ValueNotifier(maxHp);
+  static const int maxHp = 3;
+
+  // Crew settings + campaign progression (persisted on-device).
+  final ValueNotifier<int> unlockedStage = ValueNotifier(1);
+  final ValueNotifier<bool> sfxEnabled = ValueNotifier(true);
+  final ValueNotifier<bool> musicEnabled = ValueNotifier(true);
+  final ValueNotifier<bool> touchControlsEnabled = ValueNotifier(true);
+  final ValueNotifier<bool> hapticsEnabled = ValueNotifier(true);
+  final ValueNotifier<double> shakeScale = ValueNotifier(1.0);
+
   String activeSpeaker = 'BROSKIE CORP';
   String activeDialogue = '';
-  int scoreCoins = 0;
   int enemiesDefeated = 0;
   bool isPaused = false;
 
+  // Stage performance tracking for ranks + persistence.
+  double stageTime = 0;
+  String lastRank = 'C';
+  final Map<int, int> bestRanks = {}; // stage -> 1=C, 2=B, 3=A, 4=S
+
+  // Juice state.
+  double _hitStopTimer = 0;
+
+  // Boss intro card state (read by the BossCard overlay).
+  String bossCardName = '';
+  String bossCardTitle = '';
+  String bossCardArt = '';
+
+  // Stage presentation registry (read by the StageBanner overlay).
+  static const Map<int, (String, String)> stageInfo = {
+    1: ('THE GREY ZONE', 'UNAUTHORIZED INDIVIDUALITY'),
+    2: ('NEON SLUMS', 'TERMS AND CONDITIONS APPLY'),
+    3: ('THE EXCHANGE', 'MARKET HOSTILITY'),
+    4: ('EXECUTIVE ARENA', 'GOING LIVE'),
+  };
+  static const Map<int, int> stageAccents = {
+    1: 0xFF00E5FF,
+    2: 0xFFFF3FA4,
+    3: 0xFFF2F2F2,
+    4: 0xFFFFB800,
+  };
+
+  /// The world dances to its own chiptune: sharp 0..1 spike on every beat.
+  static const Map<int, int> stageBpm = {1: 92, 2: 112, 3: 128, 4: 140};
+  double get beatPulse {
+    final bpm = stageBpm[currentStage.value] ?? 100;
+    final phase = (stageTime * bpm / 60) % 1.0;
+    final t = 1 - phase;
+    return t * t;
+  }
+
+  /// 60-90ms freeze frame — this is why actions feel expensive.
+  void hitStop([double seconds = 0.07]) {
+    _hitStopTimer = max(_hitStopTimer, seconds);
+  }
+
+  void showBossCard(String name, String title, String artFile) {
+    bossCardName = name;
+    bossCardTitle = title;
+    bossCardArt = artFile;
+    BroskieAudio.playGlitch();
+    triggerScreenShake(intensity: 0.5);
+    if (hapticsEnabled.value) BroskieHaptics.medium();
+    _showOverlay('BossCard');
+  }
+
+  void hideBossCard() {
+    _hideOverlay('BossCard');
+  }
+
+  /// When true, every overlay request becomes a no-op. Unit tests run the
+  /// game headless — no GameWidget, so no overlay builders are registered and
+  /// Flame would assert on add. Production leaves this off.
+  bool overlaysMuted = false;
+
+  void _showOverlay(String name) {
+    if (overlaysMuted) return;
+    overlays.add(name);
+  }
+
+  void _hideOverlay(String name) {
+    if (overlaysMuted) return;
+    overlays.remove(name);
+  }
+
+  void hideStageBanner() {
+    _hideOverlay('StageBanner');
+  }
+
+  // ——— Boss HUD nameplate bar (fighting-game style) ———
+  final ValueNotifier<double> bossBar = ValueNotifier(-1); // < 0 = hidden
+  String bossBarName = '';
+
+  void showBossBar(String name) {
+    bossBarName = name;
+    bossBar.value = 1;
+    _showOverlay('BossBar');
+  }
+
+  void updateBossBar(double fraction) {
+    bossBar.value = fraction.clamp(0.0, 1.0);
+  }
+
+  void hideBossBar() {
+    _hideOverlay('BossBar');
+    bossBar.value = -1;
+  }
+
+  // ——— Screen flash: the white frame on the killing blow ———
+  final ValueNotifier<double> screenFlash = ValueNotifier(0);
+
+  void triggerScreenFlash([double peak = 0.85]) {
+    screenFlash.value = peak;
+  }
+
+  final Vector2 playerSpawn = Vector2(100, 300);
   double shakeIntensity = 0;
 
-  BroskieGame({required this.ref});
+  BroskieGame({this.ref});
 
   @override
   Future<void> onLoad() async {
@@ -49,61 +169,171 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
         baseVelocity: Vector2(20, 0),
         velocityMultiplierDelta: Vector2(1.5, 0),
       );
+      parallax.priority = -100;
       add(parallax);
     } catch (e) {
-      add(ProceduralSkylineParallax());
+      add(ProceduralSkylineParallax()..priority = -100);
     }
 
     _buildCurrentStage();
+
+    // Hold the world behind the main menu until the crew hits RUN IT.
+    pauseEngine();
   }
 
   @override
   void update(double dt) {
+    // Hit-stop window: only the frozen share of dt is consumed; the spill
+    // rolls into the world on the frame the freeze burns through.
+    if (_hitStopTimer > 0) {
+      _hitStopTimer -= dt;
+      if (_hitStopTimer > 0) return; // still frozen solid
+      dt = -_hitStopTimer; // thawed mid-frame: pass the unfrozen slice down
+      _hitStopTimer = 0;
+    }
+    stageTime += dt;
+    if (screenFlash.value > 0) {
+      screenFlash.value = (screenFlash.value - dt * 2.2).clamp(0.0, 1.0);
+    }
     if (shakeIntensity > 0) {
       shakeIntensity -= dt * 10;
       if (shakeIntensity < 0) shakeIntensity = 0;
       double offsetX = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
       double offsetY = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
-      camera.snapTo(Vector2(player.position.x + offsetX, player.position.y + offsetY));
+      camera.viewfinder.position =
+          Vector2(player.position.x + offsetX, player.position.y + offsetY);
     }
     super.update(dt);
   }
 
   void triggerScreenShake({double intensity = 1.0}) {
-    shakeIntensity = intensity;
+    shakeIntensity = intensity * shakeScale.value;
+  }
+
+  // ── Stage ranks (crew bragging rights) ─────────────────────────────────
+  static const Map<int, double> parTimes = {1: 35, 2: 50, 3: 55, 4: 110};
+
+  static String stageRankFor(int stage, int hearts, double seconds) {
+    final par = parTimes[stage] ?? 60;
+    if (hearts >= maxHp && seconds <= par) return 'S';
+    if (hearts >= 2 && seconds <= par * 1.5) return 'A';
+    if (seconds <= par * 2 || hearts >= 2) return 'B';
+    return 'C';
+  }
+
+  static int rankValue(String rank) => switch (rank) {
+        'S' => 4,
+        'A' => 3,
+        'B' => 2,
+        _ => 1,
+      };
+
+  static String rankLabel(int value) => switch (value) {
+        4 => 'S',
+        3 => 'A',
+        2 => 'B',
+        1 => 'C',
+        _ => '—',
+      };
+
+  String bestRankLabelFor(int stage) => rankLabel(bestRanks[stage] ?? 0);
+
+  /// Persist settings + campaign progress locally. Crew build: no accounts,
+  /// no servers — the save lives on the device.
+  Future<void> loadPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      sfxEnabled.value = prefs.getBool('settings_sfx') ?? true;
+      musicEnabled.value = prefs.getBool('settings_music') ?? true;
+      touchControlsEnabled.value = prefs.getBool('settings_touch') ?? true;
+      hapticsEnabled.value = prefs.getBool('settings_haptics') ?? true;
+      shakeScale.value = prefs.getDouble('settings_shake') ?? 1.0;
+      unlockedStage.value = max(1, min(4, prefs.getInt('unlocked_stage') ?? 1));
+      for (var i = 1; i <= 4; i++) {
+        bestRanks[i] = prefs.getInt('rank_stage_$i') ?? 0;
+      }
+      BroskieAudio.setSfx(sfxEnabled.value);
+      BroskieAudio.setMusicEnabled(musicEnabled.value);
+    } catch (_) {}
+  }
+
+  Future<void> savePrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('settings_sfx', sfxEnabled.value);
+      await prefs.setBool('settings_music', musicEnabled.value);
+      await prefs.setBool('settings_touch', touchControlsEnabled.value);
+      await prefs.setBool('settings_haptics', hapticsEnabled.value);
+      await prefs.setDouble('settings_shake', shakeScale.value);
+      await prefs.setInt('unlocked_stage', unlockedStage.value);
+      for (final entry in bestRanks.entries) {
+        await prefs.setInt('rank_stage_${entry.key}', entry.value);
+      }
+    } catch (_) {}
+  }
+
+  /// A checkpoint flag was touched: falls now respawn at the ground point.
+  void setCheckpoint(Vector2 groundPoint) {
+    playerSpawn.setValues(groundPoint.x, groundPoint.y - 48);
+  }
+
+  /// Main menu / stage select entry point.
+  void startRun(int stage) {
+    currentStage.value = max(1, min(4, stage));
+    _hideOverlay('MainMenu');
+    restart();
   }
 
   void togglePause() {
     isPaused = !isPaused;
     if (isPaused) {
       pauseEngine();
-      overlays.add('PauseMenu');
+      _showOverlay('PauseMenu');
     } else {
-      overlays.remove('PauseMenu');
+      _hideOverlay('PauseMenu');
       resumeEngine();
     }
   }
 
+  /// Called by the LevelComplete overlay's NEXT LEVEL button.
   void advanceStage() {
-    if (currentStage < 4) {
-      currentStage++;
+    _hideOverlay('LevelComplete');
+    if (currentStage.value < 4) {
+      currentStage.value++;
+      if (currentStage.value > unlockedStage.value) {
+        unlockedStage.value = currentStage.value;
+      }
+      savePrefs();
       restart();
     } else {
+      savePrefs();
       pauseEngine();
-      overlays.add('Victory');
+      _showOverlay('Victory');
     }
   }
 
   void _buildCurrentStage() {
-    player = Player(position: Vector2(100, 300));
+    // Full stage (re)build always starts Broskie at the stage entrance.
+    playerSpawn.setValues(100, 300);
+    stageTime = 0;
+    player = Player(position: playerSpawn.clone());
     add(player);
     camera.follow(player);
+    // Spawn grace: three heartbeats of mercy before the world gets teeth.
+    player.isInvulnerable = true;
+    player.invulnerableTimer = 3.0;
 
-    if (currentStage == 1) {
+    // Stage theme swap (the boot build sits silently paused behind the menu).
+    if (!overlays.isActive('MainMenu')) {
+      BroskieAudio.playStageTheme(currentStage.value);
+      _showOverlay('StageBanner');
+    }
+
+    if (currentStage.value == 1) {
       _buildStage1GreyZone();
-    } else if (currentStage == 2) {
+    } else if (currentStage.value == 2) {
       _buildStage2NeonSlums();
-    } else if (currentStage == 3) {
+    } else if (currentStage.value == 3) {
       _buildStage3StockExchange();
     } else {
       _buildStage4ExecutiveArena();
@@ -111,26 +341,51 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage1GreyZone() {
+    add(StageBackdrop(
+        imagePath: 'runtime/grey_zone_background.png', levelWidth: 2800));
+
     add(Floor(Vector2(-200, 480), Vector2(3000, 120)));
-    add(InteractableBlock(position: Vector2(300, 340), type: BlockType.mystery));
+    add(InteractableBlock(
+        position: Vector2(300, 340), type: BlockType.mystery));
     add(InteractableBlock(position: Vector2(332, 340), type: BlockType.brick));
     add(DataBitCoin(position: Vector2(500, 380)));
     add(DataBitCoin(position: Vector2(540, 380)));
+    // Hidden stash: hovering above the mystery blocks — climb and grab.
+    add(DataBitCoin(position: Vector2(316, 216)));
+    add(DataBitCoin(position: Vector2(348, 216)));
 
+    // Onboarding trail: one verb per sign, spaced like an arcade attract mode.
     add(InteractableLore(
       position: Vector2(180, 432),
-      speaker: "STAGE 1-1",
-      text: "THE GREY ZONE: Learn to run, jump, and throw Vinyl Boomerangs (J/F)!",
+      speaker: "STREET RULES",
+      text:
+          "MOVE: A/D or ARROWS · sprint with SHIFT · JUMP: SPACE or W — hold it to float higher.",
+    ));
+    add(InteractableLore(
+      position: Vector2(620, 432),
+      speaker: "VOLT DASH",
+      text:
+          "K or CTRL fires the Volt Dash. Dash THROUGH their grey — on touch: the ⚡ button.",
+    ));
+    add(InteractableLore(
+      position: Vector2(1050, 432),
+      speaker: "VINYL ARTILLERY",
+      text:
+          "J or F throws the Vinyl Boomerang. It always comes back. So does Broskie.",
     ));
 
-    add(GrumpyBrick(position: Vector2(800, 448)));
-    add(GrumpyBrick(position: Vector2(1200, 448)));
+    add(GrumpyBrick(position: Vector2(800, 448), patrolRange: 300));
+    add(GrumpyBrick(position: Vector2(1200, 448), patrolRange: 300));
+    add(CheckpointFlag(position: Vector2(1500, 416)));
     add(LevelExit(position: Vector2(2500, 352)));
   }
 
   void _buildStage2NeonSlums() {
+    add(StageBackdrop(
+        imagePath: 'runtime/neon_slums_background.png', levelWidth: 3500));
+
     add(Floor(Vector2(-200, 480), Vector2(1500, 120)));
-    add(DataSpike(position: Vector2(1300, 480), size: Vector2(800, 32)));
+    add(DataSpike(position: Vector2(1301, 480), size: Vector2(699, 32)));
 
     add(MovingPlatform(
       position: Vector2(1450, 320),
@@ -139,7 +394,12 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       speed: 160,
     ));
 
+    // Hidden stash: floating over the spike gap — time it with the ferry.
+    add(DataBitCoin(position: Vector2(1600, 400)));
+    add(DataBitCoin(position: Vector2(1760, 420)));
+
     add(Floor(Vector2(2000, 340), Vector2(1500, 120)));
+    add(CheckpointFlag(position: Vector2(2100, 276)));
     add(PropagandaSign(position: Vector2(2200, 276)));
     add(LaserHazard(position: Vector2(2500, 180), size: Vector2(12, 160)));
     add(HaterCloud(position: Vector2(2700, 180)));
@@ -147,11 +407,14 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage3StockExchange() {
-    add(Floor(Vector2(-200, 480), Vector2(1800, 120)));
-    add(WallStreetBull(position: Vector2(800, 432)));
-    add(WallStreetBull(position: Vector2(1400, 432)));
+    add(StageBackdrop(
+        imagePath: 'runtime/factory_background.png', levelWidth: 3200));
 
-    add(DataSpike(position: Vector2(1600, 480), size: Vector2(1000, 32)));
+    add(Floor(Vector2(-200, 480), Vector2(1800, 120)));
+    add(WallStreetBull(position: Vector2(800, 432), patrolRange: 280));
+    add(WallStreetBull(position: Vector2(1400, 432), patrolRange: 150));
+
+    add(DataSpike(position: Vector2(1601, 480), size: Vector2(998, 32)));
 
     add(MovingPlatform(
       position: Vector2(1700, 400),
@@ -161,54 +424,126 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     ));
 
     add(Floor(Vector2(1900, 180), Vector2(1200, 24)));
+    add(CheckpointFlag(position: Vector2(2000, 116)));
+    // Hidden stash: dangling past the tower's far lip.
+    add(DataBitCoin(position: Vector2(2980, 100)));
+    add(DataBitCoin(position: Vector2(3030, 100)));
     add(AuditorEnemy(position: Vector2(2200, 116)));
     add(LevelExit(position: Vector2(2900, 52)));
   }
 
   void _buildStage4ExecutiveArena() {
+    add(StageBackdrop(
+        imagePath: 'runtime/monopoly_core_background.png', levelWidth: 3800));
+
     add(Floor(Vector2(-200, 480), Vector2(4000, 120)));
 
     add(InteractableLore(
       position: Vector2(180, 432),
-      speaker: "STAGE 1-4",
-      text: "EXECUTIVE ARENA: Dual Boss Battle! Defeat The Foreman and Data-Broker!",
+      speaker: "FINAL STAGE",
+      text:
+          "EXECUTIVE ARENA: Bait the Foreman's charge into the arena walls, then stomp him. Burn the Data-Broker with boomerangs!",
     ));
 
-    add(TheForeman(position: Vector2(1200, 384)));
-    add(DataBrokerBoss(position: Vector2(2500, 400)));
-    add(LevelExit(position: Vector2(3600, 352)));
+    add(BossIntroTrigger(
+      position: Vector2(420, 280),
+      bossName: 'THE FOREMAN',
+      bossTitle: 'MNPLY-042 · MANAGEMENT HARDWARE',
+      bossArt: 'foreman_intro.png',
+    ));
+    add(TheForeman(position: Vector2(900, 400), minX: 500, maxX: 1900));
+    add(BossIntroTrigger(
+      position: Vector2(2150, 280),
+      bossName: 'DATA-BROKER',
+      bossTitle: 'MNPLY-0DAY · SIGNAL THIEF',
+      bossArt: 'broker_intro.png',
+    ));
+    add(DataBrokerBoss(position: Vector2(2600, 406), minX: 2300, maxX: 3200));
+    add(CheckpointFlag(position: Vector2(2100, 416)));
+    // Mid-arena supply: cash for the shop between the two executives.
+    add(DataBitCoin(position: Vector2(2230, 360)));
+    add(DataBitCoin(position: Vector2(2280, 360)));
+    add(LevelExit(
+      position: Vector2(3600, 352),
+      lockCondition: () =>
+          children.whereType<TheForeman>().isNotEmpty ||
+          children.whereType<DataBrokerBoss>().isNotEmpty,
+      lockHint: "PORTAL JAMMED: Defeat BOTH executives to go live!",
+    ));
+  }
+
+  /// Falling off the world costs one heart and respawns at the stage start.
+  void onPlayerFell() {
+    BroskieAudio.playHit();
+    hp.value -= 1;
+    if (hp.value <= 0) {
+      triggerGameOver();
+      return;
+    }
+    player.position.setFrom(playerSpawn);
+    player.velocity.setZero();
+    player.isInvulnerable = true;
+    player.invulnerableTimer = 1.5;
+    triggerScreenShake(intensity: 0.6);
   }
 
   void triggerGameOver() {
     triggerScreenShake(intensity: 1.5);
     pauseEngine();
-    overlays.add('GameOver');
+    _showOverlay('GameOver');
   }
 
   void triggerLevelComplete() {
+    final rank = stageRankFor(currentStage.value, hp.value, stageTime);
+    lastRank = rank;
+    if (rankValue(rank) > (bestRanks[currentStage.value] ?? 0)) {
+      bestRanks[currentStage.value] = rankValue(rank);
+      savePrefs();
+    }
+    // An S gets the gold-record fanfare; anything less gets the standard sting.
+    if (rank == 'S') {
+      BroskieAudio.playFanfareS();
+    } else {
+      BroskieAudio.playStageComplete();
+    }
     pauseEngine();
-    advanceStage();
+    _showOverlay('LevelComplete');
   }
 
   void showDialogue(String speaker, String text) {
     activeSpeaker = speaker;
     activeDialogue = text;
-    overlays.add('Dialogue');
+    _showOverlay('Dialogue');
   }
 
   void hideDialogue() {
-    overlays.remove('Dialogue');
+    _hideOverlay('Dialogue');
   }
 
   void restart() {
-    overlays.remove('GameOver');
-    overlays.remove('LevelComplete');
-    overlays.remove('Dialogue');
-    overlays.remove('PauseMenu');
-    overlays.remove('Shop');
-    overlays.remove('Victory');
+    _hideOverlay('GameOver');
+    _hideOverlay('LevelComplete');
+    _hideOverlay('Dialogue');
+    _hideOverlay('PauseMenu');
+    _hideOverlay('Shop');
+    _hideOverlay('Victory');
+    _hideOverlay('BossCard');
+    _hideOverlay('StageBanner');
+    hideBossBar();
+    screenFlash.value = 0;
 
-    children.where((c) => c is! ScreenHitbox && c is! ProceduralSkylineParallax).toList().forEach((c) => c.removeFromParent());
+    hp.value = maxHp;
+
+    // Keep the persistent shell: hitbox + whatever sky was loaded in onLoad.
+    // Everything else (player, stages, bosses, backdrops) is rebuilt fresh.
+    for (final c in children
+        .where((c) =>
+            c is! ScreenHitbox &&
+            c is! ParallaxComponent &&
+            c is! ProceduralSkylineParallax)
+        .toList()) {
+      c.removeFromParent();
+    }
 
     _buildCurrentStage();
     resumeEngine();
@@ -218,8 +553,10 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   Color backgroundColor() => const Color(0xFF0F0C20);
 }
 
-class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
-  Floor(Vector2 position, Vector2 size) : super(position: position, size: size) {
+class Floor extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
+  Floor(Vector2 position, Vector2 size)
+      : super(position: position, size: size) {
     add(RectangleHitbox());
   }
 
@@ -227,8 +564,13 @@ class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCal
   void render(Canvas canvas) {
     final rect = size.toRect();
     final darkConcrete = Paint()..color = const Color(0xFF222533);
-    final topNeonLine = Paint()..color = const Color(0xFF00E5FF);
-    final gridLine = Paint()..color = const Color(0xFF33384A)..strokeWidth = 1;
+    // The neon edge breathes on the stage beat.
+    final topNeonLine = Paint()
+      ..color = const Color(0xFF00E5FF)
+          .withValues(alpha: 0.45 + 0.55 * game.beatPulse);
+    final gridLine = Paint()
+      ..color = const Color(0xFF33384A)
+      ..strokeWidth = 1;
 
     canvas.drawRect(rect, darkConcrete);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, 4), topNeonLine);
@@ -242,7 +584,8 @@ class Floor extends PositionComponent with HasGameRef<BroskieGame>, CollisionCal
   }
 }
 
-class ProceduralSkylineParallax extends Component with HasGameRef<BroskieGame> {
+class ProceduralSkylineParallax extends Component
+    with HasGameReference<BroskieGame> {
   double scrollX = 0;
 
   @override
@@ -252,20 +595,22 @@ class ProceduralSkylineParallax extends Component with HasGameRef<BroskieGame> {
 
   @override
   void render(Canvas canvas) {
-    final size = gameRef.size;
+    final size = game.size;
     final skyPaint = Paint()..color = const Color(0xFF140D2B);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), skyPaint);
 
     final bldgPaintFar = Paint()..color = const Color(0xFF211442);
     for (double x = -100; x < size.x + 200; x += 80) {
       double drawX = (x - scrollX * 0.3) % (size.x + 200) - 100;
-      canvas.drawRect(Rect.fromLTWH(drawX, size.y - 250, 70, 250), bldgPaintFar);
+      canvas.drawRect(
+          Rect.fromLTWH(drawX, size.y - 250, 70, 250), bldgPaintFar);
     }
 
     final bldgPaintNear = Paint()..color = const Color(0xFF2E195E);
     for (double x = -100; x < size.x + 200; x += 120) {
       double drawX = (x - scrollX * 0.7) % (size.x + 200) - 100;
-      canvas.drawRect(Rect.fromLTWH(drawX, size.y - 180, 100, 180), bldgPaintNear);
+      canvas.drawRect(
+          Rect.fromLTWH(drawX, size.y - 180, 100, 180), bldgPaintNear);
     }
   }
 }

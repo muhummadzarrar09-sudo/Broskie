@@ -1,17 +1,18 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class InteractableLore extends SpriteComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
+class InteractableLore extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   final String text;
   final String speaker;
   bool _hasTriggered = false;
 
   InteractableLore({
-    required Vector2 position, 
-    required this.speaker, 
+    required Vector2 position,
+    required this.speaker,
     required this.text,
   }) : super(position: position, size: Vector2(32, 48)) {
     add(RectangleHitbox());
@@ -27,15 +28,12 @@ class InteractableLore extends SpriteComponent with HasGameRef<BroskieGame>, Col
   }
 
   void _showDialogue() {
-    gameRef.showDialogue(speaker, text);
+    game.showDialogue(speaker, text);
   }
 
   @override
   void render(Canvas canvas) {
-    if (sprite != null) {
-      super.render(canvas);
-      return;
-    }
+    super.render(canvas);
 
     final rect = size.toRect();
     final terminalPaint = Paint()..color = const Color(0xFF1E88E5);
@@ -48,7 +46,11 @@ class InteractableLore extends SpriteComponent with HasGameRef<BroskieGame>, Col
     final textPainter = TextPainter(
       text: const TextSpan(
         text: "i",
-        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'monospace'),
+        style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontFamily: 'monospace'),
       ),
       textDirection: TextDirection.ltr,
     );

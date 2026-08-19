@@ -1,6 +1,6 @@
 name: broskie_game
 description: A neon-soaked platformer vertical slice built with Flutter and Flame.
-version: 0.2.0+2
+version: 0.3.0+3
 publish_to: none
 
 environment:
@@ -25,5 +25,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/
-    - assets/images/
+    - assets/images/skyline_far.png
+    - assets/images/skyline_near.png
     - assets/images/runtime/

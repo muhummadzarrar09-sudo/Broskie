@@ -8,7 +8,8 @@ class NewsTickerOverlay extends StatefulWidget {
   State<NewsTickerOverlay> createState() => _NewsTickerOverlayState();
 }
 
-class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTickerProviderStateMixin {
+class _NewsTickerOverlayState extends State<NewsTickerOverlay>
+    with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
 
   @override
@@ -19,17 +20,25 @@ class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTicker
   }
 
   void _startScrolling() async {
-    while (true) {
-      await Future.delayed(const Duration(milliseconds: 500));
+    while (mounted) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
       if (_scrollController.hasClients) {
         await _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: Duration(seconds: widget.headlines.length * 5),
           curve: Curves.linear,
         );
+        if (!mounted) return;
         _scrollController.jumpTo(0);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -38,7 +47,7 @@ class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTicker
       alignment: Alignment.bottomCenter,
       child: Container(
         height: 30,
-        color: Colors.red.withOpacity(0.8),
+        color: Colors.red.withValues(alpha: 0.8),
         child: ListView(
           controller: _scrollController,
           scrollDirection: Axis.horizontal,
@@ -47,7 +56,10 @@ class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTicker
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 widget.headlines.join("  |  "),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'monospace'),
               ),
             ),
           ],

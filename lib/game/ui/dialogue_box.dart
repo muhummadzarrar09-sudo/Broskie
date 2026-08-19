@@ -5,12 +5,11 @@ class DialogueBox extends StatelessWidget {
   final String text;
   final VoidCallback onNext;
 
-  const DialogueBox({
-    super.key, 
-    required this.speakerName, 
-    required this.text, 
-    required this.onNext
-  });
+  const DialogueBox(
+      {super.key,
+      required this.speakerName,
+      required this.text,
+      required this.onNext});
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +20,9 @@ class DialogueBox extends StatelessWidget {
         padding: const EdgeInsets.all(15),
         height: 150,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.8),
-          border: Border.all(color: const Color(0xFF00FFFF), width: 3), // Neon Cyan Border
+          color: Colors.black.withValues(alpha: 0.8),
+          border: Border.all(
+              color: const Color(0xFF00FFFF), width: 3), // Neon Cyan Border
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(

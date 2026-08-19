@@ -1,24 +1,52 @@
-import 'package:flame/components.dart';
-import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
-import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/effects/kill_burst.dart';
+import 'package:broskie_game/game/haptics.dart';
+import 'package:broskie_game/game/player.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 
-class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
+class WallStreetBull extends SpriteAnimationComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isCharging = false;
   bool isDizzy = false;
   double patrolSpeed = 60;
   double chargeSpeed = 260;
   int direction = -1; // -1 Left, 1 Right
   double stateTimer = 0;
+  final double patrolRange;
+  late final double _spawnX;
+  // Sprite art faces RIGHT (+1). _artDir tracks which way the SPRITE is
+  // flipped so we never double-flip or skip a flip.
+  int _artDir = 1;
 
-  WallStreetBull({required Vector2 position}) : super(position: position, size: Vector2(64, 48)) {
+  WallStreetBull({required Vector2 position, this.patrolRange = 260})
+      : super(position: position, size: Vector2(64, 48)) {
+    _spawnX = position.x;
     add(RectangleHitbox());
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    try {
+      final image = await game.images.load('runtime/bulldozer_drone.png');
+      animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
+    } catch (_) {
+      // Procedural bull painter stays active without the art.
+    }
   }
 
   @override
   void update(double dt) {
     stateTimer += dt;
+
+    // Sprite-art facing flip (the procedural painter flips itself in render).
+    if (animation != null && direction != _artDir) {
+      flipHorizontallyAroundCenter();
+      _artDir = direction;
+    }
 
     if (isDizzy) {
       if (stateTimer > 3.0) {
@@ -36,6 +64,21 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
         startCharge();
       }
     }
+
+    // Stay inside the patrol corridor. Charging into the bound is a real
+    // wall crash: the bull goes dizzy and becomes stompable.
+    final minX = _spawnX - patrolRange;
+    final maxX = _spawnX + patrolRange;
+    if (position.x <= minX || position.x >= maxX) {
+      position.x = position.x.clamp(minX, maxX);
+      if (isCharging) {
+        getDizzy();
+        BroskieAudio.playBossHit();
+      } else if (!isDizzy) {
+        direction = -direction;
+      }
+    }
+
     super.update(dt);
   }
 
@@ -58,6 +101,12 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
 
       if (isDizzy && other.velocity.y > 0 && playerBottom <= bullTop + 16) {
         BroskieAudio.playStomp();
+        game.add(KillBurst(
+            position: position.clone()..add(size / 2),
+            color: const Color(0xFFFFB800)));
+        game.hitStop(0.08);
+        if (game.hapticsEnabled.value) BroskieHaptics.heavy();
+        game.enemiesDefeated++;
         removeFromParent(); // Stomped!
         other.bounce();
       } else {
@@ -74,7 +123,8 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
       return;
     }
 
-    final bullBody = Paint()..color = isCharging ? const Color(0xFFB71C1C) : const Color(0xFF4E342E);
+    final bullBody = Paint()
+      ..color = isCharging ? const Color(0xFFB71C1C) : const Color(0xFF4E342E);
     final hornPaint = Paint()..color = const Color(0xFFFFD700);
     final eyePaint = Paint()..color = isDizzy ? Colors.yellow : Colors.red;
 
@@ -86,7 +136,7 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
     }
 
     // Bull Body
-    canvas.drawRect(Rect.fromLTWH(12, 12, 44, 28), bullBody);
+    canvas.drawRect(const Rect.fromLTWH(12, 12, 44, 28), bullBody);
     canvas.drawRect(const Rect.fromLTWH(0, 16, 16, 20), bullBody); // Head
 
     // Gold Horns
@@ -107,8 +157,10 @@ class WallStreetBull extends SpriteAnimationComponent with CollisionCallbacks {
     // Dizzy Stars Above Head
     if (isDizzy) {
       double starOffset = (stateTimer * 10) % 20;
-      canvas.drawCircle(Offset(20 + starOffset, -6), 4, Paint()..color = Colors.yellow);
-      canvas.drawCircle(Offset(40 - starOffset, -6), 3, Paint()..color = Colors.amber);
+      canvas.drawCircle(
+          Offset(20 + starOffset, -6), 4, Paint()..color = Colors.yellow);
+      canvas.drawCircle(
+          Offset(40 - starOffset, -6), 3, Paint()..color = Colors.amber);
     }
 
     canvas.restore();
