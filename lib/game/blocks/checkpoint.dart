@@ -7,11 +7,13 @@ import 'package:flutter/material.dart';
 
 /// Touching the flag moves Broskie's respawn point to this spot.
 /// The next fall or stage hazard sends him back here instead of the start.
-class CheckpointFlag extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class CheckpointFlag extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool activated = false;
   double waveTimer = 0;
 
-  CheckpointFlag({required Vector2 position}) : super(position: position, size: Vector2(24, 64)) {
+  CheckpointFlag({required Vector2 position})
+      : super(position: position, size: Vector2(24, 64)) {
     add(RectangleHitbox());
   }
 
@@ -35,11 +37,15 @@ class CheckpointFlag extends PositionComponent with HasGameReference<BroskieGame
   void render(Canvas canvas) {
     final polePaint = Paint()..color = const Color(0xFF9E9E9E);
     final flagPaint = Paint()
-      ..color = activated ? const Color(0xFF00FF66) : const Color(0xFF00E5FF).withValues(alpha: 0.55);
+      ..color = activated
+          ? const Color(0xFF00FF66)
+          : const Color(0xFF00E5FF).withValues(alpha: 0.55);
 
     // Base + pole
-    canvas.drawRect(Rect.fromLTWH(0, size.y - 6, size.x, 6), Paint()..color = Colors.black54);
-    canvas.drawRect(Rect.fromLTWH(size.x / 2 - 1.5, 0, 3, size.y - 6), polePaint);
+    canvas.drawRect(Rect.fromLTWH(0, size.y - 6, size.x, 6),
+        Paint()..color = Colors.black54);
+    canvas.drawRect(
+        Rect.fromLTWH(size.x / 2 - 1.5, 0, 3, size.y - 6), polePaint);
 
     // Flag pennant with a little sway
     final sway = activated ? 0.0 : (waveTimer % 1.0) * 2;
@@ -52,7 +58,8 @@ class CheckpointFlag extends PositionComponent with HasGameReference<BroskieGame
 
     // Activated glow ring
     if (activated) {
-      canvas.drawCircle(Offset(size.x / 2, 12), 10, Paint()..color = const Color(0xFF00FF66).withValues(alpha: 0.25));
+      canvas.drawCircle(Offset(size.x / 2, 12), 10,
+          Paint()..color = const Color(0xFF00FF66).withValues(alpha: 0.25));
     }
   }
 }

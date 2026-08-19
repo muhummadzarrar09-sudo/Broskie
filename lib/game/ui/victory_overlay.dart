@@ -37,26 +37,39 @@ class VictoryOverlay extends StatelessWidget {
             const Text(
               "Broskie Corp takeover complete! Monopoly standardization is OVER!",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 14, fontStyle: FontStyle.italic),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic),
             ),
             const Divider(color: Colors.white24, height: 30),
-
-            Text("TOTAL CASH: \$${game.scoreCoins.value}", style: const TextStyle(color: Colors.greenAccent, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text("TOTAL CASH: \$${game.scoreCoins.value}",
+                style: const TextStyle(
+                    color: Colors.greenAccent,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
-            Text("EXECUTIVES DEFEATED: ${game.enemiesDefeated}", style: const TextStyle(color: Colors.redAccent, fontSize: 18, fontWeight: FontWeight.bold)),
-
+            Text("EXECUTIVES DEFEATED: ${game.enemiesDefeated}",
+                style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
               ),
               onPressed: () {
                 BroskieAudio.playUiClick();
                 game.restart();
               },
-              child: const Text("PLAY AGAIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18)),
+              child: const Text("PLAY AGAIN",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18)),
             ),
           ],
         ),

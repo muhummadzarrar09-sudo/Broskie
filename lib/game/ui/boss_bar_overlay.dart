@@ -24,9 +24,18 @@ class BossBarOverlay extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(game.bossBarName, style: broskieHeadline(size: 15, color: BroskieColors.amber, letterSpacing: 3)),
+                  Text(game.bossBarName,
+                      style: broskieHeadline(
+                          size: 15,
+                          color: BroskieColors.amber,
+                          letterSpacing: 3)),
                   const Spacer(),
-                  const Text('EXECUTIVE', style: TextStyle(color: BroskieColors.bone, fontSize: 9, fontFamily: 'monospace', letterSpacing: 3)),
+                  const Text('EXECUTIVE',
+                      style: TextStyle(
+                          color: BroskieColors.bone,
+                          fontSize: 9,
+                          fontFamily: 'monospace',
+                          letterSpacing: 3)),
                 ],
               ),
               const SizedBox(height: 6),
@@ -46,7 +55,9 @@ class BossBarOverlay extends StatelessWidget {
                       child: Container(
                         color: f > 0.5
                             ? const Color(0xFFFF5252)
-                            : (f > 0.25 ? BroskieColors.amber : BroskieColors.magenta),
+                            : (f > 0.25
+                                ? BroskieColors.amber
+                                : BroskieColors.magenta),
                       ),
                     ),
                   );
@@ -73,7 +84,8 @@ class ScreenFlashOverlay extends StatelessWidget {
         valueListenable: game.screenFlash,
         builder: (context, v, child) => v <= 0
             ? const SizedBox.shrink()
-            : Container(color: Colors.white.withValues(alpha: v.clamp(0.0, 1.0))),
+            : Container(
+                color: Colors.white.withValues(alpha: v.clamp(0.0, 1.0))),
       ),
     );
   }

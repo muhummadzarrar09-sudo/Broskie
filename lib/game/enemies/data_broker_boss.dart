@@ -8,7 +8,8 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class DataBrokerBoss extends SpriteAnimationComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   int health = 8;
   static const int maxHealth = 8;
   double attackTimer = 0;
@@ -22,7 +23,8 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
   double _baseY = 0;
   int _driftDir = -1;
 
-  DataBrokerBoss({required Vector2 position, this.minX = 2300, this.maxX = 3200})
+  DataBrokerBoss(
+      {required Vector2 position, this.minX = 2300, this.maxX = 3200})
       : super(position: position, size: Vector2(140, 72)) {
     add(RectangleHitbox());
   }
@@ -85,7 +87,8 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
 
     // A real three-bolt data volley aimed at Broskie's current position.
     final origin = Vector2(position.x + size.x / 2, position.y + size.y / 2);
-    final target = Vector2(player.position.x + player.size.x / 2, player.position.y + player.size.y / 2);
+    final target = Vector2(player.position.x + player.size.x / 2,
+        player.position.y + player.size.y / 2);
     final baseDir = (target - origin).normalized();
     for (final angle in [-0.35, 0.0, 0.35]) {
       final dir = baseDir.clone()..rotate(angle);
@@ -95,7 +98,8 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
 
   void _controlHack() {
     BroskieAudio.playGlitch();
-    game.showDialogue("DATA-BROKER", "Hacking your neural link! Controls inverted!");
+    game.showDialogue(
+        "DATA-BROKER", "Hacking your neural link! Controls inverted!");
     final player = game.children.whereType<Player>().firstOrNull;
     if (player != null) {
       player.controlsInverted = true;
@@ -126,7 +130,8 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
   void _triggerFakeOut() {
     isFake = false;
     health = maxHealth;
-    game.showDialogue("DATA-BROKER", "That was just a proxy, Broskie... NOW WE GOING LIVE!");
+    game.showDialogue(
+        "DATA-BROKER", "That was just a proxy, Broskie... NOW WE GOING LIVE!");
   }
 
   void die() {
@@ -137,7 +142,8 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
     if (game.hapticsEnabled.value) BroskieHaptics.heavy();
     game.hideBossBar();
     game.enemiesDefeated++;
-    game.showDialogue("DATA-BROKER", "Connection... terminated... The... signal... dies... with... me...");
+    game.showDialogue("DATA-BROKER",
+        "Connection... terminated... The... signal... dies... with... me...");
     removeFromParent();
   }
 
@@ -169,31 +175,39 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
     if (attackTimer > 3.4) {
       final jx = sin(attackTimer * 90) * 3;
       final jy = cos(attackTimer * 70) * 3;
-      final glitchPaint = Paint()..color = const Color(0xFFFF3FA4).withValues(alpha: 0.85);
+      final glitchPaint = Paint()
+        ..color = const Color(0xFFFF3FA4).withValues(alpha: 0.85);
       canvas.drawRect(Rect.fromLTWH(jx - 6, 6 + jy, 16, 6), glitchPaint);
-      canvas.drawRect(Rect.fromLTWH(size.x + jx - 10, size.y - 14 + jy, 16, 6), glitchPaint);
+      canvas.drawRect(Rect.fromLTWH(size.x + jx - 10, size.y - 14 + jy, 16, 6),
+          glitchPaint);
     }
 
     // Health bar tracks the CURRENT phase health so the fake-out reads clearly.
     final double healthPercent = (health / maxHealth).clamp(0.0, 1.0);
     final double barLeft = (size.x - 100) / 2;
-    canvas.drawRect(Rect.fromLTWH(barLeft - 2, -16, 104, 8), Paint()..color = Colors.black);
+    canvas.drawRect(
+        Rect.fromLTWH(barLeft - 2, -16, 104, 8), Paint()..color = Colors.black);
     canvas.drawRect(Rect.fromLTWH(barLeft, -14, 100 * healthPercent, 4),
         Paint()..color = isFake ? Colors.cyanAccent : Colors.redAccent);
   }
 
   void _renderProcedural(Canvas canvas) {
-    final spiderBody = Paint()..color = isFake ? const Color(0xFF1E88E5) : const Color(0xFFD32F2F);
-    final legPaint = Paint()..color = Colors.cyanAccent..strokeWidth = 3;
+    final spiderBody = Paint()
+      ..color = isFake ? const Color(0xFF1E88E5) : const Color(0xFFD32F2F);
+    final legPaint = Paint()
+      ..color = Colors.cyanAccent
+      ..strokeWidth = 3;
     final eyePaint = Paint()..color = Colors.redAccent;
     final double scaleX = size.x / 120;
 
     // Mech Chassis
-    canvas.drawOval(Rect.fromLTWH(20 * scaleX, 20, 80 * scaleX, 50), spiderBody);
+    canvas.drawOval(
+        Rect.fromLTWH(20 * scaleX, 20, 80 * scaleX, 50), spiderBody);
 
     // Glowing Cyber Eye
     canvas.drawCircle(Offset(60 * scaleX, 45), 10, eyePaint);
-    canvas.drawCircle(Offset(60 * scaleX, 45), 4, Paint()..color = Colors.white);
+    canvas.drawCircle(
+        Offset(60 * scaleX, 45), 4, Paint()..color = Colors.white);
 
     // Spider Legs
     for (int i = 0; i < 4; i++) {
@@ -205,7 +219,8 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
 }
 
 /// A glowing packet of stolen bandwidth aimed at Broskie.
-class DataBolt extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class DataBolt extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   final Vector2 velocity;
   double lifetime = 4.0;
   double pulse = 0;
@@ -240,8 +255,10 @@ class DataBolt extends PositionComponent with HasGameReference<BroskieGame>, Col
     final glow = Paint()..color = BroskieColors.magenta.withValues(alpha: 0.9);
     final core = Paint()..color = Colors.white;
     final radius = 7 + sin(pulse) * 1.5;
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius + 3, glow..color = glow.color.withValues(alpha: 0.35));
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius, glow..color = BroskieColors.magenta);
+    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius + 3,
+        glow..color = glow.color.withValues(alpha: 0.35));
+    canvas.drawCircle(Offset(size.x / 2, size.y / 2), radius,
+        glow..color = BroskieColors.magenta);
     canvas.drawCircle(Offset(size.x / 2, size.y / 2), 2.5, core);
   }
 }

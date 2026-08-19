@@ -7,11 +7,13 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class DataBitCoin extends SpriteComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class DataBitCoin extends SpriteComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   double floatTimer = 0;
   final int value;
 
-  DataBitCoin({required Vector2 position, this.value = 50}) : super(position: position, size: Vector2(20, 20)) {
+  DataBitCoin({required Vector2 position, this.value = 50})
+      : super(position: position, size: Vector2(20, 20)) {
     add(CircleHitbox());
   }
 
@@ -31,7 +33,8 @@ class DataBitCoin extends SpriteComponent with HasGameReference<BroskieGame>, Co
     }
     super.onCollision(intersectionPoints, other);
   }
-@override
+
+  @override
   // ignore: must_call_super — we paint the whole sprite ourselves
   void render(Canvas canvas) {
     // DATA-VINYL: a tiny black 7-inch, magenta label, bone spindle hole.

@@ -4,7 +4,8 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
 /// Invisible tripwire that slaps the boss intro card on screen once.
-class BossIntroTrigger extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class BossIntroTrigger extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   final String bossName;
   final String bossTitle;
   final String bossArt;

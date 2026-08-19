@@ -20,7 +20,8 @@ class _BossCardOverlayState extends State<BossCardOverlay> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(milliseconds: 2400), () => widget.game.hideBossCard());
+    _timer = Timer(
+        const Duration(milliseconds: 2400), () => widget.game.hideBossCard());
   }
 
   @override
@@ -36,7 +37,9 @@ class _BossCardOverlayState extends State<BossCardOverlay> {
         tween: Tween(begin: 0, end: 1),
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutBack,
-        builder: (context, t, child) => Transform.scale(scale: 0.85 + 0.15 * t, child: Opacity(opacity: t.clamp(0.0, 1.0), child: child)),
+        builder: (context, t, child) => Transform.scale(
+            scale: 0.85 + 0.15 * t,
+            child: Opacity(opacity: t.clamp(0.0, 1.0), child: child)),
         child: Align(
           alignment: const Alignment(0, -0.35),
           child: Container(
@@ -53,16 +56,20 @@ class _BossCardOverlayState extends State<BossCardOverlay> {
                     'assets/images/runtime/${widget.game.bossCardArt}',
                     fit: BoxFit.cover,
                     filterQuality: FilterQuality.none,
-                    errorBuilder: (_, __, ___) => Container(color: const Color(0xFF241244)),
+                    errorBuilder: (_, __, ___) =>
+                        Container(color: const Color(0xFF241244)),
                   ),
                 ),
                 Container(
                   width: double.infinity,
                   color: const Color(0xFF0F0C20),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
-                      CustomPaint(size: const Size(90, 22), painter: _BarcodeStripPainter()),
+                      CustomPaint(
+                          size: const Size(90, 22),
+                          painter: _BarcodeStripPainter()),
                       const Spacer(),
                     ],
                   ),
@@ -70,15 +77,25 @@ class _BossCardOverlayState extends State<BossCardOverlay> {
                 Container(
                   width: double.infinity,
                   color: const Color(0xFF0F0C20),
-                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 14),
+                  padding:
+                      const EdgeInsets.only(left: 16, right: 16, bottom: 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.game.bossCardName, style: broskieHeadline(size: 28, color: BroskieColors.amber, letterSpacing: 4)),
+                      Text(widget.game.bossCardName,
+                          style: broskieHeadline(
+                              size: 28,
+                              color: BroskieColors.amber,
+                              letterSpacing: 4)),
                       const SizedBox(height: 2),
                       Text(
                         widget.game.bossCardTitle,
-                        style: const TextStyle(color: BroskieColors.bone, fontSize: 11, fontStyle: FontStyle.italic, fontFamily: 'monospace', letterSpacing: 2),
+                        style: const TextStyle(
+                            color: BroskieColors.bone,
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                            fontFamily: 'monospace',
+                            letterSpacing: 2),
                       ),
                     ],
                   ),
@@ -95,7 +112,8 @@ class _BossCardOverlayState extends State<BossCardOverlay> {
 class _BarcodeStripPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    drawBarcode(canvas, Offset.zero & size, seed: 42, color: BroskieColors.bone);
+    drawBarcode(canvas, Offset.zero & size,
+        seed: 42, color: BroskieColors.bone);
   }
 
   @override

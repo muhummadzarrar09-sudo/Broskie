@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 
 /// White kill-flash: six pixel shards burst outward on defeat. Cheap, loud.
 class KillBurst extends PositionComponent {
-  KillBurst({required Vector2 position, this.color = BroskieColors.bone}) : super(position: position);
+  KillBurst({required Vector2 position, this.color = BroskieColors.bone})
+      : super(position: position);
 
   final Color color;
   double _timer = lifetime;
@@ -27,7 +28,8 @@ class KillBurst extends PositionComponent {
     final t = (1 - _timer / lifetime).clamp(0.0, 1.0);
     final paint = Paint()..color = color.withValues(alpha: 1 - t);
     for (final d in _dirs) {
-      canvas.drawRect(Rect.fromLTWH(d.x * 34 * t - 2, d.y * 34 * t - 2, 4, 4), paint);
+      canvas.drawRect(
+          Rect.fromLTWH(d.x * 34 * t - 2, d.y * 34 * t - 2, 4, 4), paint);
     }
   }
 }

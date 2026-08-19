@@ -27,7 +27,8 @@ import 'world2/propaganda_sign.dart';
 import 'world4/hater_cloud.dart';
 import 'world5/auditor_enemy.dart';
 
-class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
+class BroskieGame extends FlameGame
+    with HasKeyboardHandlerComponents, HasCollisionDetection {
   late Player player;
   final WidgetRef? ref;
 
@@ -196,7 +197,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       if (shakeIntensity < 0) shakeIntensity = 0;
       double offsetX = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
       double offsetY = (Random().nextDouble() - 0.5) * shakeIntensity * 12;
-      camera.viewfinder.position = Vector2(player.position.x + offsetX, player.position.y + offsetY);
+      camera.viewfinder.position =
+          Vector2(player.position.x + offsetX, player.position.y + offsetY);
     }
     super.update(dt);
   }
@@ -333,10 +335,12 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage1GreyZone() {
-    add(StageBackdrop(imagePath: 'runtime/grey_zone_background.png', levelWidth: 2800));
+    add(StageBackdrop(
+        imagePath: 'runtime/grey_zone_background.png', levelWidth: 2800));
 
     add(Floor(Vector2(-200, 480), Vector2(3000, 120)));
-    add(InteractableBlock(position: Vector2(300, 340), type: BlockType.mystery));
+    add(InteractableBlock(
+        position: Vector2(300, 340), type: BlockType.mystery));
     add(InteractableBlock(position: Vector2(332, 340), type: BlockType.brick));
     add(DataBitCoin(position: Vector2(500, 380)));
     add(DataBitCoin(position: Vector2(540, 380)));
@@ -348,17 +352,20 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(InteractableLore(
       position: Vector2(180, 432),
       speaker: "STREET RULES",
-      text: "MOVE: A/D or ARROWS · sprint with SHIFT · JUMP: SPACE or W — hold it to float higher.",
+      text:
+          "MOVE: A/D or ARROWS · sprint with SHIFT · JUMP: SPACE or W — hold it to float higher.",
     ));
     add(InteractableLore(
       position: Vector2(620, 432),
       speaker: "VOLT DASH",
-      text: "K or CTRL fires the Volt Dash. Dash THROUGH their grey — on touch: the ⚡ button.",
+      text:
+          "K or CTRL fires the Volt Dash. Dash THROUGH their grey — on touch: the ⚡ button.",
     ));
     add(InteractableLore(
       position: Vector2(1050, 432),
       speaker: "VINYL ARTILLERY",
-      text: "J or F throws the Vinyl Boomerang. It always comes back. So does Broskie.",
+      text:
+          "J or F throws the Vinyl Boomerang. It always comes back. So does Broskie.",
     ));
 
     add(GrumpyBrick(position: Vector2(800, 448), patrolRange: 300));
@@ -368,7 +375,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage2NeonSlums() {
-    add(StageBackdrop(imagePath: 'runtime/neon_slums_background.png', levelWidth: 3500));
+    add(StageBackdrop(
+        imagePath: 'runtime/neon_slums_background.png', levelWidth: 3500));
 
     add(Floor(Vector2(-200, 480), Vector2(1500, 120)));
     add(DataSpike(position: Vector2(1301, 480), size: Vector2(699, 32)));
@@ -393,7 +401,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage3StockExchange() {
-    add(StageBackdrop(imagePath: 'runtime/factory_background.png', levelWidth: 3200));
+    add(StageBackdrop(
+        imagePath: 'runtime/factory_background.png', levelWidth: 3200));
 
     add(Floor(Vector2(-200, 480), Vector2(1800, 120)));
     add(WallStreetBull(position: Vector2(800, 432), patrolRange: 280));
@@ -418,14 +427,16 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   }
 
   void _buildStage4ExecutiveArena() {
-    add(StageBackdrop(imagePath: 'runtime/monopoly_core_background.png', levelWidth: 3800));
+    add(StageBackdrop(
+        imagePath: 'runtime/monopoly_core_background.png', levelWidth: 3800));
 
     add(Floor(Vector2(-200, 480), Vector2(4000, 120)));
 
     add(InteractableLore(
       position: Vector2(180, 432),
       speaker: "FINAL STAGE",
-      text: "EXECUTIVE ARENA: Bait the Foreman's charge into the arena walls, then stomp him. Burn the Data-Broker with boomerangs!",
+      text:
+          "EXECUTIVE ARENA: Bait the Foreman's charge into the arena walls, then stomp him. Burn the Data-Broker with boomerangs!",
     ));
 
     add(BossIntroTrigger(
@@ -449,7 +460,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(LevelExit(
       position: Vector2(3600, 352),
       lockCondition: () =>
-          children.whereType<TheForeman>().isNotEmpty || children.whereType<DataBrokerBoss>().isNotEmpty,
+          children.whereType<TheForeman>().isNotEmpty ||
+          children.whereType<DataBrokerBoss>().isNotEmpty,
       lockHint: "PORTAL JAMMED: Defeat BOTH executives to go live!",
     ));
   }
@@ -519,7 +531,10 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     // Keep the persistent shell: hitbox + whatever sky was loaded in onLoad.
     // Everything else (player, stages, bosses, backdrops) is rebuilt fresh.
     for (final c in children
-        .where((c) => c is! ScreenHitbox && c is! ParallaxComponent && c is! ProceduralSkylineParallax)
+        .where((c) =>
+            c is! ScreenHitbox &&
+            c is! ParallaxComponent &&
+            c is! ProceduralSkylineParallax)
         .toList()) {
       c.removeFromParent();
     }
@@ -532,8 +547,10 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   Color backgroundColor() => const Color(0xFF0F0C20);
 }
 
-class Floor extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
-  Floor(Vector2 position, Vector2 size) : super(position: position, size: size) {
+class Floor extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
+  Floor(Vector2 position, Vector2 size)
+      : super(position: position, size: size) {
     add(RectangleHitbox());
   }
 
@@ -542,8 +559,12 @@ class Floor extends PositionComponent with HasGameReference<BroskieGame>, Collis
     final rect = size.toRect();
     final darkConcrete = Paint()..color = const Color(0xFF222533);
     // The neon edge breathes on the stage beat.
-    final topNeonLine = Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.45 + 0.55 * game.beatPulse);
-    final gridLine = Paint()..color = const Color(0xFF33384A)..strokeWidth = 1;
+    final topNeonLine = Paint()
+      ..color = const Color(0xFF00E5FF)
+          .withValues(alpha: 0.45 + 0.55 * game.beatPulse);
+    final gridLine = Paint()
+      ..color = const Color(0xFF33384A)
+      ..strokeWidth = 1;
 
     canvas.drawRect(rect, darkConcrete);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, 4), topNeonLine);
@@ -557,7 +578,8 @@ class Floor extends PositionComponent with HasGameReference<BroskieGame>, Collis
   }
 }
 
-class ProceduralSkylineParallax extends Component with HasGameReference<BroskieGame> {
+class ProceduralSkylineParallax extends Component
+    with HasGameReference<BroskieGame> {
   double scrollX = 0;
 
   @override
@@ -574,13 +596,15 @@ class ProceduralSkylineParallax extends Component with HasGameReference<BroskieG
     final bldgPaintFar = Paint()..color = const Color(0xFF211442);
     for (double x = -100; x < size.x + 200; x += 80) {
       double drawX = (x - scrollX * 0.3) % (size.x + 200) - 100;
-      canvas.drawRect(Rect.fromLTWH(drawX, size.y - 250, 70, 250), bldgPaintFar);
+      canvas.drawRect(
+          Rect.fromLTWH(drawX, size.y - 250, 70, 250), bldgPaintFar);
     }
 
     final bldgPaintNear = Paint()..color = const Color(0xFF2E195E);
     for (double x = -100; x < size.x + 200; x += 120) {
       double drawX = (x - scrollX * 0.7) % (size.x + 200) - 100;
-      canvas.drawRect(Rect.fromLTWH(drawX, size.y - 180, 100, 180), bldgPaintNear);
+      canvas.drawRect(
+          Rect.fromLTWH(drawX, size.y - 180, 100, 180), bldgPaintNear);
     }
   }
 }

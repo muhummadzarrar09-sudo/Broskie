@@ -6,7 +6,8 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 // Moving Platform (Horizontal or Vertical)
-class MovingPlatform extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class MovingPlatform extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   final Vector2 startPos;
   final Vector2 targetPos;
   final double speed;
@@ -18,7 +19,8 @@ class MovingPlatform extends PositionComponent with HasGameReference<BroskieGame
     required Vector2 size,
     required this.targetPos,
     this.speed = 100,
-  }) : startPos = position.clone(), super(position: position, size: size) {
+  })  : startPos = position.clone(),
+        super(position: position, size: size) {
     add(RectangleHitbox());
   }
 
@@ -45,17 +47,25 @@ class MovingPlatform extends PositionComponent with HasGameReference<BroskieGame
   @override
   void render(Canvas canvas) {
     final rect = size.toRect();
-    canvas.drawRect(rect, Paint()..color = const Color(0xFF00E5FF)); // Cyan Moving Platform
-    canvas.drawRect(rect, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 2);
+    canvas.drawRect(
+        rect, Paint()..color = const Color(0xFF00E5FF)); // Cyan Moving Platform
+    canvas.drawRect(
+        rect,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2);
   }
 }
 
 // Crumbling Platform (Collapses 1s after player steps on it)
-class CrumblingPlatform extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class CrumblingPlatform extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isStepped = false;
   double timer = 0;
 
-  CrumblingPlatform({required Vector2 position, required Vector2 size}) : super(position: position, size: size) {
+  CrumblingPlatform({required Vector2 position, required Vector2 size})
+      : super(position: position, size: size) {
     add(RectangleHitbox());
   }
 
@@ -81,21 +91,33 @@ class CrumblingPlatform extends PositionComponent with HasGameReference<BroskieG
     final rect = size.toRect();
     final color = isStepped ? Colors.orangeAccent : const Color(0xFF795548);
     canvas.drawRect(rect, Paint()..color = color);
-    canvas.drawRect(rect, Paint()..color = Colors.black..style = PaintingStyle.stroke..strokeWidth = 2);
+    canvas.drawRect(
+        rect,
+        Paint()
+          ..color = Colors.black
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2);
 
     if (isStepped) {
       // Crack lines
-      canvas.drawLine(const Offset(4, 0), Offset(size.x - 4, size.y), Paint()..color = Colors.black..strokeWidth = 2);
+      canvas.drawLine(
+          const Offset(4, 0),
+          Offset(size.x - 4, size.y),
+          Paint()
+            ..color = Colors.black
+            ..strokeWidth = 2);
     }
   }
 }
 
 // Laser Hazard (Pulsing deadly laser barrier)
-class LaserHazard extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class LaserHazard extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isActive = true;
   double pulseTimer = 0;
 
-  LaserHazard({required Vector2 position, required Vector2 size}) : super(position: position, size: size) {
+  LaserHazard({required Vector2 position, required Vector2 size})
+      : super(position: position, size: size) {
     add(RectangleHitbox());
   }
 
@@ -120,20 +142,29 @@ class LaserHazard extends PositionComponent with HasGameReference<BroskieGame>, 
     if (!isActive) return;
 
     final rect = size.toRect();
-    canvas.drawRect(rect, Paint()..color = Colors.redAccent.withValues(alpha: 0.8));
-    canvas.drawRect(rect, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5);
+    canvas.drawRect(
+        rect, Paint()..color = Colors.redAccent.withValues(alpha: 0.8));
+    canvas.drawRect(
+        rect,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5);
 
     // Sparkling electrical particles
     for (int i = 0; i < 5; i++) {
       double py = Random().nextDouble() * size.y;
-      canvas.drawCircle(Offset(size.x / 2, py), 2, Paint()..color = Colors.yellowAccent);
+      canvas.drawCircle(
+          Offset(size.x / 2, py), 2, Paint()..color = Colors.yellowAccent);
     }
   }
 }
 
 // Data Spikes Hazard
-class DataSpike extends PositionComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
-  DataSpike({required Vector2 position, required Vector2 size}) : super(position: position, size: size) {
+class DataSpike extends PositionComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
+  DataSpike({required Vector2 position, required Vector2 size})
+      : super(position: position, size: size) {
     add(RectangleHitbox());
   }
 

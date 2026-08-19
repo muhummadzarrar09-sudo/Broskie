@@ -31,7 +31,7 @@ class GameOverOverlay extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // The Broskie Call to Action
           Positioned(
             bottom: 100,
@@ -39,18 +39,24 @@ class GameOverOverlay extends StatelessWidget {
               children: [
                 const Text(
                   "HELL NA, WE GOING BACK IN!",
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
-                const Icon(Icons.arrow_downward, color: Colors.amber, size: 50), // Pointing to restart
+                const Icon(Icons.arrow_downward,
+                    color: Colors.amber, size: 50), // Pointing to restart
                 const SizedBox(height: 10),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber,
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
                   ),
                   onPressed: onRestart,
-                  child: const Text("REBOOT SYSTEM", style: TextStyle(color: Colors.black, fontSize: 22)),
+                  child: const Text("REBOOT SYSTEM",
+                      style: TextStyle(color: Colors.black, fontSize: 22)),
                 ),
               ],
             ),

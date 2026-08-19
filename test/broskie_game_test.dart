@@ -18,7 +18,8 @@ void main() {
 
   test('stage rank math is honest', () {
     expect(BroskieGame.stageRankFor(1, 3, 20), 'S'); // flawless and under par
-    expect(BroskieGame.stageRankFor(1, 2, 40), 'A'); // 2 hearts, within 1.5x par
+    expect(
+        BroskieGame.stageRankFor(1, 2, 40), 'A'); // 2 hearts, within 1.5x par
     expect(BroskieGame.stageRankFor(1, 1, 40), 'B'); // survived within 2x par
     expect(BroskieGame.stageRankFor(1, 1, 80), 'C'); // barely made it
   });
@@ -116,8 +117,12 @@ void main() {
       final exit = game.children.whereType<LevelExit>().single;
       expect(exit.locked, isTrue);
 
-      game.children.whereType<TheForeman>().forEach((c) => c.removeFromParent());
-      game.children.whereType<DataBrokerBoss>().forEach((c) => c.removeFromParent());
+      game.children
+          .whereType<TheForeman>()
+          .forEach((c) => c.removeFromParent());
+      game.children
+          .whereType<DataBrokerBoss>()
+          .forEach((c) => c.removeFromParent());
       game.update(0.016); // process pending removals
       game.update(0.3); // let the exit poll again
 
@@ -126,12 +131,16 @@ void main() {
   );
 
   test('rank boundaries: par is inclusive, S demands full health', () {
-    expect(BroskieGame.stageRankFor(2, 3, 50), 'S'); // exactly at par certifies gold
-    expect(BroskieGame.stageRankFor(2, 3, 50.01), 'A'); // full health but over par
-    expect(BroskieGame.stageRankFor(2, 2, 49), 'A'); // flawless time, one hit taken — no S
+    expect(BroskieGame.stageRankFor(2, 3, 50),
+        'S'); // exactly at par certifies gold
+    expect(
+        BroskieGame.stageRankFor(2, 3, 50.01), 'A'); // full health but over par
+    expect(BroskieGame.stageRankFor(2, 2, 49),
+        'A'); // flawless time, one hit taken — no S
     expect(BroskieGame.stageRankFor(1, 3, 36), 'A'); // full health, 1s over par
     expect(BroskieGame.stageRankFor(1, 1, 100), 'C'); // slow AND bruised
-    expect(BroskieGame.stageRankFor(1, 3, 69), 'B'); // full health but way over par
+    expect(BroskieGame.stageRankFor(1, 3, 69),
+        'B'); // full health but way over par
   });
 
   test('beatPulse stays inside [0,1] on every stage', () {
@@ -140,13 +149,15 @@ void main() {
       game.currentStage.value = stage;
       for (final t in [0.0, 0.17, 1.3, 42.42, 999.9]) {
         game.stageTime = t;
-        expect(game.beatPulse, inInclusiveRange(0, 1), reason: 'stage $stage at t=$t');
+        expect(game.beatPulse, inInclusiveRange(0, 1),
+            reason: 'stage $stage at t=$t');
       }
     }
   });
 
   test('prefs: haptics toggle persists, unlock range clamps', () async {
-    SharedPreferences.setMockInitialValues({'settings_haptics': false, 'unlocked_stage': 99});
+    SharedPreferences.setMockInitialValues(
+        {'settings_haptics': false, 'unlocked_stage': 99});
     final game = BroskieGame();
     await game.loadPrefs();
     expect(game.hapticsEnabled.value, false);

@@ -18,19 +18,21 @@ class SettingsOverlay extends StatelessWidget {
           color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: const Color(0xFF00E5FF), width: 4),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)],
+          boxShadow: const [
+            BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("SYSTEM SETTINGS", style: broskieHeadline()),
             const Divider(color: Colors.white24, height: 20),
-
             ValueListenableBuilder<bool>(
               valueListenable: game.sfxEnabled,
               builder: (context, on, _) => SwitchListTile(
                 activeThumbColor: const Color(0xFF00E5FF),
-                title: const Text("Sound FX", style: TextStyle(color: Colors.white)),
+                title: const Text("Sound FX",
+                    style: TextStyle(color: Colors.white)),
                 value: on,
                 onChanged: (v) {
                   game.sfxEnabled.value = v;
@@ -39,12 +41,12 @@ class SettingsOverlay extends StatelessWidget {
                 },
               ),
             ),
-
             ValueListenableBuilder<bool>(
               valueListenable: game.musicEnabled,
               builder: (context, on, _) => SwitchListTile(
                 activeThumbColor: const Color(0xFF00E5FF),
-                title: const Text("Music", style: TextStyle(color: Colors.white)),
+                title:
+                    const Text("Music", style: TextStyle(color: Colors.white)),
                 value: on,
                 onChanged: (v) {
                   game.musicEnabled.value = v;
@@ -53,12 +55,12 @@ class SettingsOverlay extends StatelessWidget {
                 },
               ),
             ),
-
             ValueListenableBuilder<bool>(
               valueListenable: game.touchControlsEnabled,
               builder: (context, on, _) => SwitchListTile(
                 activeThumbColor: const Color(0xFF00E5FF),
-                title: const Text("Touch Controls", style: TextStyle(color: Colors.white)),
+                title: const Text("Touch Controls",
+                    style: TextStyle(color: Colors.white)),
                 value: on,
                 onChanged: (v) {
                   game.touchControlsEnabled.value = v;
@@ -66,13 +68,14 @@ class SettingsOverlay extends StatelessWidget {
                 },
               ),
             ),
-
             ValueListenableBuilder<bool>(
               valueListenable: game.hapticsEnabled,
               builder: (context, on, _) => SwitchListTile(
                 activeThumbColor: const Color(0xFFFF3FA4),
-                title: const Text("Haptics", style: TextStyle(color: Colors.white)),
-                subtitle: const Text("Rumble on dashes, stomps and boss kills", style: TextStyle(color: Colors.white38, fontSize: 11)),
+                title: const Text("Haptics",
+                    style: TextStyle(color: Colors.white)),
+                subtitle: const Text("Rumble on dashes, stomps and boss kills",
+                    style: TextStyle(color: Colors.white38, fontSize: 11)),
                 value: on,
                 onChanged: (v) {
                   game.hapticsEnabled.value = v;
@@ -80,7 +83,6 @@ class SettingsOverlay extends StatelessWidget {
                 },
               ),
             ),
-
             const SizedBox(height: 10),
             ValueListenableBuilder<double>(
               valueListenable: game.shakeScale,
@@ -89,8 +91,10 @@ class SettingsOverlay extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Screen Shake", style: TextStyle(color: Colors.white)),
-                      Text("${(scale * 100).toInt()}%", style: const TextStyle(color: Colors.amber)),
+                      const Text("Screen Shake",
+                          style: TextStyle(color: Colors.white)),
+                      Text("${(scale * 100).toInt()}%",
+                          style: const TextStyle(color: Colors.amber)),
                     ],
                   ),
                   Slider(
@@ -107,16 +111,17 @@ class SettingsOverlay extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00E5FF)),
               onPressed: () {
                 BroskieAudio.playUiClick();
                 game.overlays.remove('Settings');
               },
-              child: const Text("SAVE & EXIT", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              child: const Text("SAVE & EXIT",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],
         ),

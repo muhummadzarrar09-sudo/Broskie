@@ -25,10 +25,12 @@ class TouchControlsOverlay extends StatelessWidget {
                   height: 60,
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
-                    border: Border.all(color: const Color(0xFF00E5FF), width: 3),
+                    border:
+                        Border.all(color: const Color(0xFF00E5FF), width: 3),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF00E5FF), size: 28),
+                  child: const Icon(Icons.arrow_back_ios_new,
+                      color: Color(0xFF00E5FF), size: 28),
                 ),
               ),
               const SizedBox(width: 15),
@@ -41,10 +43,12 @@ class TouchControlsOverlay extends StatelessWidget {
                   height: 60,
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
-                    border: Border.all(color: const Color(0xFF00E5FF), width: 3),
+                    border:
+                        Border.all(color: const Color(0xFF00E5FF), width: 3),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.arrow_forward_ios, color: Color(0xFF00E5FF), size: 28),
+                  child: const Icon(Icons.arrow_forward_ios,
+                      color: Color(0xFF00E5FF), size: 28),
                 ),
               ),
             ],
@@ -67,10 +71,17 @@ class TouchControlsOverlay extends StatelessWidget {
                     color: Colors.pinkAccent.withValues(alpha: 0.8),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [BoxShadow(color: Colors.pink, blurRadius: 8)],
+                    boxShadow: const [
+                      BoxShadow(color: Colors.pink, blurRadius: 8)
+                    ],
                   ),
                   child: const Center(
-                    child: Text("B", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                    child: Text("B",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'monospace')),
                   ),
                 ),
               ),
@@ -86,10 +97,17 @@ class TouchControlsOverlay extends StatelessWidget {
                     color: Colors.amber.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [BoxShadow(color: Colors.amber, blurRadius: 10)],
+                    boxShadow: const [
+                      BoxShadow(color: Colors.amber, blurRadius: 10)
+                    ],
                   ),
                   child: const Center(
-                    child: Text("A", style: TextStyle(color: Colors.black, fontSize: 28, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                    child: Text("A",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'monospace')),
                   ),
                 ),
               ),

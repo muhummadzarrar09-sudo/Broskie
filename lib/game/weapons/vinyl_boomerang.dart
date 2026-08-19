@@ -9,15 +9,17 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class VinylBoomerang extends SpriteComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class VinylBoomerang extends SpriteComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   final double speed = 400;
   bool returning = false;
   late Vector2 direction;
   late Player owner;
   double rotationAngle = 0;
 
-  VinylBoomerang({required Vector2 position, required this.owner, required bool isLeft})
-    : super(position: position, size: Vector2(24, 24)) {
+  VinylBoomerang(
+      {required Vector2 position, required this.owner, required bool isLeft})
+      : super(position: position, size: Vector2(24, 24)) {
     direction = isLeft ? Vector2(-1, 0) : Vector2(1, 0);
     add(CircleHitbox());
   }
@@ -46,7 +48,8 @@ class VinylBoomerang extends SpriteComponent with HasGameReference<BroskieGame>,
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Enemy) {
       other.die();
-      game.add(KillBurst(position: other.position.clone()..add(other.size / 2)));
+      game.add(
+          KillBurst(position: other.position.clone()..add(other.size / 2)));
       game.hitStop(0.05);
       removeFromParent();
     } else if (other is TheForeman) {
@@ -60,15 +63,18 @@ class VinylBoomerang extends SpriteComponent with HasGameReference<BroskieGame>,
     }
     super.onCollision(intersectionPoints, other);
   }
-@override
+
+  @override
   // ignore: must_call_super — we paint the whole sprite ourselves
   void render(Canvas canvas) {
     canvas.save();
     canvas.translate(size.x / 2, size.y / 2);
     canvas.rotate(rotationAngle);
 
-    canvas.drawCircle(Offset.zero, 12, Paint()..color = Colors.black); // Vinyl Record
-    canvas.drawCircle(Offset.zero, 4, Paint()..color = BroskieColors.magenta); // Record Label
+    canvas.drawCircle(
+        Offset.zero, 12, Paint()..color = Colors.black); // Vinyl Record
+    canvas.drawCircle(
+        Offset.zero, 4, Paint()..color = BroskieColors.magenta); // Record Label
     canvas.drawCircle(Offset.zero, 1.5, Paint()..color = Colors.white); // Hole
 
     canvas.restore();

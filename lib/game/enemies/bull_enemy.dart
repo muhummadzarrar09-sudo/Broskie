@@ -7,7 +7,8 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class WallStreetBull extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class WallStreetBull extends SpriteAnimationComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isCharging = false;
   bool isDizzy = false;
   double patrolSpeed = 60;
@@ -100,7 +101,9 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameReference<Bros
 
       if (isDizzy && other.velocity.y > 0 && playerBottom <= bullTop + 16) {
         BroskieAudio.playStomp();
-        game.add(KillBurst(position: position.clone()..add(size / 2), color: const Color(0xFFFFB800)));
+        game.add(KillBurst(
+            position: position.clone()..add(size / 2),
+            color: const Color(0xFFFFB800)));
         game.hitStop(0.08);
         if (game.hapticsEnabled.value) BroskieHaptics.heavy();
         game.enemiesDefeated++;
@@ -120,7 +123,8 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameReference<Bros
       return;
     }
 
-    final bullBody = Paint()..color = isCharging ? const Color(0xFFB71C1C) : const Color(0xFF4E342E);
+    final bullBody = Paint()
+      ..color = isCharging ? const Color(0xFFB71C1C) : const Color(0xFF4E342E);
     final hornPaint = Paint()..color = const Color(0xFFFFD700);
     final eyePaint = Paint()..color = isDizzy ? Colors.yellow : Colors.red;
 
@@ -153,8 +157,10 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameReference<Bros
     // Dizzy Stars Above Head
     if (isDizzy) {
       double starOffset = (stateTimer * 10) % 20;
-      canvas.drawCircle(Offset(20 + starOffset, -6), 4, Paint()..color = Colors.yellow);
-      canvas.drawCircle(Offset(40 - starOffset, -6), 3, Paint()..color = Colors.amber);
+      canvas.drawCircle(
+          Offset(20 + starOffset, -6), 4, Paint()..color = Colors.yellow);
+      canvas.drawCircle(
+          Offset(40 - starOffset, -6), 3, Paint()..color = Colors.amber);
     }
 
     canvas.restore();

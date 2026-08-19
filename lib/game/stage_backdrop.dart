@@ -9,7 +9,8 @@ import 'package:flame/components.dart';
 ///
 /// If the image fails to load the component renders nothing and the
 /// parallax sky remains visible, so stages always have a background.
-class StageBackdrop extends PositionComponent with HasGameReference<BroskieGame> {
+class StageBackdrop extends PositionComponent
+    with HasGameReference<BroskieGame> {
   static const double tileHeight = 700;
   static const double groundBottom = 600;
 
@@ -39,10 +40,12 @@ class StageBackdrop extends PositionComponent with HasGameReference<BroskieGame>
     final img = _image;
     if (img == null) return;
     final tileWidth = img.width * (tileHeight / img.height);
-    final src = ui.Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
+    final src =
+        ui.Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
     final paint = ui.Paint()..filterQuality = ui.FilterQuality.low;
     for (double x = 0; x < size.x; x += tileWidth) {
-      canvas.drawImageRect(img, src, ui.Rect.fromLTWH(x, 0, tileWidth, tileHeight), paint);
+      canvas.drawImageRect(
+          img, src, ui.Rect.fromLTWH(x, 0, tileWidth, tileHeight), paint);
     }
   }
 }

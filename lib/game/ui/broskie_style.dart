@@ -23,12 +23,15 @@ TextStyle broskieHeadline({
     fontWeight: FontWeight.w900,
     fontFamily: 'monospace',
     letterSpacing: letterSpacing,
-    shadows: const [Shadow(offset: Offset(2, 2), blurRadius: 0, color: Colors.black)],
+    shadows: const [
+      Shadow(offset: Offset(2, 2), blurRadius: 0, color: Colors.black)
+    ],
   );
 }
 
 /// Kit border: 3px chunky, radius never above 8.
-BoxDecoration broskiePanel({Color border = BroskieColors.cyan, Color background = Colors.black}) {
+BoxDecoration broskiePanel(
+    {Color border = BroskieColors.cyan, Color background = Colors.black}) {
   return BoxDecoration(
     color: background.withValues(alpha: 0.92),
     border: Border.all(color: border, width: 3),
@@ -51,7 +54,8 @@ class ScanlinesPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(ScanlinesPainter oldDelegate) => oldDelegate.opacity != opacity;
+  bool shouldRepaint(ScanlinesPainter oldDelegate) =>
+      oldDelegate.opacity != opacity;
 }
 
 /// Drop-in scanline layer. Non-interactive, always covers its parent.
@@ -63,7 +67,8 @@ class ScanlineFill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: CustomPaint(painter: ScanlinesPainter(opacity: opacity), size: Size.infinite),
+      child: CustomPaint(
+          painter: ScanlinesPainter(opacity: opacity), size: Size.infinite),
     );
   }
 }
@@ -90,18 +95,21 @@ class PixelHeartPainter extends CustomPainter {
       '00111100',
       '00011000',
     ];
-    final body = Paint()..color = filled ? BroskieColors.magenta : Colors.white24;
+    final body = Paint()
+      ..color = filled ? BroskieColors.magenta : Colors.white24;
     for (var row = 0; row < pattern.length; row++) {
       for (var col = 0; col < 8; col++) {
         if (pattern[row][col] == '1') {
-          canvas.drawRect(Rect.fromLTWH(col * unit, row * unit, unit, unit), body);
+          canvas.drawRect(
+              Rect.fromLTWH(col * unit, row * unit, unit, unit), body);
         }
       }
     }
   }
 
   @override
-  bool shouldRepaint(PixelHeartPainter oldDelegate) => oldDelegate.filled != filled;
+  bool shouldRepaint(PixelHeartPainter oldDelegate) =>
+      oldDelegate.filled != filled;
 }
 
 /// Pixel vinyl glyph (diegetic cash — Data Vinyls).
@@ -113,10 +121,13 @@ class PixelVinylPainter extends CustomPainter {
     final c = Offset(size.width / 2, size.height / 2);
     final r = size.width / 2;
     canvas.drawCircle(c, r, Paint()..color = Colors.black);
-    canvas.drawCircle(c, r, Paint()
-      ..color = BroskieColors.bone.withValues(alpha: 0.35)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1);
+    canvas.drawCircle(
+        c,
+        r,
+        Paint()
+          ..color = BroskieColors.bone.withValues(alpha: 0.35)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1);
     canvas.drawCircle(c, r * 0.42, Paint()..color = BroskieColors.magenta);
     canvas.drawCircle(c, r * 0.14, Paint()..color = BroskieColors.bone);
   }
@@ -126,7 +137,8 @@ class PixelVinylPainter extends CustomPainter {
 }
 
 /// Deterministic barcode stamp — the villain's signature mark.
-void drawBarcode(Canvas canvas, Rect rect, {int seed = 7, Color color = Colors.black}) {
+void drawBarcode(Canvas canvas, Rect rect,
+    {int seed = 7, Color color = Colors.black}) {
   final paint = Paint()..color = color;
   var rng = seed;
   double x = rect.left;

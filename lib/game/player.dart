@@ -12,9 +12,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 enum PowerUpType { none, classic, juggernaut, shockwave }
+
 enum PlayerState { idle, walking, running, jumping, falling, vaulting }
 
-class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameReference<BroskieGame>, CollisionCallbacks {
+class Player extends SpriteAnimationComponent
+    with KeyboardHandler, HasGameReference<BroskieGame>, CollisionCallbacks {
   // Game-feel tuning
   static const double _jumpBufferTime = 0.12;
   static const double _coyoteTime = 0.10;
@@ -22,7 +24,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   static const double _dashSpeed = 950;
   static const double _dashCooldownTime = 0.7;
 
-  Player({required Vector2 position}) : super(position: position, size: Vector2(48, 48)) {
+  Player({required Vector2 position})
+      : super(position: position, size: Vector2(48, 48)) {
     add(RectangleHitbox());
   }
 
@@ -76,26 +79,34 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      final walkSheet = await game.images.load('runtime/broskie_walk_sheet.png');
-      final voltSheet = await game.images.load('runtime/broskie_volt_walk_sheet.png');
+      final walkSheet =
+          await game.images.load('runtime/broskie_walk_sheet.png');
+      final voltSheet =
+          await game.images.load('runtime/broskie_volt_walk_sheet.png');
       const frameCount = 4;
-      final frameSize = Vector2(walkSheet.width / frameCount, walkSheet.height.toDouble());
-      final voltFrameSize = Vector2(voltSheet.width / frameCount, voltSheet.height.toDouble());
+      final frameSize =
+          Vector2(walkSheet.width / frameCount, walkSheet.height.toDouble());
+      final voltFrameSize =
+          Vector2(voltSheet.width / frameCount, voltSheet.height.toDouble());
       walkAnim = SpriteAnimation.fromFrameData(
         walkSheet,
-        SpriteAnimationData.sequenced(amount: frameCount, stepTime: 0.12, textureSize: frameSize),
+        SpriteAnimationData.sequenced(
+            amount: frameCount, stepTime: 0.12, textureSize: frameSize),
       );
       idleAnim = SpriteAnimation.fromFrameData(
         walkSheet,
-        SpriteAnimationData.sequenced(amount: 1, stepTime: 1, textureSize: frameSize),
+        SpriteAnimationData.sequenced(
+            amount: 1, stepTime: 1, textureSize: frameSize),
       );
       voltWalkAnim = SpriteAnimation.fromFrameData(
         voltSheet,
-        SpriteAnimationData.sequenced(amount: frameCount, stepTime: 0.10, textureSize: voltFrameSize),
+        SpriteAnimationData.sequenced(
+            amount: frameCount, stepTime: 0.10, textureSize: voltFrameSize),
       );
       voltIdleAnim = SpriteAnimation.fromFrameData(
         voltSheet,
-        SpriteAnimationData.sequenced(amount: 1, stepTime: 1, textureSize: voltFrameSize),
+        SpriteAnimationData.sequenced(
+            amount: 1, stepTime: 1, textureSize: voltFrameSize),
       );
       animation = idleAnim;
       artLoaded = true;
@@ -128,7 +139,9 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
 
     // Jump buffer: a press just before landing still jumps.
     if (jumpBufferTimer > 0) jumpBufferTimer -= dt;
-    if (jumpBufferTimer > 0 && (isGrounded || coyoteTimer > 0) && state != PlayerState.vaulting) {
+    if (jumpBufferTimer > 0 &&
+        (isGrounded || coyoteTimer > 0) &&
+        state != PlayerState.vaulting) {
       _performJump();
     }
 
@@ -194,9 +207,13 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
 
     // Sprite sheet selection when the AI art is loaded
     if (artLoaded) {
-      final moving = state == PlayerState.walking || state == PlayerState.running || dashTimer > 0;
+      final moving = state == PlayerState.walking ||
+          state == PlayerState.running ||
+          dashTimer > 0;
       final volt = currentPower != PowerUpType.none;
-      final next = volt ? (moving ? voltWalkAnim : voltIdleAnim) : (moving ? walkAnim : idleAnim);
+      final next = volt
+          ? (moving ? voltWalkAnim : voltIdleAnim)
+          : (moving ? walkAnim : idleAnim);
       if (animation != next) animation = next;
 
       final shouldFlip = facing == -1;
@@ -209,7 +226,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     // Running Dust/Trail Pixel Particles
     if (isGrounded && velocity.x.abs() > 200 && animFrame % 2 == 0) {
       particles.add(PixelParticle(
-        position: Vector2(position.x + (facing == 1 ? 4 : 24), position.y + size.y - 4),
+        position: Vector2(
+            position.x + (facing == 1 ? 4 : 24), position.y + size.y - 4),
         velocity: Vector2(-facing * 40, -20 - Random().nextDouble() * 30),
         color: const Color(0xFF888888),
         lifetime: 0.25,
@@ -219,7 +237,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     // Dash afterimage trail
     if (dashTimer > 0) {
       particles.add(PixelParticle(
-        position: Vector2(position.x + (facing == 1 ? 0 : size.x - 4), position.y + 8 + Random().nextDouble() * size.y - 8),
+        position: Vector2(position.x + (facing == 1 ? 0 : size.x - 4),
+            position.y + 8 + Random().nextDouble() * size.y - 8),
         velocity: Vector2(-facing * 60, 0),
         color: const Color(0xFFFFD700),
         lifetime: 0.2,
@@ -275,14 +294,17 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     int dir = 0;
-    if (keysPressed.contains(LogicalKeyboardKey.keyA) || keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
+    if (keysPressed.contains(LogicalKeyboardKey.keyA) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
       dir = -1;
-    } else if (keysPressed.contains(LogicalKeyboardKey.keyD) || keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
+    } else if (keysPressed.contains(LogicalKeyboardKey.keyD) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
       dir = 1;
     }
 
     horizontalDirection = controlsInverted ? -dir : dir;
-    isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) || keysPressed.contains(LogicalKeyboardKey.shiftRight);
+    isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
+        keysPressed.contains(LogicalKeyboardKey.shiftRight);
 
     final jumpHeld = keysPressed.contains(LogicalKeyboardKey.space) ||
         keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
@@ -302,13 +324,16 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     }
 
     // Dash: K or Ctrl.
-    if ((keysPressed.contains(LogicalKeyboardKey.keyK) || keysPressed.contains(LogicalKeyboardKey.controlLeft)) &&
+    if ((keysPressed.contains(LogicalKeyboardKey.keyK) ||
+            keysPressed.contains(LogicalKeyboardKey.controlLeft)) &&
         event is KeyDownEvent) {
       tryDash();
     }
 
     // Throw Vinyl Boomerang Weapon (Key J or Key F)
-    if ((keysPressed.contains(LogicalKeyboardKey.keyJ) || keysPressed.contains(LogicalKeyboardKey.keyF)) && event is KeyDownEvent) {
+    if ((keysPressed.contains(LogicalKeyboardKey.keyJ) ||
+            keysPressed.contains(LogicalKeyboardKey.keyF)) &&
+        event is KeyDownEvent) {
       throwVinylBoomerang();
     }
 
@@ -319,7 +344,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     if (shootCooldown > 0) return;
     shootCooldown = 0.4;
     game.add(VinylBoomerang(
-      position: Vector2(position.x + (facing == 1 ? size.x : -24), position.y + 12),
+      position:
+          Vector2(position.x + (facing == 1 ? size.x : -24), position.y + 12),
       owner: this,
       isLeft: facing == -1,
     ));
@@ -380,13 +406,17 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
-    if (other is Floor || other is InteractableBlock || other is MovingPlatform) {
+    if (other is Floor ||
+        other is InteractableBlock ||
+        other is MovingPlatform) {
       final playerBottom = position.y + size.y;
       final playerTop = position.y;
       final otherTop = other.position.y;
       final otherBottom = other.position.y + other.size.y;
 
-      if (velocity.y >= 0 && playerBottom >= otherTop && (playerBottom - velocity.y * 0.05) <= otherTop + 14) {
+      if (velocity.y >= 0 &&
+          playerBottom >= otherTop &&
+          (playerBottom - velocity.y * 0.05) <= otherTop + 14) {
         velocity.y = 0;
         // Rest 0.5px into the surface so grounding stays stable frame to frame.
         position.y = otherTop - size.y + 0.5;
@@ -395,7 +425,9 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
         if (other is CrumblingPlatform) {
           other.stepOn();
         }
-      } else if (velocity.y < 0 && playerTop <= otherBottom && (playerTop - velocity.y * 0.05) >= otherBottom - 14) {
+      } else if (velocity.y < 0 &&
+          playerTop <= otherBottom &&
+          (playerTop - velocity.y * 0.05) >= otherBottom - 14) {
         velocity.y = 0;
         position.y = otherBottom;
       } else {
@@ -415,7 +447,9 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
-    if (other is Floor || other is InteractableBlock || other is MovingPlatform) {
+    if (other is Floor ||
+        other is InteractableBlock ||
+        other is MovingPlatform) {
       isGrounded = false;
     }
   }
@@ -465,7 +499,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     switch (state) {
       case PlayerState.idle:
         headY = (animFrame % 4 == 0) ? 3.0 : 2.0; // Idle breathing bounce
-        legL = 0; legR = 0;
+        legL = 0;
+        legR = 0;
         break;
       case PlayerState.walking:
       case PlayerState.running:
@@ -476,24 +511,28 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
       case PlayerState.jumping:
         headY = 0.0;
         armShift = -10;
-        legL = -6; legR = 6;
+        legL = -6;
+        legR = 6;
         break;
       case PlayerState.falling:
         headY = 4.0;
         armShift = 10;
-        legL = 6; legR = -6;
+        legL = 6;
+        legR = -6;
         break;
       case PlayerState.vaulting:
         headY = 6.0;
         armShift = -14;
-        legL = 12; legR = 12;
+        legL = 12;
+        legR = 12;
         break;
     }
 
     // Head & Cap
     canvas.drawRect(Rect.fromLTWH(4, headY, 24, 14), skinPaint);
     canvas.drawRect(Rect.fromLTWH(2, headY - 2, 28, 6), redPaint);
-    canvas.drawRect(Rect.fromLTWH(-2, headY + 3, 18, 3), darkRedPaint); // Backwards Cap Brim
+    canvas.drawRect(Rect.fromLTWH(-2, headY + 3, 18, 3),
+        darkRedPaint); // Backwards Cap Brim
 
     // Sunglasses
     canvas.drawRect(Rect.fromLTWH(10, headY + 5, 14, 5), blackPaint);
@@ -508,12 +547,15 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     canvas.drawRect(Rect.fromLTWH(22, headY + 14, 6, 16), denimPaint);
 
     // Arms
-    canvas.drawRect(Rect.fromLTWH(-2 + armShift * 0.5, headY + 16, 6, 12), skinPaint);
-    canvas.drawRect(Rect.fromLTWH(28 - armShift * 0.5, headY + 16, 6, 12), skinPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(-2 + armShift * 0.5, headY + 16, 6, 12), skinPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(28 - armShift * 0.5, headY + 16, 6, 12), skinPaint);
 
     // Legs & Pants
     canvas.drawRect(Rect.fromLTWH(6, headY + 30, 8, 12 + legL), bluePantsPaint);
-    canvas.drawRect(Rect.fromLTWH(18, headY + 30, 8, 12 + legR), bluePantsPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(18, headY + 30, 8, 12 + legR), bluePantsPaint);
 
     // Red Sneakers
     canvas.drawRect(Rect.fromLTWH(4, headY + 42 + legL, 12, 4), redPaint);
@@ -528,7 +570,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
       final auraColor = currentPower == PowerUpType.juggernaut
           ? const Color(0xFFFFD700).withValues(alpha: 0.5)
           : const Color(0xFF00E5FF).withValues(alpha: 0.5);
-      canvas.drawCircle(Offset(w / 2, h / 2 + 8), w * 0.8, Paint()..color = auraColor);
+      canvas.drawCircle(
+          Offset(w / 2, h / 2 + 8), w * 0.8, Paint()..color = auraColor);
     }
   }
 }
@@ -540,7 +583,11 @@ class PixelParticle {
   double lifetime;
   double age = 0;
 
-  PixelParticle({required this.position, required this.velocity, required this.color, required this.lifetime});
+  PixelParticle(
+      {required this.position,
+      required this.velocity,
+      required this.color,
+      required this.lifetime});
 
   void update(double dt) {
     age += dt;
@@ -552,6 +599,8 @@ class PixelParticle {
   void render(Canvas canvas, Vector2 playerPos) {
     double alpha = (1.0 - age / lifetime).clamp(0.0, 1.0);
     final paint = Paint()..color = color.withValues(alpha: alpha);
-    canvas.drawRect(Rect.fromLTWH(position.x - playerPos.x, position.y - playerPos.y, 3, 3), paint);
+    canvas.drawRect(
+        Rect.fromLTWH(position.x - playerPos.x, position.y - playerPos.y, 3, 3),
+        paint);
   }
 }

@@ -8,13 +8,15 @@ import 'package:flutter/material.dart';
 
 enum DebuffType { slow, lowJump, invertedControls, noDash }
 
-class HaterCloud extends SpriteComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class HaterCloud extends SpriteComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   double timer = 0;
   double hoverTime = 0;
   final double attackInterval = 3.0;
   final double effectRange = 340;
 
-  HaterCloud({required Vector2 position}) : super(position: position, size: Vector2(64, 48)) {
+  HaterCloud({required Vector2 position})
+      : super(position: position, size: Vector2(64, 48)) {
     add(RectangleHitbox());
   }
 
@@ -59,7 +61,10 @@ class HaterCloud extends SpriteComponent with HasGameReference<BroskieGame>, Col
     }
 
     final cloudPaint = Paint()..color = const Color(0xFF4A148C);
-    final darkOutline = Paint()..color = const Color(0xFF1A237E)..style = PaintingStyle.stroke..strokeWidth = 2;
+    final darkOutline = Paint()
+      ..color = const Color(0xFF1A237E)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
     final eyePaint = Paint()..color = Colors.redAccent;
 
     // Dark Cloud Circles

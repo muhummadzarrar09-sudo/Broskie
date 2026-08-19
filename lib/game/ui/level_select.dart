@@ -18,14 +18,15 @@ class LevelSelectOverlay extends StatelessWidget {
           color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: const Color(0xFF00E5FF), width: 4),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)],
+          boxShadow: const [
+            BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("CAMPAIGN STAGE SELECT", style: broskieHeadline(size: 20)),
             const Divider(color: Colors.white24, height: 20),
-
             ValueListenableBuilder<int>(
               valueListenable: game.unlockedStage,
               builder: (context, unlocked, _) => Column(
@@ -68,16 +69,16 @@ class LevelSelectOverlay extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
               onPressed: () {
                 BroskieAudio.playUiClick();
                 game.overlays.remove('LevelSelect');
               },
-              child: const Text("CLOSE SELECT", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              child: const Text("CLOSE SELECT",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -106,15 +107,21 @@ class LevelSelectOverlay extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white10,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: isUnlocked ? const Color(0xFF00E5FF) : Colors.grey),
+        border: Border.all(
+            color: isUnlocked ? const Color(0xFF00E5FF) : Colors.grey),
       ),
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: isUnlocked ? const Color(0xFF00E5FF) : Colors.grey,
-          child: Text(stageNum, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          child: Text(stageNum,
+              style: const TextStyle(
+                  color: Colors.black, fontWeight: FontWeight.bold)),
         ),
-        title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        title: Text(title,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
+        subtitle: Text(subtitle,
+            style: const TextStyle(color: Colors.grey, fontSize: 12)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -124,14 +131,17 @@ class LevelSelectOverlay extends StatelessWidget {
                 child: Text(
                   best,
                   style: TextStyle(
-                    color: best == 'S' ? Colors.amber : (best == 'A' ? Colors.cyanAccent : Colors.white54),
+                    color: best == 'S'
+                        ? Colors.amber
+                        : (best == 'A' ? Colors.cyanAccent : Colors.white54),
                     fontWeight: FontWeight.w900,
                     fontSize: 18,
                     fontFamily: 'monospace',
                   ),
                 ),
               ),
-            Icon(isUnlocked ? Icons.play_arrow : Icons.lock, color: isUnlocked ? Colors.amber : Colors.grey),
+            Icon(isUnlocked ? Icons.play_arrow : Icons.lock,
+                color: isUnlocked ? Colors.amber : Colors.grey),
           ],
         ),
         onTap: isUnlocked ? onTap : null,

@@ -8,7 +8,8 @@ class NewsTickerOverlay extends StatefulWidget {
   State<NewsTickerOverlay> createState() => _NewsTickerOverlayState();
 }
 
-class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTickerProviderStateMixin {
+class _NewsTickerOverlayState extends State<NewsTickerOverlay>
+    with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
 
   @override
@@ -55,7 +56,10 @@ class _NewsTickerOverlayState extends State<NewsTickerOverlay> with SingleTicker
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 widget.headlines.join("  |  "),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'monospace'),
               ),
             ),
           ],

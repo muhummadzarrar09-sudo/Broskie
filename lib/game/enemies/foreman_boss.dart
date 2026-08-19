@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 
 enum BossPhase { chilling, mad, berserk }
 
-class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class TheForeman extends SpriteAnimationComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   BossPhase phase = BossPhase.chilling;
   int health = 6;
   static const int maxHealth = 6;
@@ -123,11 +124,13 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
       if (health <= 4 && phase == BossPhase.chilling) {
         phase = BossPhase.mad;
         speed = 180;
-        game.showDialogue("THE FOREMAN", "Efficiency dropping below KPI thresholds! Initiating AGGRESSIVE RESTRUCTURING!");
+        game.showDialogue("THE FOREMAN",
+            "Efficiency dropping below KPI thresholds! Initiating AGGRESSIVE RESTRUCTURING!");
       } else if (health <= 2 && phase == BossPhase.mad) {
         phase = BossPhase.berserk;
         speed = 320;
-        game.showDialogue("THE FOREMAN", "SYSTEM OVERRIDE! TERMINATE BROSKIE IMMEDIATELY!");
+        game.showDialogue(
+            "THE FOREMAN", "SYSTEM OVERRIDE! TERMINATE BROSKIE IMMEDIATELY!");
       }
     }
     super.update(dt);
@@ -167,7 +170,8 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
     if (game.hapticsEnabled.value) BroskieHaptics.heavy();
     game.hideBossBar();
     game.enemiesDefeated++;
-    game.showDialogue("THE FOREMAN", "System... failure... The Monopoly... will... find... you...");
+    game.showDialogue("THE FOREMAN",
+        "System... failure... The Monopoly... will... find... you...");
     removeFromParent();
   }
 
@@ -208,15 +212,19 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
         ..lineTo(cx + 16, -16)
         ..close();
       canvas.drawPath(warn, Paint()..color = Colors.amber);
-      canvas.drawRect(Rect.fromLTWH(cx - 2, -38, 4, 12), Paint()..color = Colors.black);
-      canvas.drawRect(Rect.fromLTWH(cx - 2, -23, 4, 4), Paint()..color = Colors.black);
+      canvas.drawRect(
+          Rect.fromLTWH(cx - 2, -38, 4, 12), Paint()..color = Colors.black);
+      canvas.drawRect(
+          Rect.fromLTWH(cx - 2, -23, 4, 4), Paint()..color = Colors.black);
     }
 
     // In-game dynamic health bar above the boss, drawn for both art paths.
     final double healthPercent = (health / maxHealth).clamp(0.0, 1.0);
     final double barLeft = (size.x - 100) / 2;
-    canvas.drawRect(Rect.fromLTWH(barLeft - 2, -16, 104, 8), Paint()..color = Colors.black);
-    canvas.drawRect(Rect.fromLTWH(barLeft, -14, 100 * healthPercent, 4), Paint()..color = Colors.redAccent);
+    canvas.drawRect(
+        Rect.fromLTWH(barLeft - 2, -16, 104, 8), Paint()..color = Colors.black);
+    canvas.drawRect(Rect.fromLTWH(barLeft, -14, 100 * healthPercent, 4),
+        Paint()..color = Colors.redAccent);
   }
 
   void _renderProcedural(Canvas canvas) {
@@ -227,14 +235,22 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
       canvas.scale(-1, 1);
     }
 
-    final yellowPaint = Paint()..color = phase == BossPhase.berserk ? const Color(0xFFD50000) : const Color(0xFFFFAB00);
+    final yellowPaint = Paint()
+      ..color = phase == BossPhase.berserk
+          ? const Color(0xFFD50000)
+          : const Color(0xFFFFAB00);
     final darkMetal = Paint()..color = const Color(0xFF263238);
-    final eyePaint = Paint()..color = isDizzy ? Colors.yellow : (phase == BossPhase.berserk ? Colors.cyanAccent : Colors.red);
+    final eyePaint = Paint()
+      ..color = isDizzy
+          ? Colors.yellow
+          : (phase == BossPhase.berserk ? Colors.cyanAccent : Colors.red);
     final double scaleX = size.x / 128;
 
     // Excavator Main Body
-    canvas.drawRect(Rect.fromLTWH(20 * scaleX, 20, 88 * scaleX, 56), yellowPaint);
-    canvas.drawRect(Rect.fromLTWH(40 * scaleX, 10, 48 * scaleX, 30), darkMetal); // Cockpit Screen
+    canvas.drawRect(
+        Rect.fromLTWH(20 * scaleX, 20, 88 * scaleX, 56), yellowPaint);
+    canvas.drawRect(Rect.fromLTWH(40 * scaleX, 10, 48 * scaleX, 30),
+        darkMetal); // Cockpit Screen
 
     // Evil Eyes Screen
     canvas.drawRect(Rect.fromLTWH(48 * scaleX, 16, 12, 12), eyePaint);
@@ -242,12 +258,17 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
 
     // Tread Tracks
     canvas.drawRect(Rect.fromLTWH(10 * scaleX, 72, 108 * scaleX, 8), darkMetal);
-    canvas.drawRect(Rect.fromLTWH(10 * scaleX, 72, 108 * scaleX, 4), Paint()..color = Colors.black);
+    canvas.drawRect(Rect.fromLTWH(10 * scaleX, 72, 108 * scaleX, 4),
+        Paint()..color = Colors.black);
 
     // Crane Arm & Wrecking Ball
-    final chainPaint = Paint()..color = Colors.grey..strokeWidth = 3;
-    canvas.drawLine(Offset(20 * scaleX, 30), const Offset(-10, -10), chainPaint);
-    canvas.drawCircle(const Offset(-10, 15), 14, Paint()..color = Colors.black); // Wrecking ball
+    final chainPaint = Paint()
+      ..color = Colors.grey
+      ..strokeWidth = 3;
+    canvas.drawLine(
+        Offset(20 * scaleX, 30), const Offset(-10, -10), chainPaint);
+    canvas.drawCircle(const Offset(-10, 15), 14,
+        Paint()..color = Colors.black); // Wrecking ball
 
     canvas.restore();
   }

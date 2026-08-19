@@ -35,7 +35,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _glow;
   late final AnimationController _zoom;
   double _progress = 0;
@@ -44,8 +45,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _glow = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))..repeat(reverse: true);
-    _zoom = AnimationController(vsync: this, duration: const Duration(milliseconds: 3400))..forward();
+    _glow = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1100))
+      ..repeat(reverse: true);
+    _zoom = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 3400))
+      ..forward();
     _startLoading();
   }
 
@@ -97,7 +102,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 700),
         pageBuilder: (_, __, ___) => widget.next,
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
       ),
     );
   }
@@ -148,7 +154,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.black.withValues(alpha: 0.15), Colors.black.withValues(alpha: 0.82)],
+                colors: [
+                  Colors.black.withValues(alpha: 0.15),
+                  Colors.black.withValues(alpha: 0.82)
+                ],
                 stops: const [0.45, 1.0],
               ),
             ),
@@ -172,7 +181,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         letterSpacing: 10,
                         shadows: [
                           const Shadow(color: Colors.black, blurRadius: 20),
-                          Shadow(color: const Color(0xFF00E5FF), blurRadius: 18 + 26 * _glow.value),
+                          Shadow(
+                              color: const Color(0xFF00E5FF),
+                              blurRadius: 18 + 26 * _glow.value),
                         ],
                       ),
                     ),
@@ -180,7 +191,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
                 const Text(
                   "MONOPOLY CORP MUST FALL",
-                  style: TextStyle(color: Colors.amber, fontSize: 14, fontStyle: FontStyle.italic, fontFamily: 'monospace', letterSpacing: 2),
+                  style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      fontFamily: 'monospace',
+                      letterSpacing: 2),
                 ),
                 const Spacer(flex: 2),
                 SizedBox(
@@ -191,19 +207,28 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       value: _progress > 0 ? _progress : null,
                       minHeight: 4,
                       backgroundColor: Colors.white12,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(Colors.amber),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   "LOADING NEO-CITY... ${(_progress * 100).toInt()}%",
-                  style: const TextStyle(color: Colors.white38, fontSize: 10, fontFamily: 'monospace', letterSpacing: 3),
+                  style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 10,
+                      fontFamily: 'monospace',
+                      letterSpacing: 3),
                 ),
                 const SizedBox(height: 24),
                 const Text(
                   "CODE + AI ART",
-                  style: TextStyle(color: Color(0x29FFFFFF), fontSize: 9, fontFamily: 'monospace', letterSpacing: 2),
+                  style: TextStyle(
+                      color: Color(0x29FFFFFF),
+                      fontSize: 9,
+                      fontFamily: 'monospace',
+                      letterSpacing: 2),
                 ),
                 const SizedBox(height: 16),
               ],

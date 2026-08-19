@@ -4,14 +4,15 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class InteractableLore extends SpriteComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class InteractableLore extends SpriteComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   final String text;
   final String speaker;
   bool _hasTriggered = false;
 
   InteractableLore({
-    required Vector2 position, 
-    required this.speaker, 
+    required Vector2 position,
+    required this.speaker,
     required this.text,
   }) : super(position: position, size: Vector2(32, 48)) {
     add(RectangleHitbox());
@@ -48,7 +49,11 @@ class InteractableLore extends SpriteComponent with HasGameReference<BroskieGame
     final textPainter = TextPainter(
       text: const TextSpan(
         text: "i",
-        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'monospace'),
+        style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontFamily: 'monospace'),
       ),
       textDirection: TextDirection.ltr,
     );

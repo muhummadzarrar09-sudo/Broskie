@@ -12,7 +12,8 @@ class MainMenuOverlay extends StatefulWidget {
   State<MainMenuOverlay> createState() => _MainMenuOverlayState();
 }
 
-class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderStateMixin {
+class _MainMenuOverlayState extends State<MainMenuOverlay>
+    with TickerProviderStateMixin {
   // Drives the endless ambience: art sway, breathing zoom, rain, title float.
   late final AnimationController _ambience;
   // One-shot entrance: title drops in, buttons stagger up.
@@ -21,8 +22,12 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    _ambience = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
-    _entrance = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..forward();
+    _ambience =
+        AnimationController(vsync: this, duration: const Duration(seconds: 8))
+          ..repeat();
+    _entrance = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1400))
+      ..forward();
   }
 
   @override
@@ -39,7 +44,8 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
     final eased = 1 - pow(1 - t, 3).toDouble(); // easeOutCubic
     return Opacity(
       opacity: eased,
-      child: Transform.translate(offset: Offset(0, 26 * (1 - eased)), child: child),
+      child: Transform.translate(
+          offset: Offset(0, 26 * (1 - eased)), child: child),
     );
   }
 
@@ -86,7 +92,10 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.black.withValues(alpha: 0.35), Colors.black.withValues(alpha: 0.62)],
+                      colors: [
+                        Colors.black.withValues(alpha: 0.35),
+                        Colors.black.withValues(alpha: 0.62)
+                      ],
                     ),
                   ),
                 ),
@@ -114,7 +123,9 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
                           letterSpacing: 8,
                           shadows: [
                             const Shadow(color: Colors.black, blurRadius: 24),
-                            Shadow(color: const Color(0xFF00E5FF), blurRadius: 26 + 8 * sway.abs()),
+                            Shadow(
+                                color: const Color(0xFF00E5FF),
+                                blurRadius: 26 + 8 * sway.abs()),
                           ],
                         ),
                       ),
@@ -124,7 +135,11 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
                     1,
                     const Text(
                       "MONOPOLY CORP MUST FALL",
-                      style: TextStyle(color: Colors.amber, fontSize: 16, fontStyle: FontStyle.italic, fontFamily: 'monospace'),
+                      style: TextStyle(
+                          color: Colors.amber,
+                          fontSize: 16,
+                          fontStyle: FontStyle.italic,
+                          fontFamily: 'monospace'),
                     ),
                   ),
                   const SizedBox(height: 48),
@@ -133,14 +148,35 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
                     builder: (context, unlocked, _) => Column(
                       children: [
                         if (unlocked > 1) ...[
-                          _slideIn(2, _menuButton("CONTINUE — STAGE $unlocked", Colors.amber, Colors.black, () => widget.game.startRun(unlocked))),
+                          _slideIn(
+                              2,
+                              _menuButton(
+                                  "CONTINUE — STAGE $unlocked",
+                                  Colors.amber,
+                                  Colors.black,
+                                  () => widget.game.startRun(unlocked))),
                           const SizedBox(height: 14),
                         ],
-                        _slideIn(3, _menuButton("NEW RUN", const Color(0xFF00E5FF), Colors.black, () => widget.game.startRun(1))),
+                        _slideIn(
+                            3,
+                            _menuButton("NEW RUN", const Color(0xFF00E5FF),
+                                Colors.black, () => widget.game.startRun(1))),
                         const SizedBox(height: 14),
-                        _slideIn(4, _menuButton("STAGE SELECT", Colors.white24, Colors.white, () => widget.game.overlays.add('LevelSelect'))),
+                        _slideIn(
+                            4,
+                            _menuButton(
+                                "STAGE SELECT",
+                                Colors.white24,
+                                Colors.white,
+                                () => widget.game.overlays.add('LevelSelect'))),
                         const SizedBox(height: 14),
-                        _slideIn(5, _menuButton("SETTINGS", Colors.white24, Colors.white, () => widget.game.overlays.add('Settings'))),
+                        _slideIn(
+                            5,
+                            _menuButton(
+                                "SETTINGS",
+                                Colors.white24,
+                                Colors.white,
+                                () => widget.game.overlays.add('Settings'))),
                       ],
                     ),
                   ),
@@ -149,7 +185,11 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
                     6,
                     const Text(
                       "CODE + AI ART · BUILT FOR THE CREW",
-                      style: TextStyle(color: Colors.white24, fontSize: 11, fontFamily: 'monospace', letterSpacing: 2),
+                      style: TextStyle(
+                          color: Colors.white24,
+                          fontSize: 11,
+                          fontFamily: 'monospace',
+                          letterSpacing: 2),
                     ),
                   ),
                 ],
@@ -168,7 +208,8 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
         onPressed: () {
           BroskieAudio.playUiClick();
@@ -176,7 +217,12 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> with TickerProviderSt
         },
         child: Text(
           label,
-          style: TextStyle(color: fg, fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'monospace', letterSpacing: 2),
+          style: TextStyle(
+              color: fg,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              fontFamily: 'monospace',
+              letterSpacing: 2),
         ),
       ),
     );
@@ -206,7 +252,8 @@ class _MenuRainPainter extends CustomPainter {
       final x = seedX * size.width + seedLean * cycle * size.height;
       final y = cycle * size.height * 1.1 - size.height * 0.05;
 
-      paint.color = (i % 9 == 0 ? const Color(0xFF00E5FF) : Colors.white).withValues(alpha: brightness);
+      paint.color = (i % 9 == 0 ? const Color(0xFF00E5FF) : Colors.white)
+          .withValues(alpha: brightness);
       canvas.drawLine(Offset(x, y), Offset(x - seedLean * 14, y - 13), paint);
     }
   }

@@ -33,7 +33,9 @@ class _ShopOverlayState extends State<ShopOverlay> {
           color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: BroskieColors.magenta, width: 4),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: BroskieColors.magenta, blurRadius: 15)],
+          boxShadow: const [
+            BoxShadow(color: BroskieColors.magenta, blurRadius: 15)
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -41,11 +43,15 @@ class _ShopOverlayState extends State<ShopOverlay> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("BLACK MARKET", style: broskieHeadline(color: BroskieColors.magenta)),
+                Text("BLACK MARKET",
+                    style: broskieHeadline(color: BroskieColors.magenta)),
                 ValueListenableBuilder<int>(
                   valueListenable: widget.game.scoreCoins,
-                  builder: (context, coins, _) =>
-                      Text("\$$coins", style: const TextStyle(color: Colors.amber, fontSize: 20, fontWeight: FontWeight.bold)),
+                  builder: (context, coins, _) => Text("\$$coins",
+                      style: const TextStyle(
+                          color: Colors.amber,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -57,7 +63,8 @@ class _ShopOverlayState extends State<ShopOverlay> {
               description: "Size up + golden aura + absorbs one hit",
               cost: 100,
               icon: Icons.shield,
-              onBuy: () => _tryBuy(100, () => widget.game.player.grow(PowerUpType.juggernaut)),
+              onBuy: () => _tryBuy(
+                  100, () => widget.game.player.grow(PowerUpType.juggernaut)),
             ),
 
             const SizedBox(height: 10),
@@ -68,18 +75,22 @@ class _ShopOverlayState extends State<ShopOverlay> {
               description: "Size up + cyan aura + absorbs one hit",
               cost: 150,
               icon: Icons.disc_full,
-              onBuy: () => _tryBuy(150, () => widget.game.player.grow(PowerUpType.shockwave)),
+              onBuy: () => _tryBuy(
+                  150, () => widget.game.player.grow(PowerUpType.shockwave)),
             ),
 
             const SizedBox(height: 20),
 
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00E5FF)),
               onPressed: () {
                 BroskieAudio.playUiClick();
                 widget.game.overlays.remove('Shop');
               },
-              child: const Text("CLOSE SHOP", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              child: const Text("CLOSE SHOP",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -109,15 +120,26 @@ class _ShopOverlayState extends State<ShopOverlay> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                Text(description, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+                Text(title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14)),
+                Text(description,
+                    style: const TextStyle(color: Colors.grey, fontSize: 10)),
               ],
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, padding: const EdgeInsets.symmetric(horizontal: 10)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                padding: const EdgeInsets.symmetric(horizontal: 10)),
             onPressed: onBuy,
-            child: Text("\$$cost", style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
+            child: Text("\$$cost",
+                style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12)),
           ),
         ],
       ),

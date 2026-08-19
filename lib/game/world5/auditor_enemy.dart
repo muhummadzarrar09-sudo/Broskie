@@ -6,12 +6,14 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class AuditorEnemy extends SpriteAnimationComponent with HasGameReference<BroskieGame>, CollisionCallbacks {
+class AuditorEnemy extends SpriteAnimationComponent
+    with HasGameReference<BroskieGame>, CollisionCallbacks {
   double attackTimer = 0;
   final double attackCooldown = 4.0;
   final double effectRange = 420;
 
-  AuditorEnemy({required Vector2 position}) : super(position: position, size: Vector2(48, 64)) {
+  AuditorEnemy({required Vector2 position})
+      : super(position: position, size: Vector2(48, 64)) {
     add(RectangleHitbox());
   }
 
@@ -66,7 +68,9 @@ class AuditorEnemy extends SpriteAnimationComponent with HasGameReference<Broski
 
     // Auditor Suit
     canvas.drawRect(const Rect.fromLTWH(8, 16, 32, 40), suitPaint);
-    canvas.drawRect(const Rect.fromLTWH(12, 4, 24, 16), icePaint); // Frozen Head
-    canvas.drawRect(const Rect.fromLTWH(16, 12, 16, 4), Paint()..color = Colors.white); // Sunglasses
+    canvas.drawRect(
+        const Rect.fromLTWH(12, 4, 24, 16), icePaint); // Frozen Head
+    canvas.drawRect(const Rect.fromLTWH(16, 12, 16, 4),
+        Paint()..color = Colors.white); // Sunglasses
   }
 }

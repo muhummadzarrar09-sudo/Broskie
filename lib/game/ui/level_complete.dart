@@ -35,17 +35,23 @@ class LevelCompleteOverlay extends StatelessWidget {
           color: Colors.black.withValues(alpha: 0.92),
           border: Border.all(color: Colors.amber, width: 4),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: _rankColor.withValues(alpha: 0.6), blurRadius: 24)],
+          boxShadow: [
+            BoxShadow(color: _rankColor.withValues(alpha: 0.6), blurRadius: 24)
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("LEVEL CLEARED!", style: broskieHeadline(size: 24, color: BroskieColors.amber)),
+            Text("LEVEL CLEARED!",
+                style: broskieHeadline(size: 24, color: BroskieColors.amber)),
             const SizedBox(height: 6),
             const Text(
               "HELL NAAAAA, BROSKIE COOKED!",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 15, fontStyle: FontStyle.italic),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 14),
 
@@ -59,12 +65,20 @@ class LevelCompleteOverlay extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: _rankColor, width: 5),
-                  boxShadow: [BoxShadow(color: _rankColor.withValues(alpha: 0.5), blurRadius: 18)],
+                  boxShadow: [
+                    BoxShadow(
+                        color: _rankColor.withValues(alpha: 0.5),
+                        blurRadius: 18)
+                  ],
                 ),
                 child: Center(
                   child: Text(
                     rank,
-                    style: TextStyle(color: _rankColor, fontSize: 52, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+                    style: TextStyle(
+                        color: _rankColor,
+                        fontSize: 52,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'monospace'),
                   ),
                 ),
               ),
@@ -73,18 +87,30 @@ class LevelCompleteOverlay extends StatelessWidget {
                 padding: EdgeInsets.only(top: 8),
                 child: Text(
                   "★ GOLD RECORD · NO DAMAGE · UNDER PAR ★",
-                  style: TextStyle(color: BroskieColors.amber, fontSize: 10, fontFamily: 'monospace', letterSpacing: 2, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: BroskieColors.amber,
+                      fontSize: 10,
+                      fontFamily: 'monospace',
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             const SizedBox(height: 6),
             Text(
               "BEST: $bestRank",
-              style: const TextStyle(color: Colors.white38, fontSize: 12, fontFamily: 'monospace', letterSpacing: 2),
+              style: const TextStyle(
+                  color: Colors.white38,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  letterSpacing: 2),
             ),
 
             const Divider(color: Colors.white24, height: 24),
-            Text("CASH: \$$coins", style: const TextStyle(color: Colors.greenAccent, fontSize: 18)),
-            Text("EXECUTIVES DOWN: $enemiesStomped", style: const TextStyle(color: Colors.redAccent, fontSize: 18)),
+            Text("CASH: \$$coins",
+                style:
+                    const TextStyle(color: Colors.greenAccent, fontSize: 18)),
+            Text("EXECUTIVES DOWN: $enemiesStomped",
+                style: const TextStyle(color: Colors.redAccent, fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
@@ -92,7 +118,9 @@ class LevelCompleteOverlay extends StatelessWidget {
                 BroskieAudio.playUiClick();
                 onNextLevel();
               },
-              child: const Text("NEXT LEVEL", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              child: const Text("NEXT LEVEL",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -113,12 +141,20 @@ class _GoldRecordBadge extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const RadialGradient(
-          colors: [Color(0xFFFFF3C4), BroskieColors.amber, Color(0xFF8D6E1F), BroskieColors.amber],
+          colors: [
+            Color(0xFFFFF3C4),
+            BroskieColors.amber,
+            Color(0xFF8D6E1F),
+            BroskieColors.amber
+          ],
           stops: [0.0, 0.35, 0.72, 1.0],
         ),
         border: Border.all(color: const Color(0xFFFFF3C4), width: 2),
         boxShadow: [
-          BoxShadow(color: BroskieColors.amber.withValues(alpha: 0.75), blurRadius: 26, spreadRadius: 2),
+          BoxShadow(
+              color: BroskieColors.amber.withValues(alpha: 0.75),
+              blurRadius: 26,
+              spreadRadius: 2),
         ],
       ),
       child: Center(
@@ -128,12 +164,17 @@ class _GoldRecordBadge extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.black,
-            border: Border.all(color: BroskieColors.bone.withValues(alpha: 0.6), width: 1.5),
+            border: Border.all(
+                color: BroskieColors.bone.withValues(alpha: 0.6), width: 1.5),
           ),
           child: const Center(
             child: Text(
               'S',
-              style: TextStyle(color: BroskieColors.amber, fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+              style: TextStyle(
+                  color: BroskieColors.amber,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'monospace'),
             ),
           ),
         ),

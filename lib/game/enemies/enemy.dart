@@ -8,7 +8,8 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 abstract class Enemy extends SpriteAnimationComponent with CollisionCallbacks {
-  Enemy({required Vector2 position, required Vector2 size}) : super(position: position, size: size) {
+  Enemy({required Vector2 position, required Vector2 size})
+      : super(position: position, size: size) {
     add(RectangleHitbox());
   }
 
@@ -105,10 +106,15 @@ class GrumpyBrick extends Enemy with HasGameReference<BroskieGame> {
 
     final rect = size.toRect();
     final brickColor = Paint()..color = const Color(0xFFD32F2F);
-    final darkOutline = Paint()..color = const Color(0xFF800000)..style = PaintingStyle.stroke..strokeWidth = 2;
+    final darkOutline = Paint()
+      ..color = const Color(0xFF800000)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
     final eyePaint = Paint()..color = Colors.white;
     final pupilPaint = Paint()..color = Colors.black;
-    final mouthPaint = Paint()..color = Colors.black..strokeWidth = 2;
+    final mouthPaint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 2;
 
     // Body
     canvas.drawRect(rect, brickColor);

@@ -18,7 +18,9 @@ class PauseMenuOverlay extends StatelessWidget {
           color: Colors.black.withValues(alpha: 0.95),
           border: Border.all(color: const Color(0xFF00E5FF), width: 4),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)],
+          boxShadow: const [
+            BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -27,7 +29,8 @@ class PauseMenuOverlay extends StatelessWidget {
             const SizedBox(height: 8),
             const Text(
               "BROSKIE CORP OVERRIDE",
-              style: TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'monospace'),
+              style: TextStyle(
+                  color: Colors.grey, fontSize: 12, fontFamily: 'monospace'),
             ),
             const Divider(color: Colors.white24, height: 30),
 
@@ -41,7 +44,11 @@ class PauseMenuOverlay extends StatelessWidget {
                 BroskieAudio.playUiClick();
                 game.togglePause();
               },
-              child: const Text("RESUME GAME", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+              child: const Text("RESUME GAME",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
             ),
             const SizedBox(height: 12),
 
@@ -56,7 +63,11 @@ class PauseMenuOverlay extends StatelessWidget {
                 game.togglePause();
                 game.restart();
               },
-              child: const Text("RESTART LEVEL", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+              child: const Text("RESTART LEVEL",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
             ),
             const SizedBox(height: 12),
 
@@ -71,7 +82,11 @@ class PauseMenuOverlay extends StatelessWidget {
                 game.togglePause();
                 game.overlays.add('Shop');
               },
-              child: const Text("BLACK MARKET SHOP", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              child: const Text("BLACK MARKET SHOP",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
             ),
           ],
         ),
