@@ -4,7 +4,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class InteractableLore extends SpriteComponent
+class InteractableLore extends PositionComponent
     with HasGameReference<BroskieGame>, CollisionCallbacks {
   final String text;
   final String speaker;
@@ -33,10 +33,7 @@ class InteractableLore extends SpriteComponent
 
   @override
   void render(Canvas canvas) {
-    if (sprite != null) {
-      super.render(canvas);
-      return;
-    }
+    super.render(canvas);
 
     final rect = size.toRect();
     final terminalPaint = Paint()..color = const Color(0xFF1E88E5);

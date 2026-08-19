@@ -4,7 +4,7 @@ import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class PropagandaSign extends SpriteComponent
+class PropagandaSign extends PositionComponent
     with HasGameReference<BroskieGame> {
   bool isHacked = false;
 
@@ -26,8 +26,8 @@ class PropagandaSign extends SpriteComponent
   }
 
   @override
-  // ignore: must_call_super — we paint the whole sprite ourselves
   void render(Canvas canvas) {
+    super.render(canvas);
     final rect = size.toRect();
     // Propaganda flickers on the stage beat — even the ads dance.
     final pulse = 0.65 + 0.35 * game.beatPulse;

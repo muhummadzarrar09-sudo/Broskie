@@ -7,7 +7,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class DataBitCoin extends SpriteComponent
+class DataBitCoin extends PositionComponent
     with HasGameReference<BroskieGame>, CollisionCallbacks {
   double floatTimer = 0;
   final int value;
@@ -35,8 +35,8 @@ class DataBitCoin extends SpriteComponent
   }
 
   @override
-  // ignore: must_call_super — we paint the whole sprite ourselves
   void render(Canvas canvas) {
+    super.render(canvas);
     // DATA-VINYL: a tiny black 7-inch, magenta label, bone spindle hole.
     // Underground crews trade records, not coins.
     const c = Offset(10, 10);

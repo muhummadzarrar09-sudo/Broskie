@@ -8,12 +8,13 @@ import 'package:flutter/material.dart';
 
 enum DebuffType { slow, lowJump, invertedControls, noDash }
 
-class HaterCloud extends SpriteComponent
+class HaterCloud extends PositionComponent
     with HasGameReference<BroskieGame>, CollisionCallbacks {
   double timer = 0;
   double hoverTime = 0;
   final double attackInterval = 3.0;
   final double effectRange = 340;
+  Sprite? droneSprite;
 
   HaterCloud({required Vector2 position})
       : super(position: position, size: Vector2(64, 48)) {
@@ -24,7 +25,7 @@ class HaterCloud extends SpriteComponent
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      sprite = Sprite(await game.images.load('runtime/hater_drone.png'));
+      droneSprite = Sprite(await game.images.load('runtime/hater_drone.png'));
     } catch (_) {
       // Procedural cloud painter stays active without the art.
     }
@@ -55,8 +56,9 @@ class HaterCloud extends SpriteComponent
 
   @override
   void render(Canvas canvas) {
-    if (sprite != null) {
-      super.render(canvas);
+    super.render(canvas);
+    if (droneSprite != null) {
+      droneSprite!.render(canvas, size: size);
       return;
     }
 

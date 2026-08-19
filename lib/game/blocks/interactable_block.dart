@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 enum BlockType { brick, mystery, solid }
 
-class InteractableBlock extends SpriteComponent with CollisionCallbacks {
+class InteractableBlock extends PositionComponent with CollisionCallbacks {
   final BlockType type;
   bool isHit = false;
 
@@ -66,10 +66,7 @@ class InteractableBlock extends SpriteComponent with CollisionCallbacks {
 
   @override
   void render(Canvas canvas) {
-    if (sprite != null) {
-      super.render(canvas);
-      return;
-    }
+    super.render(canvas);
 
     final rect = size.toRect();
 

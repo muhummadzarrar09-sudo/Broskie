@@ -9,7 +9,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class VinylBoomerang extends SpriteComponent
+class VinylBoomerang extends PositionComponent
     with HasGameReference<BroskieGame>, CollisionCallbacks {
   final double speed = 400;
   bool returning = false;
@@ -65,8 +65,8 @@ class VinylBoomerang extends SpriteComponent
   }
 
   @override
-  // ignore: must_call_super — we paint the whole sprite ourselves
   void render(Canvas canvas) {
+    super.render(canvas);
     canvas.save();
     canvas.translate(size.x / 2, size.y / 2);
     canvas.rotate(rotationAngle);
