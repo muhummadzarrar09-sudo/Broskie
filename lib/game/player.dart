@@ -76,8 +76,8 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      final walkSheet = await gameRef.images.load('runtime/broskie_walk_sheet.png');
-      final voltSheet = await gameRef.images.load('runtime/broskie_volt_walk_sheet.png');
+      final walkSheet = await game.images.load('runtime/broskie_walk_sheet.png');
+      final voltSheet = await game.images.load('runtime/broskie_volt_walk_sheet.png');
       const frameCount = 4;
       final frameSize = Vector2(walkSheet.width / frameCount, walkSheet.height.toDouble());
       final voltFrameSize = Vector2(voltSheet.width / frameCount, voltSheet.height.toDouble());
@@ -235,7 +235,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     position += velocity * dt;
 
     if (position.y > 1400) {
-      gameRef.onPlayerFell();
+      game.onPlayerFell();
     }
 
     super.update(dt);
@@ -269,7 +269,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
     dashTimer = _dashDuration;
     dashCooldown = _dashCooldownTime;
     BroskieAudio.playDash();
-    if (gameRef.hapticsEnabled.value) BroskieHaptics.light();
+    if (game.hapticsEnabled.value) BroskieHaptics.light();
   }
 
   @override
@@ -318,7 +318,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   void throwVinylBoomerang() {
     if (shootCooldown > 0) return;
     shootCooldown = 0.4;
-    gameRef.add(VinylBoomerang(
+    game.add(VinylBoomerang(
       position: Vector2(position.x + (facing == 1 ? size.x : -24), position.y + 12),
       owner: this,
       isLeft: facing == -1,
@@ -341,7 +341,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   void hit() {
     if (isInvulnerable) return;
     BroskieAudio.playHit();
-    if (gameRef.hapticsEnabled.value) BroskieHaptics.medium();
+    if (game.hapticsEnabled.value) BroskieHaptics.medium();
 
     if (isBig) {
       // Power absorb: shrink back to small Broskie, keep the heart.
@@ -355,15 +355,15 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
       return;
     }
 
-    gameRef.hp.value -= 1;
-    if (gameRef.hp.value <= 0) {
+    game.hp.value -= 1;
+    if (game.hp.value <= 0) {
       gameOver();
       return;
     }
     _applyKnockback();
     isInvulnerable = true;
     invulnerableTimer = 1.5;
-    gameRef.triggerScreenShake(intensity: 0.7);
+    game.triggerScreenShake(intensity: 0.7);
   }
 
   void _applyKnockback() {
@@ -372,7 +372,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRefer
   }
 
   void gameOver() {
-    gameRef.triggerGameOver();
+    game.triggerGameOver();
   }
 
   void bounce() => velocity.y = -jumpStrength * 0.75;

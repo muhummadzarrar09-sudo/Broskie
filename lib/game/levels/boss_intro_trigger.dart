@@ -23,7 +23,7 @@ class BossIntroTrigger extends PositionComponent with HasGameReference<BroskieGa
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Player && !_fired) {
       _fired = true;
-      gameRef.showBossCard(bossName, bossTitle, bossArt);
+      game.showBossCard(bossName, bossTitle, bossArt);
     }
     super.onCollision(intersectionPoints, other);
   }

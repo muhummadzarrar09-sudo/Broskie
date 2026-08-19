@@ -8,21 +8,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'player.dart';
 import 'audio_manager.dart';
-import 'stage_backdrop.dart';
-import 'blocks/interactable_block.dart';
-import 'blocks/hazards.dart';
-import 'blocks/collectibles.dart';
 import 'blocks/checkpoint.dart';
-import 'enemies/enemy.dart';
+import 'blocks/collectibles.dart';
+import 'blocks/hazards.dart';
+import 'blocks/interactable_block.dart';
 import 'enemies/bull_enemy.dart';
-import 'enemies/foreman_boss.dart';
 import 'enemies/data_broker_boss.dart';
-import 'levels/interactable_lore.dart';
-import 'levels/boss_intro_trigger.dart';
-import 'levels/level_exit.dart';
+import 'enemies/enemy.dart';
+import 'enemies/foreman_boss.dart';
 import 'haptics.dart';
+import 'levels/boss_intro_trigger.dart';
+import 'levels/interactable_lore.dart';
+import 'levels/level_exit.dart';
+import 'player.dart';
+import 'stage_backdrop.dart';
 import 'world2/propaganda_sign.dart';
 import 'world4/hater_cloud.dart';
 import 'world5/auditor_enemy.dart';
@@ -527,7 +527,7 @@ class Floor extends PositionComponent with HasGameReference<BroskieGame>, Collis
     final rect = size.toRect();
     final darkConcrete = Paint()..color = const Color(0xFF222533);
     // The neon edge breathes on the stage beat.
-    final topNeonLine = Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.45 + 0.55 * gameRef.beatPulse);
+    final topNeonLine = Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.45 + 0.55 * game.beatPulse);
     final gridLine = Paint()..color = const Color(0xFF33384A)..strokeWidth = 1;
 
     canvas.drawRect(rect, darkConcrete);
@@ -552,7 +552,7 @@ class ProceduralSkylineParallax extends Component with HasGameReference<BroskieG
 
   @override
   void render(Canvas canvas) {
-    final size = gameRef.size;
+    final size = game.size;
     final skyPaint = Paint()..color = const Color(0xFF140D2B);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), skyPaint);
 

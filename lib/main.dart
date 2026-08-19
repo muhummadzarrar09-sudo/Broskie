@@ -4,21 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'game/audio_manager.dart';
 import 'game/broskie_game.dart';
-import 'game/ui/boss_card_overlay.dart';
 import 'game/ui/boss_bar_overlay.dart';
+import 'game/ui/boss_card_overlay.dart';
 import 'game/ui/broskie_style.dart';
 import 'game/ui/dialogue_box.dart';
 import 'game/ui/game_over.dart';
 import 'game/ui/level_complete.dart';
+import 'game/ui/level_select.dart';
 import 'game/ui/main_menu_screen.dart';
 import 'game/ui/news_ticker.dart';
+import 'game/ui/pause_menu.dart';
+import 'game/ui/settings_overlay.dart';
+import 'game/ui/shop_overlay.dart';
+import 'game/ui/splash_screen.dart';
 import 'game/ui/stage_banner_overlay.dart';
 import 'game/ui/touch_controls.dart';
-import 'game/ui/pause_menu.dart';
-import 'game/ui/shop_overlay.dart';
-import 'game/ui/level_select.dart';
-import 'game/ui/settings_overlay.dart';
-import 'game/ui/splash_screen.dart';
 import 'game/ui/victory_overlay.dart';
 
 void main() async {

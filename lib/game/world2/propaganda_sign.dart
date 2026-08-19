@@ -13,11 +13,11 @@ class PropagandaSign extends SpriteComponent with HasGameReference<BroskieGame> 
   void update(double dt) {
     super.update(dt);
     
-    final player = gameRef.children.whereType<Player>().firstOrNull;
+    final player = game.children.whereType<Player>().firstOrNull;
     if (player != null && player.position.x > position.x - 150) {
       if (!isHacked) {
         isHacked = true;
-        gameRef.showDialogue("CYBER SIGN", "WELCOME TO NEO-CITY -> OBEY & STANDARDIZE!");
+        game.showDialogue("CYBER SIGN", "WELCOME TO NEO-CITY -> OBEY & STANDARDIZE!");
       }
     }
   }
@@ -26,7 +26,7 @@ class PropagandaSign extends SpriteComponent with HasGameReference<BroskieGame> 
   void render(Canvas canvas) {
     final rect = size.toRect();
     // Propaganda flickers on the stage beat — even the ads dance.
-    final pulse = 0.65 + 0.35 * gameRef.beatPulse;
+    final pulse = 0.65 + 0.35 * game.beatPulse;
     final bgPaint = Paint()..color = (isHacked ? const Color(0xFFD50000) : const Color(0xFF00E5FF)).withValues(alpha: pulse);
 
     canvas.drawRect(rect, bgPaint);
@@ -44,6 +44,6 @@ class PropagandaSign extends SpriteComponent with HasGameReference<BroskieGame> 
     textPainter.paint(canvas, Offset((size.x - textPainter.width) / 2, (size.y - textPainter.height) / 2 - 4));
 
     // Every corporate ad carries its own barcode — product goes out the door.
-    drawBarcode(canvas, const const Rect.fromLTWH(8, 30, 26, 8), seed: 11, color: Colors.black87);
+    drawBarcode(canvas, const Rect.fromLTWH(8, 30, 26, 8), seed: 11, color: Colors.black87);
   }
 }

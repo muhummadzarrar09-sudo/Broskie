@@ -7,14 +7,6 @@ analyzer:
     strict-raw-types: true
   errors:
     deprecated_member_use: warning
-  exclude:
-    - build/**
-    - android/**
-    - ios/**
-    - web/**
-    - windows/**
-    - macos/**
-    - linux/**
 
 linter:
   rules:

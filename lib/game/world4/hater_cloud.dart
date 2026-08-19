@@ -22,7 +22,7 @@ class HaterCloud extends SpriteComponent with HasGameReference<BroskieGame>, Col
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      sprite = Sprite(await gameRef.images.load('runtime/hater_drone.png'));
+      sprite = Sprite(await game.images.load('runtime/hater_drone.png'));
     } catch (_) {
       // Procedural cloud painter stays active without the art.
     }
@@ -44,7 +44,7 @@ class HaterCloud extends SpriteComponent with HasGameReference<BroskieGame>, Col
   }
 
   void _performRandomAttack() {
-    final player = gameRef.children.whereType<Player>().firstOrNull;
+    final player = game.children.whereType<Player>().firstOrNull;
     if (player == null) return;
     if ((player.position.x - position.x).abs() > effectRange) return;
     player.activeDebuffs.add(Debuff(DebuffType.slow, 1.5));

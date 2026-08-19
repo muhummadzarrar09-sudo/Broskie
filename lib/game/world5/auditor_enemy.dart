@@ -19,7 +19,7 @@ class AuditorEnemy extends SpriteAnimationComponent with HasGameReference<Broski
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      final image = await gameRef.images.load('runtime/audit_drone.png');
+      final image = await game.images.load('runtime/audit_drone.png');
       animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
     } catch (_) {
       // Procedural auditor painter stays active without the art.
@@ -39,7 +39,7 @@ class AuditorEnemy extends SpriteAnimationComponent with HasGameReference<Broski
 
   void _iceSpikeAttack() {
     // Frozen Assets: a real slow debuff when Broskie is in audit range.
-    final player = gameRef.children.whereType<Player>().firstOrNull;
+    final player = game.children.whereType<Player>().firstOrNull;
     if (player == null) return;
     if ((player.position.x - position.x).abs() > effectRange) return;
     player.activeDebuffs.add(Debuff(DebuffType.slow, 2.0));
@@ -66,7 +66,7 @@ class AuditorEnemy extends SpriteAnimationComponent with HasGameReference<Broski
 
     // Auditor Suit
     canvas.drawRect(const Rect.fromLTWH(8, 16, 32, 40), suitPaint);
-    canvas.drawRect(const const Rect.fromLTWH(12, 4, 24, 16), icePaint); // Frozen Head
-    canvas.drawRect(const const Rect.fromLTWH(16, 12, 16, 4), Paint()..color = Colors.white); // Sunglasses
+    canvas.drawRect(const Rect.fromLTWH(12, 4, 24, 16), icePaint); // Frozen Head
+    canvas.drawRect(const Rect.fromLTWH(16, 12, 16, 4), Paint()..color = Colors.white); // Sunglasses
   }
 }

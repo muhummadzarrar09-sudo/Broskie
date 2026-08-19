@@ -30,7 +30,7 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameReference<Bros
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      final image = await gameRef.images.load('runtime/bulldozer_drone.png');
+      final image = await game.images.load('runtime/bulldozer_drone.png');
       animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
     } catch (_) {
       // Procedural bull painter stays active without the art.
@@ -100,10 +100,10 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameReference<Bros
 
       if (isDizzy && other.velocity.y > 0 && playerBottom <= bullTop + 16) {
         BroskieAudio.playStomp();
-        gameRef.add(KillBurst(position: position.clone()..add(size / 2), color: const Color(0xFFFFB800)));
-        gameRef.hitStop(0.08);
-        if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
-        gameRef.enemiesDefeated++;
+        game.add(KillBurst(position: position.clone()..add(size / 2), color: const Color(0xFFFFB800)));
+        game.hitStop(0.08);
+        if (game.hapticsEnabled.value) BroskieHaptics.heavy();
+        game.enemiesDefeated++;
         removeFromParent(); // Stomped!
         other.bounce();
       } else {
@@ -133,22 +133,22 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameReference<Bros
 
     // Bull Body
     canvas.drawRect(const Rect.fromLTWH(12, 12, 44, 28), bullBody);
-    canvas.drawRect(const const Rect.fromLTWH(0, 16, 16, 20), bullBody); // Head
+    canvas.drawRect(const Rect.fromLTWH(0, 16, 16, 20), bullBody); // Head
 
     // Gold Horns
-    canvas.drawRect(const const Rect.fromLTWH(2, 4, 6, 14), hornPaint);
-    canvas.drawRect(const const Rect.fromLTWH(8, 2, 4, 16), hornPaint);
+    canvas.drawRect(const Rect.fromLTWH(2, 4, 6, 14), hornPaint);
+    canvas.drawRect(const Rect.fromLTWH(8, 2, 4, 16), hornPaint);
 
     // Eyes
-    canvas.drawRect(const const Rect.fromLTWH(4, 20, 5, 5), eyePaint);
+    canvas.drawRect(const Rect.fromLTWH(4, 20, 5, 5), eyePaint);
 
     // Snort Nose Ring
     canvas.drawCircle(const Offset(2, 28), 3, Paint()..color = Colors.amber);
 
     // Legs
     final legPaint = Paint()..color = Colors.black;
-    canvas.drawRect(const const Rect.fromLTWH(16, 40, 6, 8), legPaint);
-    canvas.drawRect(const const Rect.fromLTWH(44, 40, 6, 8), legPaint);
+    canvas.drawRect(const Rect.fromLTWH(16, 40, 6, 8), legPaint);
+    canvas.drawRect(const Rect.fromLTWH(44, 40, 6, 8), legPaint);
 
     // Dizzy Stars Above Head
     if (isDizzy) {

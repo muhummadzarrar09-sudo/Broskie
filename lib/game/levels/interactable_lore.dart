@@ -27,7 +27,7 @@ class InteractableLore extends SpriteComponent with HasGameReference<BroskieGame
   }
 
   void _showDialogue() {
-    gameRef.showDialogue(speaker, text);
+    game.showDialogue(speaker, text);
   }
 
   @override
@@ -42,7 +42,7 @@ class InteractableLore extends SpriteComponent with HasGameReference<BroskieGame
     final screenPaint = Paint()..color = const Color(0xFF00E5FF);
 
     canvas.drawRect(rect, terminalPaint);
-    canvas.drawRect(const const Rect.fromLTWH(4, 4, 24, 24), screenPaint);
+    canvas.drawRect(const Rect.fromLTWH(4, 4, 24, 24), screenPaint);
 
     // Terminal blinking cursor / icon
     final textPainter = TextPainter(

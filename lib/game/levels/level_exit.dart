@@ -40,10 +40,10 @@ class LevelExit extends PositionComponent with HasGameReference<BroskieGame>, Co
       if (locked) {
         if (_hintCooldown <= 0) {
           _hintCooldown = 3.0;
-          gameRef.showDialogue("EXIT GATE", lockHint);
+          game.showDialogue("EXIT GATE", lockHint);
         }
       } else {
-        gameRef.triggerLevelComplete();
+        game.triggerLevelComplete();
       }
     }
     super.onCollision(intersectionPoints, other);
@@ -56,7 +56,7 @@ class LevelExit extends PositionComponent with HasGameReference<BroskieGame>, Co
     final borderPaint = Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 3;
 
     // Unlocked portals thump on the beat — the door IS the drop.
-    final glow = locked ? 0.45 : 0.55 + 0.45 * gameRef.beatPulse;
+    final glow = locked ? 0.45 : 0.55 + 0.45 * game.beatPulse;
     canvas.drawRect(rect, Paint()..color = portalPaint.color.withValues(alpha: glow));
     canvas.drawRect(rect, borderPaint);
 

@@ -94,7 +94,7 @@ class SettingsOverlay extends StatelessWidget {
                     ],
                   ),
                   Slider(
-                    activeThumbColor: Colors.amber,
+                    activeColor: Colors.amber,
                     value: scale,
                     min: 0,
                     max: 1,

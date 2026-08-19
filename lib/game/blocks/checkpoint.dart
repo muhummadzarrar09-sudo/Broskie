@@ -25,7 +25,7 @@ class CheckpointFlag extends PositionComponent with HasGameReference<BroskieGame
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Player && !activated) {
       activated = true;
-      gameRef.setCheckpoint(Vector2(position.x + size.x / 2, position.y + size.y));
+      game.setCheckpoint(Vector2(position.x + size.x / 2, position.y + size.y));
       BroskieAudio.playPowerup();
     }
     super.onCollision(intersectionPoints, other);

@@ -46,8 +46,8 @@ class VinylBoomerang extends SpriteComponent with HasGameReference<BroskieGame>,
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Enemy) {
       other.die();
-      gameRef.add(KillBurst(position: other.position.clone()..add(other.size / 2)));
-      gameRef.hitStop(0.05);
+      game.add(KillBurst(position: other.position.clone()..add(other.size / 2)));
+      game.hitStop(0.05);
       removeFromParent();
     } else if (other is TheForeman) {
       other.hitByReflectedBrick();

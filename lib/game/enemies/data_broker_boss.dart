@@ -32,12 +32,12 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
     await super.onLoad();
     _baseY = position.y;
     try {
-      final image = await gameRef.images.load('runtime/data_broker_boss.png');
+      final image = await game.images.load('runtime/data_broker_boss.png');
       animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
     } catch (_) {
       // Procedural spider-mech painter stays active without the art.
     }
-    gameRef.showBossBar('DATA-BROKER');
+    game.showBossBar('DATA-BROKER');
   }
 
   @override
@@ -80,7 +80,7 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
 
   void _laserWeb() {
     BroskieAudio.playGlitch();
-    final player = gameRef.children.whereType<Player>().firstOrNull;
+    final player = game.children.whereType<Player>().firstOrNull;
     if (player == null) return;
 
     // A real three-bolt data volley aimed at Broskie's current position.
@@ -89,14 +89,14 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
     final baseDir = (target - origin).normalized();
     for (final angle in [-0.35, 0.0, 0.35]) {
       final dir = baseDir.clone()..rotate(angle);
-      gameRef.add(DataBolt(position: origin.clone(), velocity: dir * 320));
+      game.add(DataBolt(position: origin.clone(), velocity: dir * 320));
     }
   }
 
   void _controlHack() {
     BroskieAudio.playGlitch();
-    gameRef.showDialogue("DATA-BROKER", "Hacking your neural link! Controls inverted!");
-    final player = gameRef.children.whereType<Player>().firstOrNull;
+    game.showDialogue("DATA-BROKER", "Hacking your neural link! Controls inverted!");
+    final player = game.children.whereType<Player>().firstOrNull;
     if (player != null) {
       player.controlsInverted = true;
       player.hackTimer = 5.0;
@@ -111,13 +111,13 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
 
   void hit() {
     BroskieAudio.playBossHit();
-    gameRef.hitStop(0.05);
+    game.hitStop(0.05);
     health--;
     if (isFake && health <= 4) {
       _triggerFakeOut();
     }
     // Bar updates AFTER the fake-out so the proxy reveal reads as a refill.
-    gameRef.updateBossBar(health / maxHealth);
+    game.updateBossBar(health / maxHealth);
     if (health <= 0) {
       die();
     }
@@ -126,18 +126,18 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameReference<Bros
   void _triggerFakeOut() {
     isFake = false;
     health = maxHealth;
-    gameRef.showDialogue("DATA-BROKER", "That was just a proxy, Broskie... NOW WE GOING LIVE!");
+    game.showDialogue("DATA-BROKER", "That was just a proxy, Broskie... NOW WE GOING LIVE!");
   }
 
   void die() {
     // Executive termination: deep freeze, white flash, the sting.
     BroskieAudio.playBossKill();
-    gameRef.hitStop(0.35);
-    gameRef.triggerScreenFlash(0.85);
-    if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
-    gameRef.hideBossBar();
-    gameRef.enemiesDefeated++;
-    gameRef.showDialogue("DATA-BROKER", "Connection... terminated... The... signal... dies... with... me...");
+    game.hitStop(0.35);
+    game.triggerScreenFlash(0.85);
+    if (game.hapticsEnabled.value) BroskieHaptics.heavy();
+    game.hideBossBar();
+    game.enemiesDefeated++;
+    game.showDialogue("DATA-BROKER", "Connection... terminated... The... signal... dies... with... me...");
     removeFromParent();
   }
 

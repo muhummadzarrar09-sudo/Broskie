@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
-import 'package:flame/components.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:flame/components.dart';
 
 /// AI-art stage backdrop, tiled horizontally at native aspect ratio and
 /// bottom-aligned with the street line. Renders behind all gameplay
@@ -28,7 +28,7 @@ class StageBackdrop extends PositionComponent with HasGameReference<BroskieGame>
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      _image = await gameRef.images.load(imagePath);
+      _image = await game.images.load(imagePath);
     } catch (_) {
       // Missing art falls back to the sky parallax automatically.
     }

@@ -46,7 +46,7 @@ class GrumpyBrick extends Enemy with HasGameReference<BroskieGame> {
   Future<void> onLoad() async {
     await super.onLoad();
     try {
-      final image = await gameRef.images.load('runtime/corporate_cube.png');
+      final image = await game.images.load('runtime/corporate_cube.png');
       animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
       _artLoaded = true;
     } catch (_) {
@@ -84,11 +84,11 @@ class GrumpyBrick extends Enemy with HasGameReference<BroskieGame> {
 
       if (other.velocity.y > 0 && playerBottom <= enemyTop + 14) {
         other.bounce();
-        gameRef.add(KillBurst(position: position.clone()..add(size / 2)));
-        gameRef.hitStop(0.07);
-        if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
+        game.add(KillBurst(position: position.clone()..add(size / 2)));
+        game.hitStop(0.07);
+        if (game.hapticsEnabled.value) BroskieHaptics.heavy();
         die();
-        gameRef.enemiesDefeated++;
+        game.enemiesDefeated++;
       } else {
         other.hit();
       }
@@ -115,11 +115,11 @@ class GrumpyBrick extends Enemy with HasGameReference<BroskieGame> {
     canvas.drawRect(rect, darkOutline);
 
     // Angry Brows & Eyes
-    canvas.drawRect(const const Rect.fromLTWH(6, 8, 7, 7), eyePaint);
-    canvas.drawRect(const const Rect.fromLTWH(19, 8, 7, 7), eyePaint);
+    canvas.drawRect(const Rect.fromLTWH(6, 8, 7, 7), eyePaint);
+    canvas.drawRect(const Rect.fromLTWH(19, 8, 7, 7), eyePaint);
 
-    canvas.drawRect(const const Rect.fromLTWH(8, 10, 3, 4), pupilPaint);
-    canvas.drawRect(const const Rect.fromLTWH(21, 10, 3, 4), pupilPaint);
+    canvas.drawRect(const Rect.fromLTWH(8, 10, 3, 4), pupilPaint);
+    canvas.drawRect(const Rect.fromLTWH(21, 10, 3, 4), pupilPaint);
 
     // Angry eyebrows angled down
     canvas.drawLine(const Offset(4, 6), const Offset(14, 10), darkOutline);

@@ -54,13 +54,13 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
       _artDir = 1;
     }
     try {
-      final image = await gameRef.images.load('runtime/foreman_boss.png');
+      final image = await game.images.load('runtime/foreman_boss.png');
       animation = SpriteAnimation.spriteList([Sprite(image)], stepTime: 1);
       _artLoaded = true;
     } catch (_) {
       // Procedural excavator painter stays active without the art.
     }
-    gameRef.showBossBar('THE FOREMAN');
+    game.showBossBar('THE FOREMAN');
   }
 
   @override
@@ -81,7 +81,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
         isTelegraphing = true;
         telegraphTimer = 0;
         BroskieAudio.playGlitch();
-        final player = gameRef.children.whereType<Player>().firstOrNull;
+        final player = game.children.whereType<Player>().firstOrNull;
         if (player != null) {
           direction = player.position.x >= position.x ? 1 : -1;
         }
@@ -123,11 +123,11 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
       if (health <= 4 && phase == BossPhase.chilling) {
         phase = BossPhase.mad;
         speed = 180;
-        gameRef.showDialogue("THE FOREMAN", "Efficiency dropping below KPI thresholds! Initiating AGGRESSIVE RESTRUCTURING!");
+        game.showDialogue("THE FOREMAN", "Efficiency dropping below KPI thresholds! Initiating AGGRESSIVE RESTRUCTURING!");
       } else if (health <= 2 && phase == BossPhase.mad) {
         phase = BossPhase.berserk;
         speed = 320;
-        gameRef.showDialogue("THE FOREMAN", "SYSTEM OVERRIDE! TERMINATE BROSKIE IMMEDIATELY!");
+        game.showDialogue("THE FOREMAN", "SYSTEM OVERRIDE! TERMINATE BROSKIE IMMEDIATELY!");
       }
     }
     super.update(dt);
@@ -138,7 +138,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
       isCharging = false;
       behaviorTimer = 0;
       crashIntoWall();
-      gameRef.triggerScreenShake(intensity: 1.1);
+      game.triggerScreenShake(intensity: 1.1);
       BroskieAudio.playBossHit();
     } else {
       direction = -direction;
@@ -148,9 +148,9 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
   void hitByReflectedBrick() {
     if (isDizzy) return;
     BroskieAudio.playBossHit();
-    gameRef.hitStop(0.05);
+    game.hitStop(0.05);
     health--;
-    gameRef.updateBossBar(health / maxHealth);
+    game.updateBossBar(health / maxHealth);
     if (health <= 0) die();
   }
 
@@ -162,12 +162,12 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
   void die() {
     // Executive termination: deep freeze, white flash, the sting.
     BroskieAudio.playBossKill();
-    gameRef.hitStop(0.35);
-    gameRef.triggerScreenFlash(0.85);
-    if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
-    gameRef.hideBossBar();
-    gameRef.enemiesDefeated++;
-    gameRef.showDialogue("THE FOREMAN", "System... failure... The Monopoly... will... find... you...");
+    game.hitStop(0.35);
+    game.triggerScreenFlash(0.85);
+    if (game.hapticsEnabled.value) BroskieHaptics.heavy();
+    game.hideBossBar();
+    game.enemiesDefeated++;
+    game.showDialogue("THE FOREMAN", "System... failure... The Monopoly... will... find... you...");
     removeFromParent();
   }
 
@@ -182,7 +182,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameReference<BroskieG
         isDizzy = false;
         other.bounce();
         BroskieAudio.playStomp();
-        gameRef.updateBossBar(health / maxHealth);
+        game.updateBossBar(health / maxHealth);
         if (health <= 0) die();
       } else {
         other.hit();
