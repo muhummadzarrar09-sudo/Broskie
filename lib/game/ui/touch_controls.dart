@@ -6,6 +6,33 @@ class TouchControlsOverlay extends StatelessWidget {
 
   const TouchControlsOverlay({super.key, required this.game});
 
+  Widget _artButton({
+    required String asset,
+    required double size,
+    required Color borderColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            border: Border.all(color: borderColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [BoxShadow(color: borderColor, blurRadius: 8)],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(asset, fit: BoxFit.cover),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -55,61 +82,32 @@ class TouchControlsOverlay extends StatelessWidget {
           ),
         ),
 
-        // Right Action Buttons (Graffiti Style A, B, SPRAY)
+        // Right Action Buttons — REAL graffiti art cut from the crew sheet.
+        // SPRAY = Volt Dash (the lore sign promised it!), B = Vinyl, A = Jump.
         Positioned(
           bottom: 30,
           right: 20,
           child: Row(
             children: [
-              // Attack / Boomerang (B)
-              GestureDetector(
-                onTap: () => game.player.throwVinylBoomerang(),
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.pinkAccent.withValues(alpha: 0.8),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.pink, blurRadius: 8)
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text("B",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'monospace')),
-                  ),
-                ),
+              _artButton(
+                asset: 'assets/images/runtime/ui_touch_spray.png',
+                size: 56,
+                borderColor: const Color(0xFF66FF66),
+                onTap: () => game.player.tryDash(),
               ),
-              const SizedBox(width: 15),
-
-              // Jump (A)
-              GestureDetector(
+              const SizedBox(width: 12),
+              _artButton(
+                asset: 'assets/images/runtime/ui_touch_b.png',
+                size: 60,
+                borderColor: const Color(0xFFFF3FA4),
+                onTap: () => game.player.throwVinylBoomerang(),
+              ),
+              const SizedBox(width: 12),
+              _artButton(
+                asset: 'assets/images/runtime/ui_touch_a.png',
+                size: 70,
+                borderColor: const Color(0xFF00E5FF),
                 onTap: () => game.player.requestJump(),
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.amber, blurRadius: 10)
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text("A",
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'monospace')),
-                  ),
-                ),
               ),
             ],
           ),

@@ -13,6 +13,8 @@ class SettingsOverlay extends StatelessWidget {
     return Center(
       child: Container(
         width: 340,
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.92),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.95),
@@ -22,10 +24,24 @@ class SettingsOverlay extends StatelessWidget {
             BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("SYSTEM SETTINGS", style: broskieHeadline()),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("SYSTEM SETTINGS", style: broskieHeadline()),
+                  GestureDetector(
+                    onTap: () {
+                      BroskieAudio.playUiClick();
+                      game.overlays.remove('Settings');
+                    },
+                    child: const Icon(Icons.close,
+                        color: Colors.white70, size: 22),
+                  ),
+                ],
+              ),
             const Divider(color: Colors.white24, height: 20),
             ValueListenableBuilder<bool>(
               valueListenable: game.sfxEnabled,
@@ -123,7 +139,8 @@ class SettingsOverlay extends StatelessWidget {
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

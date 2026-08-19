@@ -117,7 +117,7 @@ class _MainMenuOverlayState extends State<MainMenuOverlay>
                         "BROSKIE",
                         style: TextStyle(
                           color: const Color(0xFF00E5FF),
-                          fontSize: 72,
+                          fontSize: 60,
                           fontWeight: FontWeight.w900,
                           fontFamily: 'monospace',
                           letterSpacing: 8,
@@ -142,7 +142,7 @@ class _MainMenuOverlayState extends State<MainMenuOverlay>
                           fontFamily: 'monospace'),
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 24),
                   ValueListenableBuilder<int>(
                     valueListenable: widget.game.unlockedStage,
                     builder: (context, unlocked, _) => Column(
@@ -180,7 +180,7 @@ class _MainMenuOverlayState extends State<MainMenuOverlay>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 20),
                   _slideIn(
                     6,
                     const Text(

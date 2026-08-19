@@ -319,6 +319,9 @@ class BroskieGame extends FlameGame
     player = Player(position: playerSpawn.clone());
     add(player);
     camera.follow(player);
+    // Spawn grace: three heartbeats of mercy before the world gets teeth.
+    player.isInvulnerable = true;
+    player.invulnerableTimer = 3.0;
 
     // Stage theme swap (the boot build sits silently paused behind the menu).
     if (!overlays.isActive('MainMenu')) {

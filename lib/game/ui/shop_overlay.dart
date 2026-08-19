@@ -28,6 +28,8 @@ class _ShopOverlayState extends State<ShopOverlay> {
     return Center(
       child: Container(
         width: 360,
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.92),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.95),
@@ -37,24 +39,39 @@ class _ShopOverlayState extends State<ShopOverlay> {
             BoxShadow(color: BroskieColors.magenta, blurRadius: 15)
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("BLACK MARKET",
-                    style: broskieHeadline(color: BroskieColors.magenta)),
-                ValueListenableBuilder<int>(
-                  valueListenable: widget.game.scoreCoins,
-                  builder: (context, coins, _) => Text("\$$coins",
-                      style: const TextStyle(
-                          color: Colors.amber,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("BLACK MARKET",
+                      style: broskieHeadline(color: BroskieColors.magenta)),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ValueListenableBuilder<int>(
+                        valueListenable: widget.game.scoreCoins,
+                        builder: (context, coins, _) => Text("\$$coins",
+                            style: const TextStyle(
+                                color: Colors.amber,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          BroskieAudio.playUiClick();
+                          widget.game.overlays.remove('Shop');
+                        },
+                        child: const Icon(Icons.close,
+                            color: Colors.white70, size: 22),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             const Divider(color: Colors.white24, height: 20),
 
             // Item 1: the golden 2x4
@@ -92,7 +109,8 @@ class _ShopOverlayState extends State<ShopOverlay> {
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

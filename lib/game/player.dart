@@ -465,6 +465,12 @@ class Player extends SpriteAnimationComponent
       return;
     }
 
+    // Neon under-glow so Broskie reads over the darkest AI backdrops.
+    final glow = Paint()
+      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.45)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
+    canvas.drawCircle(Offset(size.x / 2, size.y / 2 + 4), size.x / 2 + 4, glow);
+
     if (animation != null) {
       super.render(canvas);
       return;

@@ -13,6 +13,8 @@ class LevelSelectOverlay extends StatelessWidget {
     return Center(
       child: Container(
         width: 380,
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.92),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.95),
@@ -22,10 +24,27 @@ class LevelSelectOverlay extends StatelessWidget {
             BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("CAMPAIGN STAGE SELECT", style: broskieHeadline(size: 20)),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text("CAMPAIGN STAGE SELECT",
+                        style: broskieHeadline(size: 20)),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      BroskieAudio.playUiClick();
+                      game.overlays.remove('LevelSelect');
+                    },
+                    child: const Icon(Icons.close,
+                        color: Colors.white70, size: 22),
+                  ),
+                ],
+              ),
             const Divider(color: Colors.white24, height: 20),
             ValueListenableBuilder<int>(
               valueListenable: game.unlockedStage,
@@ -80,7 +99,8 @@ class LevelSelectOverlay extends StatelessWidget {
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

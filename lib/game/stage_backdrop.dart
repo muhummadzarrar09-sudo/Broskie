@@ -43,9 +43,26 @@ class StageBackdrop extends PositionComponent
     final src =
         ui.Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
     final paint = ui.Paint()..filterQuality = ui.FilterQuality.low;
+    // Alternate tiles mirror so seams meet their own reflection instead of a
+    // hard cut in the AI art.
+    var flip = false;
     for (double x = 0; x < size.x; x += tileWidth) {
-      canvas.drawImageRect(
-          img, src, ui.Rect.fromLTWH(x, 0, tileWidth, tileHeight), paint);
+      if (flip) {
+        canvas.save();
+        canvas.translate(x + tileWidth, 0);
+        canvas.scale(-1, 1);
+        canvas.drawImageRect(
+            img, src, ui.Rect.fromLTWH(0, 0, tileWidth, tileHeight), paint);
+        canvas.restore();
+      } else {
+        canvas.drawImageRect(
+            img, src, ui.Rect.fromLTWH(x, 0, tileWidth, tileHeight), paint);
+      }
+      flip = !flip;
     }
+    // Gloom scrim: backdrop sinks into atmosphere, seams die, and fake
+    // "platforms" baked into the art stop competing with real geometry.
+    canvas.drawRect(ui.Rect.fromLTWH(0, 0, size.x, size.y),
+        ui.Paint()..color = const ui.Color(0x7305070F));
   }
 }
