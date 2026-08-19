@@ -3,6 +3,7 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/effects/kill_burst.dart';
+import 'package:broskie_game/game/haptics.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/audio_manager.dart';
 
@@ -101,6 +102,7 @@ class WallStreetBull extends SpriteAnimationComponent with HasGameRef<BroskieGam
         BroskieAudio.playStomp();
         gameRef.add(KillBurst(position: position.clone()..add(size / 2), color: const Color(0xFFFFB800)));
         gameRef.hitStop(0.08);
+        if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
         gameRef.enemiesDefeated++;
         removeFromParent(); // Stomped!
         other.bounce();

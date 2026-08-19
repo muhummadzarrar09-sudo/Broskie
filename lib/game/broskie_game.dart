@@ -22,6 +22,7 @@ import 'enemies/data_broker_boss.dart';
 import 'levels/interactable_lore.dart';
 import 'levels/boss_intro_trigger.dart';
 import 'levels/level_exit.dart';
+import 'haptics.dart';
 import 'world2/propaganda_sign.dart';
 import 'world4/hater_cloud.dart';
 import 'world5/auditor_enemy.dart';
@@ -41,6 +42,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
   final ValueNotifier<bool> sfxEnabled = ValueNotifier(true);
   final ValueNotifier<bool> musicEnabled = ValueNotifier(true);
   final ValueNotifier<bool> touchControlsEnabled = ValueNotifier(true);
+  final ValueNotifier<bool> hapticsEnabled = ValueNotifier(true);
   final ValueNotifier<double> shakeScale = ValueNotifier(1.0);
 
   String activeSpeaker = 'BROSKIE CORP';
@@ -95,6 +97,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     bossCardArt = artFile;
     BroskieAudio.playGlitch();
     triggerScreenShake(intensity: 0.5);
+    if (hapticsEnabled.value) BroskieHaptics.medium();
     overlays.add('BossCard');
   }
 
@@ -104,6 +107,32 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
 
   void hideStageBanner() {
     overlays.remove('StageBanner');
+  }
+
+  // ——— Boss HUD nameplate bar (fighting-game style) ———
+  final ValueNotifier<double> bossBar = ValueNotifier(-1); // < 0 = hidden
+  String bossBarName = '';
+
+  void showBossBar(String name) {
+    bossBarName = name;
+    bossBar.value = 1;
+    overlays.add('BossBar');
+  }
+
+  void updateBossBar(double fraction) {
+    bossBar.value = fraction.clamp(0.0, 1.0);
+  }
+
+  void hideBossBar() {
+    overlays.remove('BossBar');
+    bossBar.value = -1;
+  }
+
+  // ——— Screen flash: the white frame on the killing blow ———
+  final ValueNotifier<double> screenFlash = ValueNotifier(0);
+
+  void triggerScreenFlash([double peak = 0.85]) {
+    screenFlash.value = peak;
   }
 
   final Vector2 playerSpawn = Vector2(100, 300);
@@ -144,6 +173,9 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       return;
     }
     stageTime += dt;
+    if (screenFlash.value > 0) {
+      screenFlash.value = (screenFlash.value - dt * 2.2).clamp(0.0, 1.0);
+    }
     if (shakeIntensity > 0) {
       shakeIntensity -= dt * 10;
       if (shakeIntensity < 0) shakeIntensity = 0;
@@ -194,6 +226,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       sfxEnabled.value = prefs.getBool('settings_sfx') ?? true;
       musicEnabled.value = prefs.getBool('settings_music') ?? true;
       touchControlsEnabled.value = prefs.getBool('settings_touch') ?? true;
+      hapticsEnabled.value = prefs.getBool('settings_haptics') ?? true;
       shakeScale.value = prefs.getDouble('settings_shake') ?? 1.0;
       unlockedStage.value = max(1, min(4, prefs.getInt('unlocked_stage') ?? 1));
       for (var i = 1; i <= 4; i++) {
@@ -210,6 +243,7 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       await prefs.setBool('settings_sfx', sfxEnabled.value);
       await prefs.setBool('settings_music', musicEnabled.value);
       await prefs.setBool('settings_touch', touchControlsEnabled.value);
+      await prefs.setBool('settings_haptics', hapticsEnabled.value);
       await prefs.setDouble('settings_shake', shakeScale.value);
       await prefs.setInt('unlocked_stage', unlockedStage.value);
       for (final entry in bestRanks.entries) {
@@ -422,7 +456,12 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
       bestRanks[currentStage.value] = rankValue(rank);
       savePrefs();
     }
-    BroskieAudio.playStageComplete();
+    // An S gets the gold-record fanfare; anything less gets the standard sting.
+    if (rank == 'S') {
+      BroskieAudio.playFanfareS();
+    } else {
+      BroskieAudio.playStageComplete();
+    }
     pauseEngine();
     overlays.add('LevelComplete');
   }
@@ -446,6 +485,8 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     overlays.remove('Victory');
     overlays.remove('BossCard');
     overlays.remove('StageBanner');
+    hideBossBar();
+    screenFlash.value = 0;
 
     hp.value = maxHp;
 

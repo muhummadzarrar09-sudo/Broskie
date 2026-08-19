@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/haptics.dart';
 
 enum BossPhase { chilling, mad, berserk }
 
@@ -59,6 +60,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
     } catch (_) {
       // Procedural excavator painter stays active without the art.
     }
+    gameRef.showBossBar('THE FOREMAN');
   }
 
   @override
@@ -148,6 +150,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
     BroskieAudio.playBossHit();
     gameRef.hitStop(0.05);
     health--;
+    gameRef.updateBossBar(health / maxHealth);
     if (health <= 0) die();
   }
 
@@ -157,7 +160,12 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
   }
 
   void die() {
-    BroskieAudio.playBossHit();
+    // Executive termination: deep freeze, white flash, the sting.
+    BroskieAudio.playBossKill();
+    gameRef.hitStop(0.35);
+    gameRef.triggerScreenFlash(0.85);
+    if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
+    gameRef.hideBossBar();
     gameRef.enemiesDefeated++;
     gameRef.showDialogue("THE FOREMAN", "System... failure... The Monopoly... will... find... you...");
     removeFromParent();
@@ -174,6 +182,7 @@ class TheForeman extends SpriteAnimationComponent with HasGameRef<BroskieGame>, 
         isDizzy = false;
         other.bounce();
         BroskieAudio.playStomp();
+        gameRef.updateBossBar(health / maxHealth);
         if (health <= 0) die();
       } else {
         other.hit();

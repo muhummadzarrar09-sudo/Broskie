@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'game/audio_manager.dart';
 import 'game/broskie_game.dart';
 import 'game/ui/boss_card_overlay.dart';
+import 'game/ui/boss_bar_overlay.dart';
 import 'game/ui/broskie_style.dart';
 import 'game/ui/dialogue_box.dart';
 import 'game/ui/game_over.dart';
@@ -208,6 +209,10 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
           'MainMenu': (context, game) => broskieOverlayScan(MainMenuOverlay(game: game)),
 
           'BossCard': (context, game) => broskieOverlayScan(BossCardOverlay(game: game)),
+          'BossBar': (context, game) => broskieOverlayScan(BossBarOverlay(game: game)),
+          // ScreenFlash renders above everything and must NOT be scan-wrapped:
+          // it IS the white frame.
+          'ScreenFlash': (context, game) => ScreenFlashOverlay(game: game),
 
           'StageBanner': (context, game) => broskieOverlayScan(StageBannerOverlay(game: game)),
 
@@ -248,7 +253,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
             },
           )),
         },
-        initialActiveOverlays: const ['HUD', 'MainMenu'],
+        initialActiveOverlays: const ['HUD', 'MainMenu', 'ScreenFlash'],
       ),
     );
   }

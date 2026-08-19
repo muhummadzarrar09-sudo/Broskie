@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/haptics.dart';
 
 class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGame>, CollisionCallbacks {
   int health = 8;
@@ -35,6 +36,7 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGam
     } catch (_) {
       // Procedural spider-mech painter stays active without the art.
     }
+    gameRef.showBossBar('DATA-BROKER');
   }
 
   @override
@@ -113,6 +115,8 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGam
     if (isFake && health <= 4) {
       _triggerFakeOut();
     }
+    // Bar updates AFTER the fake-out so the proxy reveal reads as a refill.
+    gameRef.updateBossBar(health / maxHealth);
     if (health <= 0) {
       die();
     }
@@ -125,6 +129,12 @@ class DataBrokerBoss extends SpriteAnimationComponent with HasGameRef<BroskieGam
   }
 
   void die() {
+    // Executive termination: deep freeze, white flash, the sting.
+    BroskieAudio.playBossKill();
+    gameRef.hitStop(0.35);
+    gameRef.triggerScreenFlash(0.85);
+    if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
+    gameRef.hideBossBar();
     gameRef.enemiesDefeated++;
     gameRef.showDialogue("DATA-BROKER", "Connection... terminated... The... signal... dies... with... me...");
     removeFromParent();

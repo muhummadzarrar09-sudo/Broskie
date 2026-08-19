@@ -67,6 +67,20 @@ class SettingsOverlay extends StatelessWidget {
               ),
             ),
 
+            ValueListenableBuilder<bool>(
+              valueListenable: game.hapticsEnabled,
+              builder: (context, on, _) => SwitchListTile(
+                activeColor: const Color(0xFFFF3FA4),
+                title: const Text("Haptics", style: TextStyle(color: Colors.white)),
+                subtitle: const Text("Rumble on dashes, stomps and boss kills", style: TextStyle(color: Colors.white38, fontSize: 11)),
+                value: on,
+                onChanged: (v) {
+                  game.hapticsEnabled.value = v;
+                  game.savePrefs();
+                },
+              ),
+            ),
+
             const SizedBox(height: 10),
             ValueListenableBuilder<double>(
               valueListenable: game.shakeScale,

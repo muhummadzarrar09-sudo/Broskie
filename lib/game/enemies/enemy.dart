@@ -3,6 +3,7 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/effects/kill_burst.dart';
+import 'package:broskie_game/game/haptics.dart';
 import 'package:broskie_game/game/player.dart';
 import 'package:broskie_game/game/audio_manager.dart';
 
@@ -85,6 +86,7 @@ class GrumpyBrick extends Enemy with HasGameRef<BroskieGame> {
         other.bounce();
         gameRef.add(KillBurst(position: position.clone()..add(size / 2)));
         gameRef.hitStop(0.07);
+        if (gameRef.hapticsEnabled.value) BroskieHaptics.heavy();
         die();
         gameRef.enemiesDefeated++;
       } else {

@@ -68,8 +68,10 @@ class BroskieAudio {
   static void playPowerup() => _play('powerup.wav', 0.8);
   static void playStomp() => _play('stomp.wav', 0.7);
   static void playBossHit() => _play('boss_hit.wav', 0.8);
-  static void playGlitch() => _play('hit.wav', 0.45);
+  static void playGlitch() => _play('glitch.wav', 0.55);
   static void playStageComplete() => _play('stage_complete.wav', 0.85);
+  static void playFanfareS() => _play('fanfare_s.wav', 0.85);
+  static void playBossKill() => _play('boss_kill.wav', 0.9);
   static void playUiClick() => _play('ui_click.wav', 0.6);
 
   static void startMusic() {

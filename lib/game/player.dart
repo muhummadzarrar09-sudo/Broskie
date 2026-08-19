@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/audio_manager.dart';
+import 'package:broskie_game/game/haptics.dart';
 import 'package:broskie_game/game/blocks/interactable_block.dart';
 import 'package:broskie_game/game/world4/hater_cloud.dart';
 import 'package:broskie_game/game/weapons/vinyl_boomerang.dart';
@@ -265,6 +266,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
     dashTimer = _dashDuration;
     dashCooldown = _dashCooldownTime;
     BroskieAudio.playDash();
+    if (gameRef.hapticsEnabled.value) BroskieHaptics.light();
   }
 
   @override
@@ -336,6 +338,7 @@ class Player extends SpriteAnimationComponent with KeyboardHandler, HasGameRef<B
   void hit() {
     if (isInvulnerable) return;
     BroskieAudio.playHit();
+    if (gameRef.hapticsEnabled.value) BroskieHaptics.medium();
 
     if (isBig) {
       // Power absorb: shrink back to small Broskie, keep the heart.
