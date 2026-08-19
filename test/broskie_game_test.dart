@@ -6,6 +6,7 @@ import 'package:broskie_game/game/player.dart';
 import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -116,6 +117,74 @@ void main() {
       game.update(0.3); // let the exit poll again
 
       expect(exit.locked, isFalse);
+    },
+  );
+
+  test('rank boundaries: par is inclusive, S demands full health', () {
+    expect(BroskieGame.stageRankFor(2, 3, 50), 'S'); // exactly at par certifies gold
+    expect(BroskieGame.stageRankFor(2, 3, 50.01), 'A'); // full health but over par
+    expect(BroskieGame.stageRankFor(2, 2, 49), 'A'); // flawless time, one hit taken — no S
+    expect(BroskieGame.stageRankFor(1, 3, 36), 'A'); // full health, 1s over par
+    expect(BroskieGame.stageRankFor(1, 1, 100), 'C'); // slow AND bruised
+    expect(BroskieGame.stageRankFor(1, 3, 69), 'B'); // full health but way over par
+  });
+
+  test('beatPulse stays inside [0,1] on every stage', () {
+    final game = BroskieGame();
+    for (var stage = 1; stage <= 4; stage++) {
+      game.currentStage.value = stage;
+      for (final t in [0.0, 0.17, 1.3, 42.42, 999.9]) {
+        game.stageTime = t;
+        expect(game.beatPulse, inInclusiveRange(0, 1), reason: 'stage $stage at t=$t');
+      }
+    }
+  });
+
+  test('prefs: haptics toggle persists, unlock range clamps', () async {
+    SharedPreferences.setMockInitialValues({'settings_haptics': false, 'unlocked_stage': 99});
+    final game = BroskieGame();
+    await game.loadPrefs();
+    expect(game.hapticsEnabled.value, false);
+    expect(game.unlockedStage.value, 4); // clamped to campaign max
+  });
+
+  testWithGame<BroskieGame>(
+    'hit-stop freezes stage time, then releases it',
+    BroskieGame.new,
+    (game) async {
+      await game.ready();
+
+      game.hitStop(0.1);
+      game.update(0.05);
+      expect(game.stageTime, 0); // the world held its breath
+
+      game.update(0.2); // burn through the freeze
+      expect(game.stageTime, greaterThan(0));
+    },
+  );
+
+  testWithGame<BroskieGame>(
+    'boss bar and screen flash have a clean lifecycle',
+    BroskieGame.new,
+    (game) async {
+      await game.ready();
+
+      game.showBossBar('THE FOREMAN');
+      expect(game.bossBarName, 'THE FOREMAN');
+      expect(game.bossBar.value, 1.0);
+
+      game.updateBossBar(0.5);
+      expect(game.bossBar.value, 0.5);
+
+      game.hideBossBar();
+      expect(game.bossBar.value, -1);
+
+      game.triggerScreenFlash(0.8);
+      expect(game.screenFlash.value, 0.8);
+      for (var i = 0; i < 120; i++) {
+        game.update(1 / 60);
+      }
+      expect(game.screenFlash.value, 0); // fully faded out
     },
   );
 }

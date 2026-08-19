@@ -329,10 +329,21 @@ class BroskieGame extends FlameGame with HasKeyboardHandlerComponents, HasCollis
     add(DataBitCoin(position: Vector2(316, 216)));
     add(DataBitCoin(position: Vector2(348, 216)));
 
+    // Onboarding trail: one verb per sign, spaced like an arcade attract mode.
     add(InteractableLore(
       position: Vector2(180, 432),
-      speaker: "STAGE 1-1",
-      text: "THE GREY ZONE: Run (SHIFT), jump (SPACE), dash (K) and throw Vinyl Boomerangs (J/F)!",
+      speaker: "STREET RULES",
+      text: "MOVE: A/D or ARROWS · sprint with SHIFT · JUMP: SPACE or W — hold it to float higher.",
+    ));
+    add(InteractableLore(
+      position: Vector2(620, 432),
+      speaker: "VOLT DASH",
+      text: "K or CTRL fires the Volt Dash. Dash THROUGH their grey — on touch: the ⚡ button.",
+    ));
+    add(InteractableLore(
+      position: Vector2(1050, 432),
+      speaker: "VINYL ARTILLERY",
+      text: "J or F throws the Vinyl Boomerang. It always comes back. So does Broskie.",
     ));
 
     add(GrumpyBrick(position: Vector2(800, 448), patrolRange: 300));
