@@ -293,14 +293,7 @@ class BroskieGame extends FlameGame
   /// the lower third. Climbing (stage 3 tower) slides Y just enough to keep
   /// Broskie in that same lower-middle band.
   void _updateMarioCamera() {
-    Player? p;
-    try {
-      p = player;
-    } catch (_) {
-      return;
-    }
-    if (p.parent == null) return;
-    final player = p;
+    if (!player.isMounted) return;
     final px = player.position.x + player.size.x / 2;
     final feet = player.position.y + player.size.y;
     var targetY = camLockY;
@@ -364,7 +357,7 @@ class BroskieGame extends FlameGame
       musicVolume.value = prefs.getDouble('settings_music_vol') ?? 1.0;
       BroskieAudio.setSfxVolume(sfxVolume.value);
       BroskieAudio.setMusicVolume(musicVolume.value);
-      difficulty.value = BroskieDifficultyTuning.fromName(
+      difficulty.value = BroskieDifficulty.fromName(
           prefs.getString('settings_difficulty'));
       unlockedStage.value = max(1, min(4, prefs.getInt('unlocked_stage') ?? 1));
       scoreCoins.value = max(0, prefs.getInt('wallet') ?? 0);

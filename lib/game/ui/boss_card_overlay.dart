@@ -56,7 +56,7 @@ class _BossCardOverlayState extends State<BossCardOverlay> {
                     'assets/images/runtime/${widget.game.bossCardArt}',
                     fit: BoxFit.cover,
                     filterQuality: FilterQuality.none,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (_, _, _) =>
                         Container(color: const Color(0xFF241244)),
                   ),
                 ),

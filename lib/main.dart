@@ -138,7 +138,7 @@ class _BroskieGameScreenState extends State<BroskieGameScreen>
                                     builder: (context, hearts, _) =>
                                         ValueListenableBuilder(
                                       valueListenable: game.difficulty,
-                                      builder: (context, _, __) => Row(
+                                      builder: (context, _, _) => Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: List.generate(
                                           game.hpMax,
