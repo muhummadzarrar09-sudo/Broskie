@@ -118,15 +118,22 @@ void main() {
 
       final exit = game.children.whereType<LevelExit>().single;
       expect(exit.locked, isTrue);
+      expect(game.children.whereType<TheForeman>(), isNotEmpty);
+      expect(game.children.whereType<DataBrokerBoss>(), isEmpty);
 
       game.children
           .whereType<TheForeman>()
           .forEach((c) => c.removeFromParent());
+      game.update(0.016); // process pending removals
+      game.update(0.3); // Foreman gone → Broker clocks in
+      expect(game.children.whereType<DataBrokerBoss>(), isNotEmpty);
+      expect(exit.locked, isTrue);
+
       game.children
           .whereType<DataBrokerBoss>()
           .forEach((c) => c.removeFromParent());
-      game.update(0.016); // process pending removals
-      game.update(0.3); // let the exit poll again
+      game.update(0.016);
+      game.update(0.3);
 
       expect(exit.locked, isFalse);
     },
@@ -284,6 +291,25 @@ void main() {
       final floorFromTop = (BroskieGame.streetY - top) / BroskieGame.viewH;
       expect(floorFromTop, greaterThan(0.65));
       expect(floorFromTop, lessThan(0.92));
+    },
+  );
+
+  test('wallet persists in prefs', () async {
+    SharedPreferences.setMockInitialValues({'wallet': 400});
+    final game = BroskieGame()..overlaysMuted = true;
+    await game.loadPrefs();
+    expect(game.scoreCoins.value, 400);
+  });
+
+  testWithGame<BroskieGame>(
+    'NEW RUN wipes the wallet',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.scoreCoins.value = 250;
+      game.startRun(1, newRun: true);
+      await game.ready();
+      expect(game.scoreCoins.value, 0);
     },
   );
 }

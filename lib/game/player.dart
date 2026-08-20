@@ -323,6 +323,11 @@ class Player extends SpriteAnimationComponent
     }
 
     setMove(dir);
+    if (event is KeyDownEvent &&
+        (event.logicalKey == LogicalKeyboardKey.escape ||
+            event.logicalKey == LogicalKeyboardKey.keyP)) {
+      game.togglePause();
+    }
     isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
         keysPressed.contains(LogicalKeyboardKey.shiftRight);
 

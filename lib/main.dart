@@ -285,6 +285,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen>
                 enemiesStomped: game.enemiesDefeated,
                 rank: game.lastRank,
                 bestRank: game.bestRankLabelFor(game.currentStage.value),
+                isLastStage: game.currentStage.value >= 4,
                 onNextLevel: () {
                   BroskieAudio.playUiClick();
                   game.advanceStage();

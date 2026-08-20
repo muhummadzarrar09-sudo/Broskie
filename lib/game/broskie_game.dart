@@ -227,6 +227,7 @@ class BroskieGame extends FlameGame
   static const double camLockY = 380;
   static const double lookAhead = 110;
   double _levelWidth = 2800;
+  bool _brokerReleased = false;
 
   BroskieGame({this.ref});
 
@@ -277,6 +278,7 @@ class BroskieGame extends FlameGame
       screenFlash.value = (screenFlash.value - dt * 2.2).clamp(0.0, 1.0);
     }
     super.update(dt);
+    _maybeReleaseBroker();
     _updateMarioCamera();
     if (shakeIntensity > 0) {
       shakeIntensity -= dt * 10;
@@ -361,6 +363,7 @@ class BroskieGame extends FlameGame
       difficulty.value = BroskieDifficultyTuning.fromName(
           prefs.getString('settings_difficulty'));
       unlockedStage.value = max(1, min(4, prefs.getInt('unlocked_stage') ?? 1));
+      scoreCoins.value = max(0, prefs.getInt('wallet') ?? 0);
       for (var i = 1; i <= 4; i++) {
         bestRanks[i] = prefs.getInt('rank_stage_$i') ?? 0;
       }
@@ -379,6 +382,7 @@ class BroskieGame extends FlameGame
       await prefs.setDouble('settings_shake', shakeScale.value);
       await prefs.setString('settings_difficulty', difficulty.value.name);
       await prefs.setInt('unlocked_stage', unlockedStage.value);
+      await prefs.setInt('wallet', scoreCoins.value);
       for (final entry in bestRanks.entries) {
         await prefs.setInt('rank_stage_${entry.key}', entry.value);
       }
@@ -391,7 +395,12 @@ class BroskieGame extends FlameGame
   }
 
   /// Main menu / stage select entry point.
-  void startRun(int stage) {
+  void startRun(int stage, {bool newRun = false}) {
+    if (newRun) {
+      scoreCoins.value = 0;
+      enemiesDefeated = 0;
+      savePrefs();
+    }
     currentStage.value = max(1, min(4, stage));
     hp.value = hpMax;
     _hideOverlay('MainMenu');
@@ -588,7 +597,8 @@ class BroskieGame extends FlameGame
       bossTitle: 'MNPLY-0DAY · SIGNAL THIEF',
       bossArt: 'broker_intro.png',
     ));
-    add(DataBrokerBoss(position: Vector2(2600, 406), minX: 2300, maxX: 3200));
+    // Broker waits in the wings until the Foreman is actually gone.
+    _brokerReleased = false;
     add(CheckpointFlag(position: Vector2(2100, 416)));
     // Mid-arena supply: cash for the shop between the two executives.
     add(DataBitCoin(position: Vector2(2230, 360)));
@@ -597,9 +607,18 @@ class BroskieGame extends FlameGame
       position: Vector2(3600, 352),
       lockCondition: () =>
           children.whereType<TheForeman>().isNotEmpty ||
-          children.whereType<DataBrokerBoss>().isNotEmpty,
+          children.whereType<DataBrokerBoss>().isNotEmpty ||
+          !_brokerReleased,
       lockHint: "PORTAL JAMMED: Defeat BOTH executives to go live!",
     ));
+  }
+
+  /// One executive at a time. The Broker clocks in after the Foreman clocks out.
+  void _maybeReleaseBroker() {
+    if (currentStage.value != 4 || _brokerReleased) return;
+    if (children.whereType<TheForeman>().isNotEmpty) return;
+    _brokerReleased = true;
+    add(DataBrokerBoss(position: Vector2(2600, 406), minX: 2300, maxX: 3200));
   }
 
   /// Falling off the world respawns at the last checkpoint.
@@ -645,6 +664,7 @@ class BroskieGame extends FlameGame
     } else {
       BroskieAudio.playStageComplete();
     }
+    savePrefs();
     pauseEngine();
     _showOverlay('LevelComplete');
   }

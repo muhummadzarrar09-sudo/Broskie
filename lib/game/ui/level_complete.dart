@@ -8,6 +8,7 @@ class LevelCompleteOverlay extends StatelessWidget {
   final String rank;
   final String bestRank;
   final VoidCallback onNextLevel;
+  final bool isLastStage;
 
   const LevelCompleteOverlay({
     super.key,
@@ -16,6 +17,7 @@ class LevelCompleteOverlay extends StatelessWidget {
     required this.rank,
     required this.bestRank,
     required this.onNextLevel,
+    this.isLastStage = false,
   });
 
   Color get _rankColor => switch (rank) {
@@ -106,10 +108,10 @@ class LevelCompleteOverlay extends StatelessWidget {
             ),
 
             const Divider(color: Colors.white24, height: 24),
-            Text("CASH: \$$coins",
+            Text("VINYL $coins",
                 style:
                     const TextStyle(color: Colors.greenAccent, fontSize: 18)),
-            Text("EXECUTIVES DOWN: $enemiesStomped",
+            Text("STOMPS: $enemiesStomped",
                 style: const TextStyle(color: Colors.redAccent, fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -118,8 +120,8 @@ class LevelCompleteOverlay extends StatelessWidget {
                 BroskieAudio.playUiClick();
                 onNextLevel();
               },
-              child: const Text("NEXT LEVEL",
-                  style: TextStyle(
+              child: Text(isLastStage ? "TAKE THE CITY" : "NEXT LEVEL",
+                  style: const TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],

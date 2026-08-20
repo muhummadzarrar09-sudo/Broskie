@@ -105,7 +105,7 @@ class MainMenuOverlay extends StatelessWidget {
                           const SizedBox(height: 12),
                         ],
                         _btn('NEW RUN', BroskieColors.bone, Colors.black,
-                            () => game.startRun(1)),
+                            () => game.startRun(1, newRun: true)),
                         const SizedBox(height: 12),
                         _btn('STAGE SELECT', const Color(0xFF1A1814),
                             BroskieColors.bone, game.openLevelSelect),
