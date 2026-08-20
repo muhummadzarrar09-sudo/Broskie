@@ -33,14 +33,7 @@ class LevelCompleteOverlay extends StatelessWidget {
       child: Container(
         width: 320,
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.92),
-          border: Border.all(color: Colors.amber, width: 4),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(color: _rankColor.withValues(alpha: 0.6), blurRadius: 24)
-          ],
-        ),
+        decoration: broskiePanel(border: BroskieColors.amber),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

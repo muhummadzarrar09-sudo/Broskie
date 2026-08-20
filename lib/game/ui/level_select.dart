@@ -16,14 +16,7 @@ class LevelSelectOverlay extends StatelessWidget {
         constraints: BoxConstraints(
             maxHeight: MediaQuery.sizeOf(context).height * 0.92),
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.95),
-          border: Border.all(color: const Color(0xFF00E5FF), width: 4),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
-          ],
-        ),
+        decoration: broskiePanel(),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -108,10 +101,8 @@ class LevelSelectOverlay extends StatelessWidget {
 
   void _launch(int stage) {
     BroskieAudio.playUiClick();
-    game.currentStage.value = stage;
-    game.restart();
-    game.overlays.remove('LevelSelect');
-    game.overlays.remove('MainMenu');
+    game.dismissOverlay('LevelSelect');
+    game.startRun(stage);
   }
 
   Widget _buildStageTile({

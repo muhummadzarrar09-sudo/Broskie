@@ -301,6 +301,15 @@ void main() {
     expect(game.scoreCoins.value, 400);
   });
 
+  test('volume sliders persist', () async {
+    SharedPreferences.setMockInitialValues(
+        {'settings_sfx_vol': 0.4, 'settings_music_vol': 0.2});
+    final game = BroskieGame()..overlaysMuted = true;
+    await game.loadPrefs();
+    expect(game.sfxVolume.value, closeTo(0.4, 0.001));
+    expect(game.musicVolume.value, closeTo(0.2, 0.001));
+  });
+
   testWithGame<BroskieGame>(
     'NEW RUN wipes the wallet',
     createMutedGame,

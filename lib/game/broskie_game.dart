@@ -50,6 +50,9 @@ class BroskieGame extends FlameGame
   final ValueNotifier<bool> touchControlsEnabled = ValueNotifier(true);
   final ValueNotifier<bool> hapticsEnabled = ValueNotifier(true);
   final ValueNotifier<double> shakeScale = ValueNotifier(1.0);
+  final ValueNotifier<double> sfxVolume = ValueNotifier(1.0);
+  final ValueNotifier<double> musicVolume = ValueNotifier(1.0);
+  static const int saveVersion = 1;
 
   String activeSpeaker = 'BROSKIE CORP';
   String activeDialogue = '';
@@ -360,6 +363,10 @@ class BroskieGame extends FlameGame
       touchControlsEnabled.value = prefs.getBool('settings_touch') ?? true;
       hapticsEnabled.value = prefs.getBool('settings_haptics') ?? true;
       shakeScale.value = prefs.getDouble('settings_shake') ?? 1.0;
+      sfxVolume.value = prefs.getDouble('settings_sfx_vol') ?? 1.0;
+      musicVolume.value = prefs.getDouble('settings_music_vol') ?? 1.0;
+      BroskieAudio.setSfxVolume(sfxVolume.value);
+      BroskieAudio.setMusicVolume(musicVolume.value);
       difficulty.value = BroskieDifficultyTuning.fromName(
           prefs.getString('settings_difficulty'));
       unlockedStage.value = max(1, min(4, prefs.getInt('unlocked_stage') ?? 1));
@@ -380,6 +387,9 @@ class BroskieGame extends FlameGame
       await prefs.setBool('settings_touch', touchControlsEnabled.value);
       await prefs.setBool('settings_haptics', hapticsEnabled.value);
       await prefs.setDouble('settings_shake', shakeScale.value);
+      await prefs.setDouble('settings_sfx_vol', sfxVolume.value);
+      await prefs.setDouble('settings_music_vol', musicVolume.value);
+      await prefs.setInt('save_v', saveVersion);
       await prefs.setString('settings_difficulty', difficulty.value.name);
       await prefs.setInt('unlocked_stage', unlockedStage.value);
       await prefs.setInt('wallet', scoreCoins.value);

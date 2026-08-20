@@ -1,5 +1,6 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'game/audio_manager.dart';
@@ -24,6 +25,11 @@ import 'game/ui/victory_overlay.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations(const [
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await BroskieAudio.init();
   runApp(
     const ProviderScope(
@@ -246,41 +252,27 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen>
 
           'MainMenu': (context, game) => MainMenuOverlay(game: game),
 
-          'BossCard': (context, game) =>
-              broskieOverlayScan(BossCardOverlay(game: game)),
-          'BossBar': (context, game) =>
-              broskieOverlayScan(BossBarOverlay(game: game)),
+          'BossCard': (context, game) => BossCardOverlay(game: game),
+          'BossBar': (context, game) => BossBarOverlay(game: game),
           // ScreenFlash renders above everything and must NOT be scan-wrapped:
           // it IS the white frame.
           'ScreenFlash': (context, game) => ScreenFlashOverlay(game: game),
 
-          'StageBanner': (context, game) =>
-              broskieOverlayScan(StageBannerOverlay(game: game)),
-
-          'LevelSelect': (context, game) =>
-              broskieOverlayScan(LevelSelectOverlay(game: game)),
-
-          'Settings': (context, game) =>
-              broskieOverlayScan(SettingsOverlay(game: game)),
-
-          'PauseMenu': (context, game) =>
-              broskieOverlayScan(PauseMenuOverlay(game: game)),
-
-          'Shop': (context, game) =>
-              broskieOverlayScan(ShopOverlay(game: game)),
-
-          'Victory': (context, game) =>
-              broskieOverlayScan(VictoryOverlay(game: game)),
-
-          'GameOver': (context, game) => broskieOverlayScan(GameOverOverlay(
+          'StageBanner': (context, game) => StageBannerOverlay(game: game),
+          'StageLoad': (context, game) => StageLoadOverlay(game: game),
+          'DeathCard': (context, game) => DeathCardOverlay(game: game),
+          'LevelSelect': (context, game) => LevelSelectOverlay(game: game),
+          'Settings': (context, game) => SettingsOverlay(game: game),
+          'PauseMenu': (context, game) => PauseMenuOverlay(game: game),
+          'Shop': (context, game) => ShopOverlay(game: game),
+          'Victory': (context, game) => VictoryOverlay(game: game),
+          'GameOver': (context, game) => GameOverOverlay(
                 onRestart: () {
                   BroskieAudio.playUiClick();
                   game.restart(showLoadCard: true);
                 },
-              )),
-
-          'LevelComplete': (context, game) =>
-              broskieOverlayScan(LevelCompleteOverlay(
+              ),
+          'LevelComplete': (context, game) => LevelCompleteOverlay(
                 coins: game.scoreCoins.value,
                 enemiesStomped: game.enemiesDefeated,
                 rank: game.lastRank,
@@ -290,16 +282,15 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen>
                   BroskieAudio.playUiClick();
                   game.advanceStage();
                 },
-              )),
-
-          'Dialogue': (context, game) => broskieOverlayScan(DialogueBox(
+              ),
+          'Dialogue': (context, game) => DialogueBox(
                 speakerName: game.activeSpeaker,
                 text: game.activeDialogue,
                 onNext: () {
                   BroskieAudio.playUiClick();
                   game.hideDialogue();
                 },
-              )),
+              ),
         },
           initialActiveOverlays: const ['HUD', 'MainMenu', 'ScreenFlash'],
         ),

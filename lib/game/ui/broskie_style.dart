@@ -30,13 +30,13 @@ TextStyle broskieHeadline({
   );
 }
 
-/// Kit border: 3px chunky, radius never above 8.
+/// Kit border: 3px chunky, radius 4. Bone, not cyan-OS.
 BoxDecoration broskiePanel(
-    {Color border = BroskieColors.cyan, Color background = Colors.black}) {
+    {Color border = BroskieColors.bone, Color background = BroskieColors.night}) {
   return BoxDecoration(
-    color: background.withValues(alpha: 0.92),
+    color: background.withValues(alpha: 0.95),
     border: Border.all(color: border, width: 3),
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(4),
   );
 }
 
@@ -97,7 +97,7 @@ class PixelHeartPainter extends CustomPainter {
       '00011000',
     ];
     final body = Paint()
-      ..color = filled ? BroskieColors.magenta : Colors.white24;
+      ..color = filled ? BroskieColors.cap : Colors.white24;
     for (var row = 0; row < pattern.length; row++) {
       for (var col = 0; col < 8; col++) {
         if (pattern[row][col] == '1') {

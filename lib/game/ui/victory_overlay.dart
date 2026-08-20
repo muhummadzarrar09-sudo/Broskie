@@ -1,5 +1,6 @@
 import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:flutter/material.dart';
 
 class VictoryOverlay extends StatelessWidget {
@@ -9,69 +10,96 @@ class VictoryOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 360,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.95),
-          border: Border.all(color: Colors.amber, width: 5),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [BoxShadow(color: Colors.amber, blurRadius: 20)],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.emoji_events, color: Colors.amber, size: 60),
-            const SizedBox(height: 10),
-            const Text(
-              "NEO-CITY LIBERATED!",
-              style: TextStyle(
-                color: Colors.amber,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'monospace',
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Broskie Corp takeover complete! Monopoly standardization is OVER!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic),
-            ),
-            const Divider(color: Colors.white24, height: 30),
-            Text("TOTAL CASH: \$${game.scoreCoins.value}",
-                style: const TextStyle(
-                    color: Colors.greenAccent,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Text("EXECUTIVES DEFEATED: ${game.enemiesDefeated}",
-                style: const TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-              ),
-              onPressed: () {
-                BroskieAudio.playUiClick();
-                game.restart();
-              },
-              child: const Text("PLAY AGAIN",
+    return ColoredBox(
+      color: BroskieColors.night,
+      child: SafeArea(
+        child: Center(
+          child: Container(
+            width: 360,
+            padding: const EdgeInsets.all(24),
+            decoration: broskiePanel(border: BroskieColors.amber),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('THE CITY IS YOURS',
+                    textAlign: TextAlign.center,
+                    style: broskieHeadline(
+                        size: 22, color: BroskieColors.amber, letterSpacing: 3)),
+                const SizedBox(height: 10),
+                const Text(
+                  'Monopoly Corp clocked out. Broskie did not.',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18)),
+                      color: BroskieColors.bone,
+                      fontSize: 14,
+                      fontFamily: 'monospace'),
+                ),
+                const Divider(color: Color(0x33F2E6D4), height: 28),
+                Text('VINYL  ${game.scoreCoins.value}',
+                    style: const TextStyle(
+                        color: BroskieColors.amber,
+                        fontSize: 16,
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w900)),
+                const SizedBox(height: 6),
+                Text('STOMPS  ${game.enemiesDefeated}',
+                    style: const TextStyle(
+                        color: BroskieColors.cap,
+                        fontSize: 16,
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w900)),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BroskieColors.amber,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4)),
+                    ),
+                    onPressed: () {
+                      BroskieAudio.playUiClick();
+                      game.restart(showLoadCard: true);
+                    },
+                    child: const Text('PLAY AGAIN',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'monospace',
+                            letterSpacing: 2)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1A1814),
+                      foregroundColor: BroskieColors.bone,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        side: const BorderSide(
+                            color: BroskieColors.bone, width: 2),
+                      ),
+                    ),
+                    onPressed: () {
+                      BroskieAudio.playUiClick();
+                      game.returnToTitle();
+                    },
+                    child: const Text('TITLE SCREEN',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'monospace',
+                            letterSpacing: 2)),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

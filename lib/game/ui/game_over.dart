@@ -1,3 +1,4 @@
+import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:flutter/material.dart';
 
 class GameOverOverlay extends StatelessWidget {
@@ -7,61 +8,49 @@ class GameOverOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // The "DELETED" Stamp
-          Transform.rotate(
-            angle: -0.2,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.red, width: 8),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Text(
-                "DELETED",
+    return ColoredBox(
+      color: BroskieColors.night,
+      child: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('BROSKIE  ×  0',
+                  style: broskieHeadline(
+                      size: 32, color: BroskieColors.cap, letterSpacing: 4)),
+              const SizedBox(height: 12),
+              const Text(
+                'DOWN, NOT OUT.',
                 style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 80,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'Impact',
-                ),
+                    color: BroskieColors.amber,
+                    fontFamily: 'monospace',
+                    letterSpacing: 3,
+                    fontSize: 13),
               ),
-            ),
-          ),
-
-          // The Broskie Call to Action
-          Positioned(
-            bottom: 100,
-            child: Column(
-              children: [
-                const Text(
-                  "HELL NA, WE GOING BACK IN!",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                const Icon(Icons.arrow_downward,
-                    color: Colors.amber, size: 50), // Pointing to restart
-                const SizedBox(height: 10),
-                ElevatedButton(
+              const SizedBox(height: 28),
+              SizedBox(
+                width: 260,
+                height: 48,
+                child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 15),
+                    backgroundColor: BroskieColors.amber,
+                    foregroundColor: Colors.black,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)),
                   ),
                   onPressed: onRestart,
-                  child: const Text("REBOOT SYSTEM",
-                      style: TextStyle(color: Colors.black, fontSize: 22)),
+                  child: const Text('GO BACK IN',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'monospace',
+                          letterSpacing: 2,
+                          fontSize: 16)),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
