@@ -9,6 +9,7 @@ class BroskieHaptics {
 
   static void _safe(Future<void> Function() fn) {
     try {
+      // ignore: discarded_futures
       fn();
     } catch (_) {}
   }

@@ -54,12 +54,14 @@ class WallStreetBull extends SpriteAnimationComponent
         stateTimer = 0;
       }
     } else if (isCharging) {
-      position.x += direction * chargeSpeed * dt;
+      position.x +=
+          direction * chargeSpeed * game.difficulty.value.enemySpeed * dt;
       if (stateTimer > 2.5) {
         getDizzy();
       }
     } else {
-      position.x += direction * patrolSpeed * dt;
+      position.x +=
+          direction * patrolSpeed * game.difficulty.value.enemySpeed * dt;
       if (stateTimer > 3.0) {
         startCharge();
       }
@@ -109,6 +111,7 @@ class WallStreetBull extends SpriteAnimationComponent
         game.enemiesDefeated++;
         removeFromParent(); // Stomped!
         other.bounce();
+        other.onStompLockout();
       } else {
         other.hit();
       }

@@ -53,10 +53,12 @@ This roadmap reports only integrated, running code as complete. Runtime certific
 
 ## Campaign Polish
 
-- [ ] Physical-device playtesting and movement tuning (crew APK feedback round)
-- [ ] Contextual tutorial prompts in Stage 1
-- [ ] Balance stage target times, boss health and damage windows
-- [ ] Stage ranks (C/B/A/S) shown on level-complete, persisted per stage
+- [x] Touch-first Android controls (invert, hold-A jump, DASH/B/A)
+- [x] Moving platforms carry the rider
+- [x] One-heart pit tax (no spike + abyss double charge)
+- [x] Mario-shaped Easy / Normal / Hard
+- [x] Title return + modal pause (settings/shop/dialogue)
+- [ ] Physical-device playtesting on crew phones
 - [ ] Controller input and remapping
 - [ ] Golden tests for major overlays
 

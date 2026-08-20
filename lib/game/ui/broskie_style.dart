@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 /// The design center, in code. See DESIGN.md — Beat vs Barcode.
 /// Locked palette, hard-shadow type, scanlines, pixel glyphs.
 class BroskieColors {
-  static const night = Color(0xFF0F0C20);
-  static const cyan = Color(0xFF00E5FF);
-  static const magenta = Color(0xFFFF3FA4);
+  static const night = Color(0xFF12100C);
+  static const cyan = Color(0xFF00E5FF); // enemy tech only
+  static const magenta = Color(0xFFFF3FA4); // enemy tech only
   static const amber = Color(0xFFFFB800);
-  static const bone = Color(0xFFF2F2F2);
-  static const go = Color(0xFF00FF66); // semantic: exits, success
+  static const bone = Color(0xFFF2E6D4);
+  static const go = Color(0xFF3DDC84);
+  static const cap = Color(0xFFE52521);
 }
 
 /// Headline style with the law: 2px hard offset shadow, zero blur.
 TextStyle broskieHeadline({
   double size = 22,
-  Color color = BroskieColors.cyan,
+  Color color = BroskieColors.bone,
   double letterSpacing = 3,
 }) {
   return TextStyle(

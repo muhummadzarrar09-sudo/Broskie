@@ -13,6 +13,7 @@ class MovingPlatform extends PositionComponent
   final double speed;
   double progress = 0;
   int direction = 1;
+  final Vector2 movement = Vector2.zero();
 
   MovingPlatform({
     required Vector2 position,
@@ -27,7 +28,10 @@ class MovingPlatform extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
+    final prevX = position.x;
+    final prevY = position.y;
     double distance = (targetPos - startPos).length;
+    if (distance < 1) return;
     progress += direction * (speed * dt) / distance;
 
     if (progress >= 1.0) {
@@ -42,17 +46,25 @@ class MovingPlatform extends PositionComponent
       startPos.x + (targetPos.x - startPos.x) * progress,
       startPos.y + (targetPos.y - startPos.y) * progress,
     );
+    movement.setValues(position.x - prevX, position.y - prevY);
+
+    // Carry whoever is standing on us. This is what makes a platform a platform.
+    final rider = game.player;
+    if (rider.riding == this) {
+      rider.position.add(movement);
+    }
   }
 
   @override
   void render(Canvas canvas) {
     final rect = size.toRect();
-    canvas.drawRect(
-        rect, Paint()..color = const Color(0xFF00E5FF)); // Cyan Moving Platform
+    canvas.drawRect(rect, Paint()..color = const Color(0xFF3A3428));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, 4),
+        Paint()..color = const Color(0xFFF2E6D4));
     canvas.drawRect(
         rect,
         Paint()
-          ..color = Colors.white
+          ..color = const Color(0xFFFFB800)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2);
   }

@@ -32,16 +32,17 @@ Broskie breaks out of Monopoly Corp's orientation, crosses the Grey Zone, the Ne
 
 ## Controls
 
-| Action | Keyboard | Touch |
+| Action | Touch (the real game) | Keyboard (debug) |
 | --- | --- | --- |
-| Move | A/D or arrow keys | Left/right buttons |
-| Jump (variable height) | Space, W or up arrow | A button |
-| Run | Shift | — |
-| Dash | K or Ctrl | — |
-| Vinyl Boomerang | J or F | B button |
-| Pause | HUD pause button | HUD pause button |
+| Move | Hold left / right | A/D or arrows |
+| Jump (hold to float) | Hold **A** | Space / W / up |
+| Dash | **DASH** | K or Left Ctrl |
+| Vinyl | **B** | J or F |
+| Pause | HUD pause / Android Back | HUD pause |
 
-The Android build is locked to landscape.
+Difficulty is chosen on the title screen: **Easy (5 hearts) / Normal (3) / Hard (1)**.
+
+The Android build is locked to landscape. Touch is first-class.
 
 ## Art pipeline (code + AI images only)
 

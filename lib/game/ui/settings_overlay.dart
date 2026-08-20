@@ -35,7 +35,7 @@ class SettingsOverlay extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       BroskieAudio.playUiClick();
-                      game.overlays.remove('Settings');
+                      game.dismissOverlay('Settings');
                     },
                     child: const Icon(Icons.close,
                         color: Colors.white70, size: 22),
@@ -67,6 +67,9 @@ class SettingsOverlay extends StatelessWidget {
                 onChanged: (v) {
                   game.musicEnabled.value = v;
                   BroskieAudio.setMusicEnabled(v);
+                  if (v && !game.overlays.isActive('MainMenu')) {
+                    BroskieAudio.playStageTheme(game.currentStage.value);
+                  }
                   game.savePrefs();
                 },
               ),
@@ -133,7 +136,7 @@ class SettingsOverlay extends StatelessWidget {
                   backgroundColor: const Color(0xFF00E5FF)),
               onPressed: () {
                 BroskieAudio.playUiClick();
-                game.overlays.remove('Settings');
+                game.dismissOverlay('Settings');
               },
               child: const Text("SAVE & EXIT",
                   style: TextStyle(

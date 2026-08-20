@@ -1,4 +1,6 @@
+import 'package:broskie_game/game/blocks/hazards.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/difficulty.dart';
 import 'package:broskie_game/game/enemies/data_broker_boss.dart';
 import 'package:broskie_game/game/enemies/foreman_boss.dart';
 import 'package:broskie_game/game/levels/level_exit.dart';
@@ -174,7 +176,8 @@ void main() {
       game.update(0.05);
       expect(game.stageTime, 0); // the world held its breath
 
-      game.update(0.2); // burn through the freeze
+      game.update(0.05); // thaw
+      game.update(0.05); // world moves again (dt is clamped)
       expect(game.stageTime, greaterThan(0));
     },
   );
@@ -201,6 +204,86 @@ void main() {
         game.update(1 / 60);
       }
       expect(game.screenFlash.value, 0); // fully faded out
+    },
+  );
+
+  test('touch invert uses the same move mux as the keyboard', () {
+    final player = Player(position: Vector2(0, 0));
+    player.controlsInverted = true;
+    player.setMove(1);
+    expect(player.horizontalDirection, -1);
+    player.setMove(-1);
+    expect(player.horizontalDirection, 1);
+    player.setMove(0);
+    expect(player.horizontalDirection, 0);
+  });
+
+  test('easy is 5 hearts, hard is 1', () {
+    expect(BroskieDifficulty.easy.hearts, 5);
+    expect(BroskieDifficulty.normal.hearts, 3);
+    expect(BroskieDifficulty.hard.hearts, 1);
+  });
+
+  testWithGame<BroskieGame>(
+    'a pit cannot tax two hearts for one fall',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.onPlayerFell();
+      expect(game.hp.value, BroskieGame.maxHp - 1);
+      game.onPlayerFell();
+      expect(game.hp.value, BroskieGame.maxHp - 1);
+    },
+  );
+
+  testWithGame<BroskieGame>(
+    'moving platforms carry a rider',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.currentStage.value = 2;
+      game.restart();
+      await game.ready();
+      game.update(0.016);
+
+      final plat = game.children.whereType<MovingPlatform>().first;
+      final player = game.player;
+      player.riding = plat;
+      player.isGrounded = true;
+      final startX = player.position.x;
+      for (var i = 0; i < 40; i++) {
+        game.update(0.016);
+      }
+      expect((player.position.x - startX).abs(), greaterThan(8));
+    },
+  );
+
+  testWithGame<BroskieGame>(
+    'easy mode restores five hearts on restart',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.difficulty.value = BroskieDifficulty.easy;
+      game.restart();
+      await game.ready();
+      expect(game.hp.value, 5);
+      expect(game.hpMax, 5);
+    },
+  );
+
+  testWithGame<BroskieGame>(
+    'camera locks the street in the lower third, not on Broskie\'s head',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.player.position.setValues(400, BroskieGame.streetY - 48);
+      game.update(0.016);
+      final camY = game.camera.viewfinder.position.y;
+      // Visible band is camY ± 180. Floor at 480 should sit below mid-screen.
+      final top = camY - BroskieGame.viewH / 2;
+      final floorFromTop = (BroskieGame.streetY - top) / BroskieGame.viewH;
+      expect(floorFromTop, greaterThan(0.65));
+      expect(floorFromTop, lessThan(0.92));
     },
   );
 }

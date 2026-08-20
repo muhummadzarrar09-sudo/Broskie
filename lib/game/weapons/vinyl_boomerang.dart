@@ -48,6 +48,7 @@ class VinylBoomerang extends PositionComponent
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Enemy) {
       other.die();
+      game.enemiesDefeated++;
       game.add(
           KillBurst(position: other.position.clone()..add(other.size / 2)));
       game.hitStop(0.05);

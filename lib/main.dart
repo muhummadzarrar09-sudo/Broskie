@@ -18,6 +18,7 @@ import 'game/ui/settings_overlay.dart';
 import 'game/ui/shop_overlay.dart';
 import 'game/ui/splash_screen.dart';
 import 'game/ui/stage_banner_overlay.dart';
+import 'game/ui/stage_load_overlay.dart';
 import 'game/ui/touch_controls.dart';
 import 'game/ui/victory_overlay.dart';
 
@@ -52,180 +53,198 @@ class BroskieGameScreen extends ConsumerStatefulWidget {
   ConsumerState<BroskieGameScreen> createState() => _BroskieGameScreenState();
 }
 
-class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
+class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen>
+    with WidgetsBindingObserver {
   late BroskieGame game;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     game = BroskieGame(ref: ref);
     // Load saved crew settings/unlocks, then start the chiptune.
     game.loadPrefs().then((_) => BroskieAudio.startMusic());
   }
 
   @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      game.requestPauseFromOs();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GameWidget<BroskieGame>(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (game.overlays.isActive('MainMenu')) {
+          // Title screen: a second back can leave the activity.
+          return;
+        }
+        game.requestPauseFromOs();
+      },
+      child: Scaffold(
+        body: GameWidget<BroskieGame>(
         game: game,
         overlayBuilderMap: {
-          'HUD': (context, game) => broskieOverlayScan(Stack(
+          'HUD': (context, game) => Stack(
                 children: [
-                  // Top Bar Status HUD
                   Positioned(
-                    top: 20,
-                    left: 20,
-                    right: 20,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.8),
-                            border: Border.all(
-                                color: const Color(0xFF00E5FF), width: 2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xE612100C),
+                                border: Border.all(
+                                    color: const Color(0xFFF2E6D4), width: 2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.flash_on,
-                                      color: Colors.amber, size: 20),
-                                  const SizedBox(width: 6),
                                   ValueListenableBuilder<int>(
                                     valueListenable: game.currentStage,
                                     builder: (context, stage, _) => Text(
-                                      "STAGE $stage | BROSKIE",
+                                      "STAGE $stage  BROSKIE",
                                       style: const TextStyle(
-                                          color: Colors.white,
+                                          color: Color(0xFFF2E6D4),
                                           fontWeight: FontWeight.bold,
                                           fontFamily: 'monospace'),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  ValueListenableBuilder<int>(
+                                    valueListenable: game.hp,
+                                    builder: (context, hearts, _) =>
+                                        ValueListenableBuilder(
+                                      valueListenable: game.difficulty,
+                                      builder: (context, _, __) => Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: List.generate(
+                                          game.hpMax,
+                                          (i) => Padding(
+                                            padding:
+                                                const EdgeInsets.only(right: 3),
+                                            child: CustomPaint(
+                                              size: const Size(21, 16),
+                                              painter: PixelHeartPainter(
+                                                  filled: i < hearts),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
-                              ValueListenableBuilder<int>(
-                                valueListenable: game.hp,
-                                builder: (context, hearts, _) => Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: List.generate(
-                                    BroskieGame.maxHp,
-                                    (i) => Padding(
-                                      padding: const EdgeInsets.only(right: 3),
-                                      child: CustomPaint(
-                                        size: const Size(21, 16),
-                                        painter: PixelHeartPainter(
-                                            filled: i < hearts),
-                                      ),
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xE612100C),
+                                    border: Border.all(
+                                        color: const Color(0xFFFFB800),
+                                        width: 2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: ValueListenableBuilder<int>(
+                                    valueListenable: game.scoreCoins,
+                                    builder: (context, coins, _) => Row(
+                                      children: [
+                                        const CustomPaint(
+                                            size: Size(16, 16),
+                                            painter: PixelVinylPainter()),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          "VINYL $coins",
+                                          style: const TextStyle(
+                                              color: Color(0xFFFFB800),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'monospace'),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.8),
-                                border:
-                                    Border.all(color: Colors.amber, width: 2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: ValueListenableBuilder<int>(
-                                valueListenable: game.scoreCoins,
-                                builder: (context, coins, _) => Row(
-                                  children: [
-                                    const CustomPaint(
-                                        size: Size(16, 16),
-                                        painter: PixelVinylPainter()),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      "CASH: \$$coins",
-                                      style: const TextStyle(
-                                          color: Colors.amber,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'monospace'),
-                                    ),
-                                  ],
+                                IconButton(
+                                  icon: const Icon(Icons.map,
+                                      color: Color(0xFFFFB800), size: 28),
+                                  onPressed: () {
+                                    BroskieAudio.playUiClick();
+                                    game.openLevelSelect();
+                                  },
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-
-                            // Stage Select Button
-                            IconButton(
-                              icon: const Icon(Icons.map,
-                                  color: Colors.amber, size: 32),
-                              onPressed: () {
-                                BroskieAudio.playUiClick();
-                                game.overlays.add('LevelSelect');
-                              },
-                            ),
-
-                            // Settings Button
-                            IconButton(
-                              icon: const Icon(Icons.settings,
-                                  color: Colors.grey, size: 32),
-                              onPressed: () {
-                                BroskieAudio.playUiClick();
-                                game.overlays.add('Settings');
-                              },
-                            ),
-
-                            // Pause Button
-                            IconButton(
-                              icon: const Icon(Icons.pause_circle_filled,
-                                  color: Color(0xFF00E5FF), size: 36),
-                              onPressed: () {
-                                BroskieAudio.playUiClick();
-                                game.togglePause();
-                              },
+                                IconButton(
+                                  icon: const Icon(Icons.settings,
+                                      color: Color(0xFFF2E6D4), size: 28),
+                                  onPressed: () {
+                                    BroskieAudio.playUiClick();
+                                    game.openSettings();
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.pause,
+                                      color: Color(0xFFFFB800), size: 32),
+                                  onPressed: () {
+                                    BroskieAudio.playUiClick();
+                                    game.togglePause();
+                                  },
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-
-                  // Floating Mobile Touch Controls Overlay (settings-gated)
                   ValueListenableBuilder<bool>(
                     valueListenable: game.touchControlsEnabled,
                     builder: (context, enabled, _) => enabled
                         ? TouchControlsOverlay(game: game)
                         : const SizedBox.shrink(),
                   ),
-
-                  // Bottom News Ticker
                   const Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    child: NewsTickerOverlay(
-                      headlines: [
-                        "MONOPOLY CORP: 'All unauthorized chill is hereby prohibited!'",
-                        "BROSKIE SPOTTED IN THE GREY ZONE WITH VOLT-COLA!",
-                        "THE FOREMAN INITIATES AGGRESSIVE RESTRUCTURING IN SECTOR 1-8!",
-                        "DATA-BROKER DENIES SINKING BANDWIDTH IN NEON SLUMS!",
-                      ],
+                    child: IgnorePointer(
+                      child: NewsTickerOverlay(
+                        headlines: [
+                          "MONOPOLY CORP BANS UNAUTHORIZED CHILL",
+                          "BROSKIE SPOTTED IN THE GREY ZONE",
+                          "THE FOREMAN WANTS A WORD",
+                          "DATA-BROKER SELLING YOUR JUMPS",
+                        ],
+                      ),
                     ),
                   ),
                 ],
-              )),
+              ),
 
-          'MainMenu': (context, game) =>
-              broskieOverlayScan(MainMenuOverlay(game: game)),
+          'MainMenu': (context, game) => MainMenuOverlay(game: game),
 
           'BossCard': (context, game) =>
               broskieOverlayScan(BossCardOverlay(game: game)),
@@ -256,7 +275,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
           'GameOver': (context, game) => broskieOverlayScan(GameOverOverlay(
                 onRestart: () {
                   BroskieAudio.playUiClick();
-                  game.restart();
+                  game.restart(showLoadCard: true);
                 },
               )),
 
@@ -281,7 +300,8 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen> {
                 },
               )),
         },
-        initialActiveOverlays: const ['HUD', 'MainMenu', 'ScreenFlash'],
+          initialActiveOverlays: const ['HUD', 'MainMenu', 'ScreenFlash'],
+        ),
       ),
     );
   }

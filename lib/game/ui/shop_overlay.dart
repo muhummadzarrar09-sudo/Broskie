@@ -14,12 +14,11 @@ class ShopOverlay extends StatefulWidget {
 }
 
 class _ShopOverlayState extends State<ShopOverlay> {
-  void _tryBuy(int cost, void Function() apply) {
+  void _tryBuy(int cost, bool Function() apply) {
     final wallet = widget.game.scoreCoins;
     BroskieAudio.playUiClick();
-    if (wallet.value >= cost) {
+    if (wallet.value >= cost && apply()) {
       wallet.value -= cost;
-      apply();
     }
   }
 
@@ -63,7 +62,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
                       GestureDetector(
                         onTap: () {
                           BroskieAudio.playUiClick();
-                          widget.game.overlays.remove('Shop');
+                          widget.game.dismissOverlay('Shop');
                         },
                         child: const Icon(Icons.close,
                             color: Colors.white70, size: 22),
@@ -103,7 +102,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
                   backgroundColor: const Color(0xFF00E5FF)),
               onPressed: () {
                 BroskieAudio.playUiClick();
-                widget.game.overlays.remove('Shop');
+                widget.game.dismissOverlay('Shop');
               },
               child: const Text("CLOSE SHOP",
                   style: TextStyle(

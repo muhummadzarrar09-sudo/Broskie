@@ -38,7 +38,7 @@ class LevelSelectOverlay extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       BroskieAudio.playUiClick();
-                      game.overlays.remove('LevelSelect');
+                      game.dismissOverlay('LevelSelect');
                     },
                     child: const Icon(Icons.close,
                         color: Colors.white70, size: 22),
@@ -93,7 +93,7 @@ class LevelSelectOverlay extends StatelessWidget {
               style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
               onPressed: () {
                 BroskieAudio.playUiClick();
-                game.overlays.remove('LevelSelect');
+                game.dismissOverlay('LevelSelect');
               },
               child: const Text("CLOSE SELECT",
                   style: TextStyle(
