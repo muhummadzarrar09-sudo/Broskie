@@ -14,12 +14,11 @@ class ShopOverlay extends StatefulWidget {
 }
 
 class _ShopOverlayState extends State<ShopOverlay> {
-  void _tryBuy(int cost, void Function() apply) {
+  void _tryBuy(int cost, bool Function() apply) {
     final wallet = widget.game.scoreCoins;
     BroskieAudio.playUiClick();
-    if (wallet.value >= cost) {
+    if (wallet.value >= cost && apply()) {
       wallet.value -= cost;
-      apply();
     }
   }
 
@@ -31,14 +30,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
         constraints: BoxConstraints(
             maxHeight: MediaQuery.sizeOf(context).height * 0.92),
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.95),
-          border: Border.all(color: BroskieColors.magenta, width: 4),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(color: BroskieColors.magenta, blurRadius: 15)
-          ],
-        ),
+        decoration: broskiePanel(border: BroskieColors.cap),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -47,7 +39,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("BLACK MARKET",
-                      style: broskieHeadline(color: BroskieColors.magenta)),
+                      style: broskieHeadline(color: BroskieColors.cap)),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -63,7 +55,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
                       GestureDetector(
                         onTap: () {
                           BroskieAudio.playUiClick();
-                          widget.game.overlays.remove('Shop');
+                          widget.game.dismissOverlay('Shop');
                         },
                         child: const Icon(Icons.close,
                             color: Colors.white70, size: 22),
@@ -100,10 +92,14 @@ class _ShopOverlayState extends State<ShopOverlay> {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00E5FF)),
+                  backgroundColor: BroskieColors.amber,
+                  foregroundColor: Colors.black,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4))),
               onPressed: () {
                 BroskieAudio.playUiClick();
-                widget.game.overlays.remove('Shop');
+                widget.game.dismissOverlay('Shop');
               },
               child: const Text("CLOSE SHOP",
                   style: TextStyle(

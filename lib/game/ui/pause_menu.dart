@@ -15,22 +15,22 @@ class PauseMenuOverlay extends StatelessWidget {
         width: 320,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.95),
-          border: Border.all(color: const Color(0xFF00E5FF), width: 4),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
-          ],
+          color: const Color(0xF012100C),
+          border: Border.all(color: BroskieColors.bone, width: 3),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("SYSTEM PAUSED", style: broskieHeadline(size: 24)),
+            Text("PAUSED",
+                style: broskieHeadline(size: 24, color: BroskieColors.bone)),
             const SizedBox(height: 8),
             const Text(
-              "BROSKIE CORP OVERRIDE",
+              "THUMBS OFF THE STREET",
               style: TextStyle(
-                  color: Colors.grey, fontSize: 12, fontFamily: 'monospace'),
+                  color: BroskieColors.amber,
+                  fontSize: 12,
+                  fontFamily: 'monospace'),
             ),
             const Divider(color: Colors.white24, height: 30),
 
@@ -79,12 +79,30 @@ class PauseMenuOverlay extends StatelessWidget {
               ),
               onPressed: () {
                 BroskieAudio.playUiClick();
-                game.togglePause();
-                game.overlays.add('Shop');
+                game.dismissOverlay('PauseMenu');
+                game.openShop();
               },
-              child: const Text("BLACK MARKET SHOP",
+              child: const Text("BLACK MARKET",
                   style: TextStyle(
                       color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A1814),
+                minimumSize: const Size(double.infinity, 45),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4)),
+              ),
+              onPressed: () {
+                BroskieAudio.playUiClick();
+                game.returnToTitle();
+              },
+              child: const Text("TITLE SCREEN",
+                  style: TextStyle(
+                      color: BroskieColors.bone,
                       fontWeight: FontWeight.bold,
                       fontSize: 16)),
             ),

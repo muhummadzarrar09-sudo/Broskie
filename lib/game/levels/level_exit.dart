@@ -13,6 +13,7 @@ class LevelExit extends PositionComponent
   final String lockHint;
 
   bool locked = false;
+  bool _cleared = false;
   double _pollTimer = 0.2; // evaluate immediately on first update
   double _hintCooldown = 0;
 
@@ -44,7 +45,8 @@ class LevelExit extends PositionComponent
           _hintCooldown = 3.0;
           game.showDialogue("EXIT GATE", lockHint);
         }
-      } else {
+      } else if (!_cleared) {
+        _cleared = true;
         game.triggerLevelComplete();
       }
     }

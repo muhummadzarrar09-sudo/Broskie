@@ -156,6 +156,7 @@ class DataBrokerBoss extends SpriteAnimationComponent
       if (other.velocity.y > 0 && playerBottom <= bossTop + 20) {
         hit();
         other.bounce();
+        other.onStompLockout();
       } else {
         other.hit();
       }

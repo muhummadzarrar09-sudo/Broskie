@@ -1,8 +1,11 @@
-import 'dart:math';
 import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/difficulty.dart';
+import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:flutter/material.dart';
 
+/// Title as an attract-mode street: Broskie walks the lower third,
+/// same silhouette the in-game camera uses.
 class MainMenuOverlay extends StatefulWidget {
   final BroskieGame game;
 
@@ -13,203 +16,176 @@ class MainMenuOverlay extends StatefulWidget {
 }
 
 class _MainMenuOverlayState extends State<MainMenuOverlay>
-    with TickerProviderStateMixin {
-  // Drives the endless ambience: art sway, breathing zoom, rain, title float.
-  late final AnimationController _ambience;
-  // One-shot entrance: title drops in, buttons stagger up.
-  late final AnimationController _entrance;
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _walk;
 
   @override
   void initState() {
     super.initState();
-    _ambience =
+    _walk =
         AnimationController(vsync: this, duration: const Duration(seconds: 8))
           ..repeat();
-    _entrance = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1400))
-      ..forward();
   }
 
   @override
   void dispose() {
-    _ambience.dispose();
-    _entrance.dispose();
+    _walk.dispose();
     super.dispose();
-  }
-
-  /// Staggered slide-up + fade used by every menu element.
-  Widget _slideIn(int order, Widget child) {
-    final start = (order * 0.12).clamp(0.0, 0.6);
-    final t = ((_entrance.value - start) / (1 - start)).clamp(0.0, 1.0);
-    final eased = 1 - pow(1 - t, 3).toDouble(); // easeOutCubic
-    return Opacity(
-      opacity: eased,
-      child: Transform.translate(
-          offset: Offset(0, 26 * (1 - eased)), child: child),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_ambience, _entrance]),
-      builder: (context, _) {
-        final sway = sin(_ambience.value * 2 * pi); // -1..1 over 8s
-        final breathe = 1.065 + 0.012 * sway;
-        final float = 4 * sin(_ambience.value * 2 * pi);
-
-        return SizedBox.expand(
-          child: Stack(
-            children: [
-              // Rooftop key art with a gentle sway + breath.
-              Positioned.fill(
-                child: Transform.translate(
-                  offset: Offset(sway * 16, 0),
-                  child: Transform.scale(
-                    scale: breathe,
-                    child: Image.asset(
-                      'assets/images/runtime/menu_keyart.png',
-                      fit: BoxFit.cover,
-                      filterQuality: FilterQuality.none, // crisp pixels
-                      errorBuilder: (_, __, ___) => Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xFA0F0C20), Color(0xFA241244)],
+    final game = widget.game;
+    return ColoredBox(
+      color: BroskieColors.night,
+      child: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('BROSKIE',
+                            style: broskieHeadline(
+                                size: 52,
+                                color: BroskieColors.bone,
+                                letterSpacing: 8)),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'A KID. A VINYL. A BAD ATTITUDE.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: BroskieColors.amber,
+                            fontFamily: 'monospace',
+                            letterSpacing: 2,
+                            fontSize: 12,
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Readability scrim over the art
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.35),
-                        Colors.black.withValues(alpha: 0.62)
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Procedural rain — pure code, no asset.
-              Positioned.fill(
-                child: CustomPaint(painter: _MenuRainPainter(_ambience.value)),
-              ),
-
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _slideIn(
-                    0,
-                    Transform.translate(
-                      offset: Offset(0, float),
-                      child: Text(
-                        "BROSKIE",
-                        style: TextStyle(
-                          color: const Color(0xFF00E5FF),
-                          fontSize: 60,
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'monospace',
-                          letterSpacing: 8,
-                          shadows: [
-                            const Shadow(color: Colors.black, blurRadius: 24),
-                            Shadow(
-                                color: const Color(0xFF00E5FF),
-                                blurRadius: 26 + 8 * sway.abs()),
-                          ],
+                        const SizedBox(height: 22),
+                        ValueListenableBuilder<BroskieDifficulty>(
+                          valueListenable: game.difficulty,
+                          builder: (context, current, _) => Row(
+                            children: BroskieDifficulty.values.map((d) {
+                              final on = d == current;
+                              return Expanded(
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      BroskieAudio.playUiClick();
+                                      game.difficulty.value = d;
+                                      game.savePrefs();
+                                    },
+                                    child: Container(
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: on
+                                            ? BroskieColors.amber
+                                            : const Color(0xFF1A1814),
+                                        border: Border.all(
+                                            color: BroskieColors.bone,
+                                            width: 2),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        d.label,
+                                        style: TextStyle(
+                                          color: on
+                                              ? Colors.black
+                                              : BroskieColors.bone,
+                                          fontFamily: 'monospace',
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                  _slideIn(
-                    1,
-                    const Text(
-                      "MONOPOLY CORP MUST FALL",
-                      style: TextStyle(
-                          color: Colors.amber,
-                          fontSize: 16,
-                          fontStyle: FontStyle.italic,
-                          fontFamily: 'monospace'),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ValueListenableBuilder<int>(
-                    valueListenable: widget.game.unlockedStage,
-                    builder: (context, unlocked, _) => Column(
-                      children: [
-                        if (unlocked > 1) ...[
-                          _slideIn(
-                              2,
-                              _menuButton(
-                                  "CONTINUE — STAGE $unlocked",
-                                  Colors.amber,
+                        const SizedBox(height: 6),
+                        ValueListenableBuilder<BroskieDifficulty>(
+                          valueListenable: game.difficulty,
+                          builder: (context, d, _) => Text(
+                            '${d.hearts} HEART${d.hearts == 1 ? '' : 'S'}',
+                            style: const TextStyle(
+                                color: Color(0x99F2E6D4),
+                                fontFamily: 'monospace',
+                                fontSize: 11,
+                                letterSpacing: 2),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        ValueListenableBuilder<int>(
+                          valueListenable: game.unlockedStage,
+                          builder: (context, unlocked, _) => Column(
+                            children: [
+                              if (unlocked > 1) ...[
+                                _btn(
+                                    'CONTINUE  STAGE $unlocked',
+                                    BroskieColors.amber,
+                                    Colors.black,
+                                    () => game.startRun(unlocked)),
+                                const SizedBox(height: 10),
+                              ],
+                              _btn(
+                                  'NEW RUN',
+                                  BroskieColors.bone,
                                   Colors.black,
-                                  () => widget.game.startRun(unlocked))),
-                          const SizedBox(height: 14),
-                        ],
-                        _slideIn(
-                            3,
-                            _menuButton("NEW RUN", const Color(0xFF00E5FF),
-                                Colors.black, () => widget.game.startRun(1))),
-                        const SizedBox(height: 14),
-                        _slideIn(
-                            4,
-                            _menuButton(
-                                "STAGE SELECT",
-                                Colors.white24,
-                                Colors.white,
-                                () => widget.game.overlays.add('LevelSelect'))),
-                        const SizedBox(height: 14),
-                        _slideIn(
-                            5,
-                            _menuButton(
-                                "SETTINGS",
-                                Colors.white24,
-                                Colors.white,
-                                () => widget.game.overlays.add('Settings'))),
+                                  () => game.startRun(1, newRun: true)),
+                              const SizedBox(height: 10),
+                              _btn('STAGE SELECT', const Color(0xFF1A1814),
+                                  BroskieColors.bone, game.openLevelSelect),
+                              const SizedBox(height: 10),
+                              _btn('SETTINGS', const Color(0xFF1A1814),
+                                  BroskieColors.bone, game.openSettings),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  _slideIn(
-                    6,
-                    const Text(
-                      "CODE + AI ART · BUILT FOR THE CREW",
-                      style: TextStyle(
-                          color: Colors.white24,
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                          letterSpacing: 2),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ],
+            ),
           ),
-        );
-      },
+          SizedBox(
+            height: 96,
+            width: double.infinity,
+            child: AnimatedBuilder(
+              animation: _walk,
+              builder: (context, _) =>
+                  CustomPaint(painter: _AttractStreetPainter(_walk.value)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _menuButton(String label, Color bg, Color fg, VoidCallback onTap) {
+  Widget _btn(String label, Color bg, Color fg, VoidCallback onTap) {
     return SizedBox(
-      width: 280,
-      height: 52,
+      width: double.infinity,
+      height: 44,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          foregroundColor: fg,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+            side: const BorderSide(color: BroskieColors.bone, width: 2),
+          ),
         ),
         onPressed: () {
           BroskieAudio.playUiClick();
@@ -219,8 +195,7 @@ class _MainMenuOverlayState extends State<MainMenuOverlay>
           label,
           style: TextStyle(
               color: fg,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontWeight: FontWeight.w900,
               fontFamily: 'monospace',
               letterSpacing: 2),
         ),
@@ -229,35 +204,29 @@ class _MainMenuOverlayState extends State<MainMenuOverlay>
   }
 }
 
-/// Deterministic streaks of neon rain. Phase [t] loops 0..1 forever.
-class _MenuRainPainter extends CustomPainter {
+class _AttractStreetPainter extends CustomPainter {
   final double t;
 
-  _MenuRainPainter(this.t);
+  _AttractStreetPainter(this.t);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..strokeWidth = 1.4
-      ..strokeCap = StrokeCap.round;
-
-    for (var i = 0; i < 90; i++) {
-      // Stable pseudo-random per drop
-      final seedX = (i * 97.31) % 1.0;
-      final seedSpeed = 0.55 + (i % 5) * 0.13;
-      final seedLean = ((i * 37.77) % 1.0 - 0.5) * 0.4;
-      final brightness = i % 7 == 0 ? 0.34 : 0.16; // a few hero streaks
-
-      final cycle = (t * seedSpeed + i * 0.61803) % 1.0;
-      final x = seedX * size.width + seedLean * cycle * size.height;
-      final y = cycle * size.height * 1.1 - size.height * 0.05;
-
-      paint.color = (i % 9 == 0 ? const Color(0xFF00E5FF) : Colors.white)
-          .withValues(alpha: brightness);
-      canvas.drawLine(Offset(x, y), Offset(x - seedLean * 14, y - 13), paint);
-    }
+    canvas.drawRect(
+        Offset.zero & size, Paint()..color = const Color(0xFF222533));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 6),
+        Paint()..color = BroskieColors.bone);
+    // Ping-pong walk across the lip.
+    final ping = t < 0.5 ? t * 2 : (1 - t) * 2;
+    final x = 20 + (size.width - 56) * ping;
+    const y = 14.0;
+    canvas.drawRect(
+        Rect.fromLTWH(x, y, 20, 12), Paint()..color = BroskieColors.bone);
+    canvas.drawRect(
+        Rect.fromLTWH(x - 2, y - 5, 24, 7), Paint()..color = BroskieColors.cap);
+    canvas.drawRect(Rect.fromLTWH(x + 2, y + 12, 16, 22),
+        Paint()..color = const Color(0xFF1F4287));
   }
 
   @override
-  bool shouldRepaint(_MenuRainPainter oldDelegate) => oldDelegate.t != t;
+  bool shouldRepaint(_AttractStreetPainter oldDelegate) => oldDelegate.t != t;
 }

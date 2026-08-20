@@ -63,6 +63,6 @@ class StageBackdrop extends PositionComponent
     // Gloom scrim: backdrop sinks into atmosphere, seams die, and fake
     // "platforms" baked into the art stop competing with real geometry.
     canvas.drawRect(ui.Rect.fromLTWH(0, 0, size.x, size.y),
-        ui.Paint()..color = const ui.Color(0x7305070F));
+        ui.Paint()..color = const ui.Color(0xB312100C));
   }
 }

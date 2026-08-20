@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 /// The design center, in code. See DESIGN.md — Beat vs Barcode.
 /// Locked palette, hard-shadow type, scanlines, pixel glyphs.
 class BroskieColors {
-  static const night = Color(0xFF0F0C20);
-  static const cyan = Color(0xFF00E5FF);
-  static const magenta = Color(0xFFFF3FA4);
+  static const night = Color(0xFF12100C);
+  static const cyan = Color(0xFF00E5FF); // enemy tech only
+  static const magenta = Color(0xFFFF3FA4); // enemy tech only
   static const amber = Color(0xFFFFB800);
-  static const bone = Color(0xFFF2F2F2);
-  static const go = Color(0xFF00FF66); // semantic: exits, success
+  static const bone = Color(0xFFF2E6D4);
+  static const go = Color(0xFF3DDC84);
+  static const cap = Color(0xFFE52521);
 }
 
 /// Headline style with the law: 2px hard offset shadow, zero blur.
 TextStyle broskieHeadline({
   double size = 22,
-  Color color = BroskieColors.cyan,
+  Color color = BroskieColors.bone,
   double letterSpacing = 3,
 }) {
   return TextStyle(
@@ -29,13 +30,13 @@ TextStyle broskieHeadline({
   );
 }
 
-/// Kit border: 3px chunky, radius never above 8.
+/// Kit border: 3px chunky, radius 4. Bone, not cyan-OS.
 BoxDecoration broskiePanel(
-    {Color border = BroskieColors.cyan, Color background = Colors.black}) {
+    {Color border = BroskieColors.bone, Color background = BroskieColors.night}) {
   return BoxDecoration(
-    color: background.withValues(alpha: 0.92),
+    color: background.withValues(alpha: 0.95),
     border: Border.all(color: border, width: 3),
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(4),
   );
 }
 
@@ -96,7 +97,7 @@ class PixelHeartPainter extends CustomPainter {
       '00011000',
     ];
     final body = Paint()
-      ..color = filled ? BroskieColors.magenta : Colors.white24;
+      ..color = filled ? BroskieColors.cap : Colors.white24;
     for (var row = 0; row < pattern.length; row++) {
       for (var col = 0; col < 8; col++) {
         if (pattern[row][col] == '1') {

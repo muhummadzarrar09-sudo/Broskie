@@ -1,3 +1,4 @@
+import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:flutter/material.dart';
 
 class DialogueBox extends StatelessWidget {
@@ -19,22 +20,17 @@ class DialogueBox extends StatelessWidget {
         margin: const EdgeInsets.all(20),
         padding: const EdgeInsets.all(15),
         height: 150,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.8),
-          border: Border.all(
-              color: const Color(0xFF00FFFF), width: 3), // Neon Cyan Border
-          borderRadius: BorderRadius.circular(10),
-        ),
+        decoration: broskiePanel(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               speakerName.toUpperCase(),
               style: const TextStyle(
-                color: Color(0xFF00FFFF),
+                color: BroskieColors.amber,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
-                fontFamily: 'Courier',
+                fontFamily: 'monospace',
               ),
             ),
             const SizedBox(height: 10),

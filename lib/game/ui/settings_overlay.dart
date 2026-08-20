@@ -16,14 +16,7 @@ class SettingsOverlay extends StatelessWidget {
         constraints: BoxConstraints(
             maxHeight: MediaQuery.sizeOf(context).height * 0.92),
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.95),
-          border: Border.all(color: const Color(0xFF00E5FF), width: 4),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(color: Color(0xFF00E5FF), blurRadius: 15)
-          ],
-        ),
+        decoration: broskiePanel(),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -31,118 +24,133 @@ class SettingsOverlay extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("SYSTEM SETTINGS", style: broskieHeadline()),
+                  Text('SETTINGS', style: broskieHeadline()),
                   GestureDetector(
                     onTap: () {
                       BroskieAudio.playUiClick();
-                      game.overlays.remove('Settings');
+                      game.dismissOverlay('Settings');
                     },
                     child: const Icon(Icons.close,
-                        color: Colors.white70, size: 22),
+                        color: BroskieColors.bone, size: 22),
                   ),
                 ],
               ),
-            const Divider(color: Colors.white24, height: 20),
-            ValueListenableBuilder<bool>(
-              valueListenable: game.sfxEnabled,
-              builder: (context, on, _) => SwitchListTile(
-                activeThumbColor: const Color(0xFF00E5FF),
-                title: const Text("Sound FX",
-                    style: TextStyle(color: Colors.white)),
-                value: on,
-                onChanged: (v) {
-                  game.sfxEnabled.value = v;
-                  BroskieAudio.setSfx(v);
+              const Divider(color: Color(0x33F2E6D4), height: 20),
+              _switch('SOUND FX', game.sfxEnabled, (v) {
+                game.sfxEnabled.value = v;
+                BroskieAudio.setSfx(v);
+                game.savePrefs();
+              }),
+              ValueListenableBuilder<double>(
+                valueListenable: game.sfxVolume,
+                builder: (context, vol, _) => _slider('FX LEVEL', vol, (v) {
+                  game.sfxVolume.value = v;
+                  BroskieAudio.setSfxVolume(v);
                   game.savePrefs();
-                },
+                }),
               ),
-            ),
-            ValueListenableBuilder<bool>(
-              valueListenable: game.musicEnabled,
-              builder: (context, on, _) => SwitchListTile(
-                activeThumbColor: const Color(0xFF00E5FF),
-                title:
-                    const Text("Music", style: TextStyle(color: Colors.white)),
-                value: on,
-                onChanged: (v) {
-                  game.musicEnabled.value = v;
-                  BroskieAudio.setMusicEnabled(v);
+              _switch('MUSIC', game.musicEnabled, (v) {
+                game.musicEnabled.value = v;
+                BroskieAudio.setMusicEnabled(v);
+                game.savePrefs();
+              }),
+              ValueListenableBuilder<double>(
+                valueListenable: game.musicVolume,
+                builder: (context, vol, _) => _slider('MUSIC LEVEL', vol, (v) {
+                  game.musicVolume.value = v;
+                  BroskieAudio.setMusicVolume(v);
                   game.savePrefs();
-                },
+                }),
               ),
-            ),
-            ValueListenableBuilder<bool>(
-              valueListenable: game.touchControlsEnabled,
-              builder: (context, on, _) => SwitchListTile(
-                activeThumbColor: const Color(0xFF00E5FF),
-                title: const Text("Touch Controls",
-                    style: TextStyle(color: Colors.white)),
-                value: on,
-                onChanged: (v) {
-                  game.touchControlsEnabled.value = v;
+              _switch('TOUCH CONTROLS', game.touchControlsEnabled, (v) {
+                game.touchControlsEnabled.value = v;
+                game.savePrefs();
+              }),
+              _switch('HAPTICS', game.hapticsEnabled, (v) {
+                game.hapticsEnabled.value = v;
+                game.savePrefs();
+              }),
+              ValueListenableBuilder<double>(
+                valueListenable: game.shakeScale,
+                builder: (context, scale, _) =>
+                    _slider('SCREEN SHAKE', scale, (v) {
+                  game.shakeScale.value = v;
                   game.savePrefs();
-                },
+                }),
               ),
-            ),
-            ValueListenableBuilder<bool>(
-              valueListenable: game.hapticsEnabled,
-              builder: (context, on, _) => SwitchListTile(
-                activeThumbColor: const Color(0xFFFF3FA4),
-                title: const Text("Haptics",
-                    style: TextStyle(color: Colors.white)),
-                subtitle: const Text("Rumble on dashes, stomps and boss kills",
-                    style: TextStyle(color: Colors.white38, fontSize: 11)),
-                value: on,
-                onChanged: (v) {
-                  game.hapticsEnabled.value = v;
-                  game.savePrefs();
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-            ValueListenableBuilder<double>(
-              valueListenable: game.shakeScale,
-              builder: (context, scale, _) => Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Screen Shake",
-                          style: TextStyle(color: Colors.white)),
-                      Text("${(scale * 100).toInt()}%",
-                          style: const TextStyle(color: Colors.amber)),
-                    ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BroskieColors.amber,
+                    foregroundColor: Colors.black,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)),
                   ),
-                  Slider(
-                    activeColor: Colors.amber,
-                    value: scale,
-                    min: 0,
-                    max: 1,
-                    divisions: 10,
-                    onChanged: (v) {
-                      game.shakeScale.value = v;
-                      game.savePrefs();
-                    },
-                  ),
-                ],
+                  onPressed: () {
+                    BroskieAudio.playUiClick();
+                    game.dismissOverlay('Settings');
+                  },
+                  child: const Text('CLOSE',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'monospace',
+                          letterSpacing: 2)),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00E5FF)),
-              onPressed: () {
-                BroskieAudio.playUiClick();
-                game.overlays.remove('Settings');
-              },
-              child: const Text("SAVE & EXIT",
-                  style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.bold)),
-            ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _switch(String label, ValueNotifier<bool> n, ValueChanged<bool> on) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: n,
+      builder: (context, onVal, _) => SwitchListTile(
+        activeThumbColor: BroskieColors.amber,
+        contentPadding: EdgeInsets.zero,
+        title: Text(label,
+            style: const TextStyle(
+                color: BroskieColors.bone,
+                fontFamily: 'monospace',
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+                letterSpacing: 1)),
+        value: onVal,
+        onChanged: on,
+      ),
+    );
+  }
+
+  Widget _slider(String label, double value, ValueChanged<double> on) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label,
+                style: const TextStyle(
+                    color: BroskieColors.bone, fontFamily: 'monospace')),
+            Text('${(value * 100).toInt()}%',
+                style: const TextStyle(
+                    color: BroskieColors.amber, fontFamily: 'monospace')),
+          ],
+        ),
+        Slider(
+          activeColor: BroskieColors.amber,
+          inactiveColor: const Color(0x33F2E6D4),
+          value: value,
+          min: 0,
+          max: 1,
+          divisions: 10,
+          onChanged: on,
+        ),
+      ],
     );
   }
 }

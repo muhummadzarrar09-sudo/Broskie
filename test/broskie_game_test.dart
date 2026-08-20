@@ -1,4 +1,6 @@
+import 'package:broskie_game/game/blocks/hazards.dart';
 import 'package:broskie_game/game/broskie_game.dart';
+import 'package:broskie_game/game/difficulty.dart';
 import 'package:broskie_game/game/enemies/data_broker_boss.dart';
 import 'package:broskie_game/game/enemies/foreman_boss.dart';
 import 'package:broskie_game/game/levels/level_exit.dart';
@@ -116,15 +118,22 @@ void main() {
 
       final exit = game.children.whereType<LevelExit>().single;
       expect(exit.locked, isTrue);
+      expect(game.children.whereType<TheForeman>(), isNotEmpty);
+      expect(game.children.whereType<DataBrokerBoss>(), isEmpty);
 
       game.children
           .whereType<TheForeman>()
           .forEach((c) => c.removeFromParent());
+      game.update(0.016); // process pending removals
+      game.update(0.3); // Foreman gone → Broker clocks in
+      expect(game.children.whereType<DataBrokerBoss>(), isNotEmpty);
+      expect(exit.locked, isTrue);
+
       game.children
           .whereType<DataBrokerBoss>()
           .forEach((c) => c.removeFromParent());
-      game.update(0.016); // process pending removals
-      game.update(0.3); // let the exit poll again
+      game.update(0.016);
+      game.update(0.3);
 
       expect(exit.locked, isFalse);
     },
@@ -174,7 +183,8 @@ void main() {
       game.update(0.05);
       expect(game.stageTime, 0); // the world held its breath
 
-      game.update(0.2); // burn through the freeze
+      game.update(0.05); // thaw
+      game.update(0.05); // world moves again (dt is clamped)
       expect(game.stageTime, greaterThan(0));
     },
   );
@@ -201,6 +211,114 @@ void main() {
         game.update(1 / 60);
       }
       expect(game.screenFlash.value, 0); // fully faded out
+    },
+  );
+
+  test('touch invert uses the same move mux as the keyboard', () {
+    final player = Player(position: Vector2(0, 0));
+    player.controlsInverted = true;
+    player.setMove(1);
+    expect(player.horizontalDirection, -1);
+    player.setMove(-1);
+    expect(player.horizontalDirection, 1);
+    player.setMove(0);
+    expect(player.horizontalDirection, 0);
+  });
+
+  test('easy is 5 hearts, hard is 1', () {
+    expect(BroskieDifficulty.easy.hearts, 5);
+    expect(BroskieDifficulty.normal.hearts, 3);
+    expect(BroskieDifficulty.hard.hearts, 1);
+  });
+
+  testWithGame<BroskieGame>(
+    'a pit cannot tax two hearts for one fall',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.onPlayerFell();
+      expect(game.hp.value, BroskieGame.maxHp - 1);
+      game.onPlayerFell();
+      expect(game.hp.value, BroskieGame.maxHp - 1);
+    },
+  );
+
+  testWithGame<BroskieGame>(
+    'moving platforms carry a rider',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.currentStage.value = 2;
+      game.restart();
+      await game.ready();
+      game.update(0.016);
+
+      final plat = game.children.whereType<MovingPlatform>().first;
+      final player = game.player;
+      player.riding = plat;
+      player.isGrounded = true;
+      final startX = player.position.x;
+      for (var i = 0; i < 40; i++) {
+        game.update(0.016);
+      }
+      expect((player.position.x - startX).abs(), greaterThan(8));
+    },
+  );
+
+  testWithGame<BroskieGame>(
+    'easy mode restores five hearts on restart',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.difficulty.value = BroskieDifficulty.easy;
+      game.restart();
+      await game.ready();
+      expect(game.hp.value, 5);
+      expect(game.hpMax, 5);
+    },
+  );
+
+  testWithGame<BroskieGame>(
+    'camera locks the street in the lower third, not on Broskie\'s head',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.player.position.setValues(400, BroskieGame.streetY - 48);
+      game.update(0.016);
+      final camY = game.camera.viewfinder.position.y;
+      // Visible band is camY ± 180. Floor at 480 should sit below mid-screen.
+      final top = camY - BroskieGame.viewH / 2;
+      final floorFromTop = (BroskieGame.streetY - top) / BroskieGame.viewH;
+      expect(floorFromTop, greaterThan(0.65));
+      expect(floorFromTop, lessThan(0.92));
+    },
+  );
+
+  test('wallet persists in prefs', () async {
+    SharedPreferences.setMockInitialValues({'wallet': 400});
+    final game = BroskieGame()..overlaysMuted = true;
+    await game.loadPrefs();
+    expect(game.scoreCoins.value, 400);
+  });
+
+  test('volume sliders persist', () async {
+    SharedPreferences.setMockInitialValues(
+        {'settings_sfx_vol': 0.4, 'settings_music_vol': 0.2});
+    final game = BroskieGame()..overlaysMuted = true;
+    await game.loadPrefs();
+    expect(game.sfxVolume.value, closeTo(0.4, 0.001));
+    expect(game.musicVolume.value, closeTo(0.2, 0.001));
+  });
+
+  testWithGame<BroskieGame>(
+    'NEW RUN wipes the wallet',
+    createMutedGame,
+    (game) async {
+      await game.ready();
+      game.scoreCoins.value = 250;
+      game.startRun(1, newRun: true);
+      await game.ready();
+      expect(game.scoreCoins.value, 0);
     },
   );
 }

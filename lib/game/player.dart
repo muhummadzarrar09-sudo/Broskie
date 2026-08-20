@@ -17,12 +17,11 @@ enum PlayerState { idle, walking, running, jumping, falling, vaulting }
 
 class Player extends SpriteAnimationComponent
     with KeyboardHandler, HasGameReference<BroskieGame>, CollisionCallbacks {
-  // Game-feel tuning
-  static const double _jumpBufferTime = 0.12;
-  static const double _coyoteTime = 0.10;
+  // Game-feel tuning. Coyote / buffer come from difficulty (Mario-shaped).
   static const double _dashDuration = 0.16;
   static const double _dashSpeed = 950;
   static const double _dashCooldownTime = 0.7;
+  static const double _terminalVy = 1100;
 
   Player({required Vector2 position})
       : super(position: position, size: Vector2(48, 48)) {
@@ -38,6 +37,9 @@ class Player extends SpriteAnimationComponent
   final double friction = 1600;
 
   bool isGrounded = false;
+  final Set<int> _groundKeys = {};
+  MovingPlatform? riding;
+  bool jumpHeld = false;
   int horizontalDirection = 0;
   bool isRunning = false;
   bool isBig = false;
@@ -131,8 +133,9 @@ class Player extends SpriteAnimationComponent
     if (dashCooldown > 0) dashCooldown -= dt;
 
     // Coyote time: grounded refreshes the window, air time burns it down.
+    final coyote = game.difficulty.value.coyoteTime;
     if (isGrounded) {
-      coyoteTimer = _coyoteTime;
+      coyoteTimer = coyote;
     } else if (coyoteTimer > 0) {
       coyoteTimer -= dt;
     }
@@ -145,9 +148,10 @@ class Player extends SpriteAnimationComponent
       _performJump();
     }
 
-    // Gravity
+    // Gravity + terminal velocity so hitches cannot tunnel the floor.
     if (!isGrounded && state != PlayerState.vaulting) {
       velocity.y += gravity * dt;
+      if (velocity.y > _terminalVy) velocity.y = _terminalVy;
     }
 
     // Debuffs & Speed
@@ -265,6 +269,8 @@ class Player extends SpriteAnimationComponent
     coyoteTimer = 0;
     velocity.y = -jumpStrength;
     isGrounded = false;
+    _groundKeys.clear();
+    riding = null;
     BroskieAudio.playJump();
 
     // Jump Particle Burst
@@ -280,7 +286,21 @@ class Player extends SpriteAnimationComponent
 
   /// Both keyboard and touch route through the buffer so press timing is fair.
   void requestJump() {
-    jumpBufferTimer = _jumpBufferTime;
+    jumpBufferTimer = game.difficulty.value.jumpBuffer;
+  }
+
+  /// One move API. Invert (Data-Broker hack) applies to thumbs AND keys.
+  void setMove(int rawDir) {
+    horizontalDirection = controlsInverted ? -rawDir : rawDir;
+  }
+
+  /// Touch A is a hold, same as Space: tap-down jumps, release cuts the hop.
+  void setJumpHeld(bool held) {
+    if (held && !jumpHeld) requestJump();
+    if (!held && jumpHeld && velocity.y < -60) {
+      velocity.y *= 0.45;
+    }
+    jumpHeld = held;
   }
 
   void tryDash() {
@@ -302,15 +322,20 @@ class Player extends SpriteAnimationComponent
       dir = 1;
     }
 
-    horizontalDirection = controlsInverted ? -dir : dir;
+    setMove(dir);
+    if (event is KeyDownEvent &&
+        (event.logicalKey == LogicalKeyboardKey.escape ||
+            event.logicalKey == LogicalKeyboardKey.keyP)) {
+      game.togglePause();
+    }
     isRunning = keysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
         keysPressed.contains(LogicalKeyboardKey.shiftRight);
 
-    final jumpHeld = keysPressed.contains(LogicalKeyboardKey.space) ||
+    final jumpKeyHeld = keysPressed.contains(LogicalKeyboardKey.space) ||
         keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
         keysPressed.contains(LogicalKeyboardKey.keyW);
 
-    if (jumpHeld && event is KeyDownEvent) {
+    if (jumpKeyHeld && event is KeyDownEvent) {
       requestJump();
     }
     // Variable jump height: releasing a JUMP key early cuts the rise short.
@@ -318,7 +343,7 @@ class Player extends SpriteAnimationComponent
         (event.logicalKey == LogicalKeyboardKey.space ||
             event.logicalKey == LogicalKeyboardKey.arrowUp ||
             event.logicalKey == LogicalKeyboardKey.keyW) &&
-        !jumpHeld &&
+        !jumpKeyHeld &&
         velocity.y < -60) {
       velocity.y *= 0.45;
     }
@@ -356,12 +381,20 @@ class Player extends SpriteAnimationComponent
     vaultTimer = 0.35;
   }
 
-  void grow(PowerUpType type) {
-    if (isBig) return;
+  /// Returns false if already big so the shop cannot charge for a no-op.
+  bool grow(PowerUpType type) {
+    if (isBig) return false;
     isBig = true;
     currentPower = type;
     size = Vector2(48, 64);
     position.y -= 16;
+    return true;
+  }
+
+  /// Brief lockout after a stomp so the boss cannot revenge-hit the same frame.
+  void onStompLockout() {
+    isInvulnerable = true;
+    invulnerableTimer = 0.22;
   }
 
   void hit() {
@@ -377,18 +410,20 @@ class Player extends SpriteAnimationComponent
       position.y += 16;
       _applyKnockback();
       isInvulnerable = true;
-      invulnerableTimer = 1.5;
+      invulnerableTimer = game.difficulty.value.iFrameSeconds;
+      if (!isGrounded) game.noteAirHit();
       return;
     }
 
     game.hp.value -= 1;
+    if (!isGrounded) game.noteAirHit();
     if (game.hp.value <= 0) {
       gameOver();
       return;
     }
     _applyKnockback();
     isInvulnerable = true;
-    invulnerableTimer = 1.5;
+    invulnerableTimer = game.difficulty.value.iFrameSeconds;
     game.triggerScreenShake(intensity: 0.7);
   }
 
@@ -420,7 +455,10 @@ class Player extends SpriteAnimationComponent
         velocity.y = 0;
         // Rest 0.5px into the surface so grounding stays stable frame to frame.
         position.y = otherTop - size.y + 0.5;
-        isGrounded = true;
+        _groundKeys.add(identityHashCode(other));
+        isGrounded = _groundKeys.isNotEmpty;
+        game.clearFallTax();
+        if (other is MovingPlatform) riding = other;
 
         if (other is CrumblingPlatform) {
           other.stepOn();
@@ -439,7 +477,8 @@ class Player extends SpriteAnimationComponent
         } else {
           position.x = other.position.x + other.size.x;
         }
-        if (dashTimer <= 0) velocity.x = 0;
+        velocity.x = 0;
+        dashTimer = 0;
       }
     }
   }
@@ -450,7 +489,9 @@ class Player extends SpriteAnimationComponent
     if (other is Floor ||
         other is InteractableBlock ||
         other is MovingPlatform) {
-      isGrounded = false;
+      _groundKeys.remove(identityHashCode(other));
+      isGrounded = _groundKeys.isNotEmpty;
+      if (other is MovingPlatform && riding == other) riding = null;
     }
   }
 
@@ -465,11 +506,7 @@ class Player extends SpriteAnimationComponent
       return;
     }
 
-    // Neon under-glow so Broskie reads over the darkest AI backdrops.
-    final glow = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.45)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2 + 4), size.x / 2 + 4, glow);
+    // Hard lip so Broskie reads on dark plates — no blur.
 
     if (animation != null) {
       super.render(canvas);

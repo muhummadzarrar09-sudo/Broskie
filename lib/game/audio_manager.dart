@@ -5,6 +5,10 @@ class BroskieAudio {
   static bool audioAvailable = false;
   static bool sfxOn = true;
   static bool musicOn = true;
+  static double sfxVolume = 1.0;
+  static double musicVolume = 1.0;
+  /// null = menu loop. Otherwise the last stage theme.
+  static int? playingStage;
 
   // Only files that actually exist in assets/audio/. Keep this list honest.
   static const List<String> _sfxFiles = [
@@ -17,6 +21,9 @@ class BroskieAudio {
     'boss_hit.wav',
     'stage_complete.wav',
     'ui_click.wav',
+    'glitch.wav',
+    'fanfare_s.wav',
+    'boss_kill.wav',
     'neon_loop.wav',
     'stage1_groove.wav',
     'stage2_slums.wav',
@@ -48,16 +55,33 @@ class BroskieAudio {
   static void setMusicEnabled(bool on) {
     musicOn = on;
     if (on) {
-      startMusic();
+      resumeCurrent();
     } else {
       stopMusic();
     }
   }
 
-  static void _play(String file, double volume) {
-    if (!audioAvailable || !sfxOn) return;
+  static void setSfxVolume(double v) => sfxVolume = v.clamp(0.0, 1.0);
+
+  static void setMusicVolume(double v) {
+    musicVolume = v.clamp(0.0, 1.0);
     try {
-      FlameAudio.play(file, volume: volume);
+      FlameAudio.bgm.audioPlayer.setVolume(0.35 * musicVolume);
+    } catch (_) {}
+  }
+
+  static void resumeCurrent() {
+    if (playingStage == null) {
+      startMusic();
+    } else {
+      playStageTheme(playingStage!);
+    }
+  }
+
+  static void _play(String file, double volume) {
+    if (!audioAvailable || !sfxOn || sfxVolume <= 0) return;
+    try {
+      FlameAudio.play(file, volume: volume * sfxVolume);
     } catch (_) {}
   }
 

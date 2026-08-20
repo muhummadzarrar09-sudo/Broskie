@@ -57,7 +57,10 @@ class GrumpyBrick extends Enemy with HasGameReference<BroskieGame> {
 
   @override
   void update(double dt) {
+    final raw = speed;
+    speed = raw * game.difficulty.value.enemySpeed;
     super.update(dt);
+    speed = raw;
     // Patrol between spawn bounds instead of drifting off the stage forever.
     if (position.x < _spawnX - patrolRange) {
       position.x = _spawnX - patrolRange;
@@ -85,6 +88,7 @@ class GrumpyBrick extends Enemy with HasGameReference<BroskieGame> {
 
       if (other.velocity.y > 0 && playerBottom <= enemyTop + 14) {
         other.bounce();
+        other.onStompLockout();
         game.add(KillBurst(position: position.clone()..add(size / 2)));
         game.hitStop(0.07);
         if (game.hapticsEnabled.value) BroskieHaptics.heavy();

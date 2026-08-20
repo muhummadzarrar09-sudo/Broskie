@@ -101,7 +101,8 @@ class TheForeman extends SpriteAnimationComponent
       }
 
       if (!isTelegraphing) {
-        final double moveSpeed = isCharging ? speed * 1.9 : speed;
+        final double moveSpeed = (isCharging ? speed * 1.9 : speed) *
+            game.difficulty.value.enemySpeed;
         position.x += direction * moveSpeed * dt;
 
         if (position.x <= minX) {
@@ -148,8 +149,9 @@ class TheForeman extends SpriteAnimationComponent
     }
   }
 
+  /// Vinyl only during the dizzy window — same readable rule as the stomp.
   void hitByReflectedBrick() {
-    if (isDizzy) return;
+    if (!isDizzy) return;
     BroskieAudio.playBossHit();
     game.hitStop(0.05);
     health--;
@@ -185,6 +187,7 @@ class TheForeman extends SpriteAnimationComponent
         health -= 2;
         isDizzy = false;
         other.bounce();
+        other.onStompLockout();
         BroskieAudio.playStomp();
         game.updateBossBar(health / maxHealth);
         if (health <= 0) die();
