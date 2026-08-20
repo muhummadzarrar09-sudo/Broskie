@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -5,7 +6,6 @@ import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'audio_manager.dart';
@@ -31,7 +31,6 @@ import 'world5/auditor_enemy.dart';
 class BroskieGame extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
   late Player player;
-  final WidgetRef? ref;
 
   // Live HUD state: overlays listen to these and rebuild on change.
   final ValueNotifier<int> currentStage = ValueNotifier(1); // 1..4
@@ -232,14 +231,12 @@ class BroskieGame extends FlameGame
   double _levelWidth = 2800;
   bool _brokerReleased = false;
 
-  BroskieGame({this.ref});
+  BroskieGame();
 
   @override
   Future<void> onLoad() async {
     camera.viewfinder.anchor = Anchor.center;
     camera.viewfinder.visibleGameSize = Vector2(viewW, viewH);
-
-    add(ScreenHitbox());
 
     try {
       final parallax = await loadParallaxComponent(
@@ -409,7 +406,7 @@ class BroskieGame extends FlameGame
     if (newRun) {
       scoreCoins.value = 0;
       enemiesDefeated = 0;
-      savePrefs();
+      unawaited(savePrefs());
     }
     currentStage.value = max(1, min(4, stage));
     hp.value = hpMax;
@@ -427,8 +424,10 @@ class BroskieGame extends FlameGame
     if (overlays.isActive('PauseMenu')) {
       isPaused = false;
       _hideOverlay('PauseMenu');
+      BroskieAudio.resumeBgm();
     } else {
       isPaused = true;
+      BroskieAudio.pauseBgm();
       _showOverlay('PauseMenu');
     }
   }
@@ -446,10 +445,10 @@ class BroskieGame extends FlameGame
       if (currentStage.value > unlockedStage.value) {
         unlockedStage.value = currentStage.value;
       }
-      savePrefs();
+      unawaited(savePrefs());
       restart(showLoadCard: true);
     } else {
-      savePrefs();
+      unawaited(savePrefs());
       pauseEngine();
       _showOverlay('Victory');
     }
@@ -666,7 +665,7 @@ class BroskieGame extends FlameGame
     lastRank = rank;
     if (rankValue(rank) > (bestRanks[currentStage.value] ?? 0)) {
       bestRanks[currentStage.value] = rankValue(rank);
-      savePrefs();
+      unawaited(savePrefs());
     }
     // An S gets the gold-record fanfare; anything less gets the standard sting.
     if (rank == 'S') {
@@ -674,7 +673,7 @@ class BroskieGame extends FlameGame
     } else {
       BroskieAudio.playStageComplete();
     }
-    savePrefs();
+    unawaited(savePrefs());
     pauseEngine();
     _showOverlay('LevelComplete');
   }
@@ -708,10 +707,7 @@ class BroskieGame extends FlameGame
     // Keep the persistent shell: hitbox + whatever sky was loaded in onLoad.
     // Everything else (player, stages, bosses, backdrops) is rebuilt fresh.
     for (final c in children
-        .where((c) =>
-            c is! ScreenHitbox &&
-            c is! ParallaxComponent &&
-            c is! ProceduralSkylineParallax)
+        .where((c) => c is! ParallaxComponent && c is! ProceduralSkylineParallax)
         .toList()) {
       c.removeFromParent();
     }

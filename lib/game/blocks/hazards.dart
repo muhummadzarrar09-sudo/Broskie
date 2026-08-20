@@ -70,63 +70,11 @@ class MovingPlatform extends PositionComponent
   }
 }
 
-// Crumbling Platform (Collapses 1s after player steps on it)
-class CrumblingPlatform extends PositionComponent
-    with HasGameReference<BroskieGame>, CollisionCallbacks {
-  bool isStepped = false;
-  double timer = 0;
-
-  CrumblingPlatform({required Vector2 position, required Vector2 size})
-      : super(position: position, size: size) {
-    add(RectangleHitbox());
-  }
-
-  void stepOn() {
-    if (!isStepped) {
-      isStepped = true;
-    }
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-    if (isStepped) {
-      timer += dt;
-      if (timer >= 0.8) {
-        removeFromParent(); // Collapse platform!
-      }
-    }
-  }
-
-  @override
-  void render(Canvas canvas) {
-    final rect = size.toRect();
-    final color = isStepped ? Colors.orangeAccent : const Color(0xFF795548);
-    canvas.drawRect(rect, Paint()..color = color);
-    canvas.drawRect(
-        rect,
-        Paint()
-          ..color = Colors.black
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2);
-
-    if (isStepped) {
-      // Crack lines
-      canvas.drawLine(
-          const Offset(4, 0),
-          Offset(size.x - 4, size.y),
-          Paint()
-            ..color = Colors.black
-            ..strokeWidth = 2);
-    }
-  }
-}
-
-// Laser Hazard (Pulsing deadly laser barrier)
 class LaserHazard extends PositionComponent
     with HasGameReference<BroskieGame>, CollisionCallbacks {
   bool isActive = true;
   double pulseTimer = 0;
+  final Random _rng = Random();
 
   LaserHazard({required Vector2 position, required Vector2 size})
       : super(position: position, size: size) {
@@ -165,7 +113,7 @@ class LaserHazard extends PositionComponent
 
     // Sparkling electrical particles
     for (int i = 0; i < 5; i++) {
-      double py = Random().nextDouble() * size.y;
+      double py = _rng.nextDouble() * size.y;
       canvas.drawCircle(
           Offset(size.x / 2, py), 2, Paint()..color = Colors.yellowAccent);
     }

@@ -1,7 +1,6 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'game/audio_manager.dart';
 import 'game/broskie_game.dart';
@@ -31,35 +30,31 @@ void main() async {
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await BroskieAudio.init();
-  runApp(
-    const ProviderScope(
-      child: BroskieApp(),
-    ),
-  );
+  runApp(const BroskieApp());
 }
 
-class BroskieApp extends ConsumerWidget {
+class BroskieApp extends StatelessWidget {
   const BroskieApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Broskie Game',
+      title: 'Broskie',
       theme: ThemeData.dark(),
       home: const SplashScreen(next: BroskieGameScreen()),
     );
   }
 }
 
-class BroskieGameScreen extends ConsumerStatefulWidget {
+class BroskieGameScreen extends StatefulWidget {
   const BroskieGameScreen({super.key});
 
   @override
-  ConsumerState<BroskieGameScreen> createState() => _BroskieGameScreenState();
+  State<BroskieGameScreen> createState() => _BroskieGameScreenState();
 }
 
-class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen>
+class _BroskieGameScreenState extends State<BroskieGameScreen>
     with WidgetsBindingObserver {
   late BroskieGame game;
 
@@ -67,8 +62,7 @@ class _BroskieGameScreenState extends ConsumerState<BroskieGameScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    game = BroskieGame(ref: ref);
-    // Load saved crew settings/unlocks, then start the chiptune.
+    game = BroskieGame();
     game.loadPrefs().then((_) => BroskieAudio.startMusic());
   }
 

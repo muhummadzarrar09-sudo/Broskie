@@ -1,6 +1,6 @@
 param(
     [ValidateSet("bundle", "apk")]
-    [string]$Target = "bundle"
+    [string]$Target = "apk"
 )
 
 $ErrorActionPreference = "Stop"
@@ -25,7 +25,7 @@ $projectRoot = $PSScriptRoot
 Set-Location $projectRoot
 
 if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
-    throw "Flutter is not on PATH. Install Flutter 3.41+ and run flutter doctor first."
+    throw "Flutter is not on PATH. Install Flutter 3.44+ and run flutter doctor first."
 }
 
 if ($Target -eq "bundle" -and -not (Test-Path "android/key.properties")) {

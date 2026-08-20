@@ -1,9 +1,5 @@
-
-# ─────────────────────────────────────────────────────────────
-# PASTE THIS FILE as .github/workflows/flutter.yml in the GitHub
-# web UI (Add file → create new file). The Arena GitHub App can
-# push code but NOT workflow files (missing "workflows" scope).
-# ─────────────────────────────────────────────────────────────
+# PASTE as .github/workflows/flutter.yml in the GitHub web UI if the
+# GitHub App cannot push workflow files.
 name: BROSKIE verify
 
 on:
@@ -20,10 +16,11 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: "3.44.0"
           cache: true
 
       - name: Dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Format gate
         run: dart format --set-exit-if-changed lib test
@@ -34,6 +31,5 @@ jobs:
       - name: Unit + engine tests
         run: flutter test
 
-      # Crew build sanity: the APK must compile end-to-end (debug needs no keystore).
       - name: Debug APK compiles
         run: flutter build apk --debug

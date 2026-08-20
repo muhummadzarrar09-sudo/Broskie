@@ -120,4 +120,17 @@ class BroskieAudio {
       FlameAudio.bgm.stop();
     } catch (_) {}
   }
+
+  static void pauseBgm() {
+    try {
+      FlameAudio.bgm.pause();
+    } catch (_) {}
+  }
+
+  static void resumeBgm() {
+    if (!musicOn || musicVolume <= 0) return;
+    try {
+      FlameAudio.bgm.resume();
+    } catch (_) {}
+  }
 }

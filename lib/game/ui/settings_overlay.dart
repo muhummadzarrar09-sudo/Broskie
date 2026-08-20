@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
@@ -39,43 +40,43 @@ class SettingsOverlay extends StatelessWidget {
               _switch('SOUND FX', game.sfxEnabled, (v) {
                 game.sfxEnabled.value = v;
                 BroskieAudio.setSfx(v);
-                game.savePrefs();
+                unawaited(game.savePrefs());
               }),
               ValueListenableBuilder<double>(
                 valueListenable: game.sfxVolume,
                 builder: (context, vol, _) => _slider('FX LEVEL', vol, (v) {
                   game.sfxVolume.value = v;
                   BroskieAudio.setSfxVolume(v);
-                  game.savePrefs();
+                  unawaited(game.savePrefs());
                 }),
               ),
               _switch('MUSIC', game.musicEnabled, (v) {
                 game.musicEnabled.value = v;
                 BroskieAudio.setMusicEnabled(v);
-                game.savePrefs();
+                unawaited(game.savePrefs());
               }),
               ValueListenableBuilder<double>(
                 valueListenable: game.musicVolume,
                 builder: (context, vol, _) => _slider('MUSIC LEVEL', vol, (v) {
                   game.musicVolume.value = v;
                   BroskieAudio.setMusicVolume(v);
-                  game.savePrefs();
+                  unawaited(game.savePrefs());
                 }),
               ),
               _switch('TOUCH CONTROLS', game.touchControlsEnabled, (v) {
                 game.touchControlsEnabled.value = v;
-                game.savePrefs();
+                unawaited(game.savePrefs());
               }),
               _switch('HAPTICS', game.hapticsEnabled, (v) {
                 game.hapticsEnabled.value = v;
-                game.savePrefs();
+                unawaited(game.savePrefs());
               }),
               ValueListenableBuilder<double>(
                 valueListenable: game.shakeScale,
                 builder: (context, scale, _) =>
                     _slider('SCREEN SHAKE', scale, (v) {
                   game.shakeScale.value = v;
-                  game.savePrefs();
+                  unawaited(game.savePrefs());
                 }),
               ),
               const SizedBox(height: 16),

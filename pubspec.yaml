@@ -1,18 +1,17 @@
 name: broskie_game
-description: A neon-soaked platformer vertical slice built with Flutter and Flame.
-version: 0.3.0+3
+description: A landscape Android platformer. Broskie vs Monopoly Corp.
+version: 0.4.0+4
 publish_to: none
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
-  flutter: '>=3.0.0'
+  sdk: '>=3.12.0 <4.0.0'
+  flutter: '>=3.44.0'
 
 dependencies:
   flame: ^1.38.0
   flame_audio: ^2.12.1
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.5.0
   shared_preferences: ^2.5.5
 
 dev_dependencies:

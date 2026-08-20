@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:broskie_game/game/audio_manager.dart';
 import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/difficulty.dart';
@@ -81,7 +82,7 @@ class _MainMenuOverlayState extends State<MainMenuOverlay>
                                     onTap: () {
                                       BroskieAudio.playUiClick();
                                       game.difficulty.value = d;
-                                      game.savePrefs();
+                                      unawaited(game.savePrefs());
                                     },
                                     child: Container(
                                       height: 40,

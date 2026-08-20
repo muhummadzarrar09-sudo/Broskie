@@ -13,7 +13,7 @@ import 'package:flutter/services.dart';
 
 enum PowerUpType { none, classic, juggernaut, shockwave }
 
-enum PlayerState { idle, walking, running, jumping, falling, vaulting }
+enum PlayerState { idle, walking, running, jumping, falling }
 
 class Player extends SpriteAnimationComponent
     with KeyboardHandler, HasGameReference<BroskieGame>, CollisionCallbacks {
@@ -52,7 +52,6 @@ class Player extends SpriteAnimationComponent
   int facing = 1; // 1 Right, -1 Left
   double animTimer = 0;
   int animFrame = 0;
-  double vaultTimer = 0;
   double shootCooldown = 0;
 
   // Jump assistance + dash state
@@ -142,14 +141,12 @@ class Player extends SpriteAnimationComponent
 
     // Jump buffer: a press just before landing still jumps.
     if (jumpBufferTimer > 0) jumpBufferTimer -= dt;
-    if (jumpBufferTimer > 0 &&
-        (isGrounded || coyoteTimer > 0) &&
-        state != PlayerState.vaulting) {
+    if (jumpBufferTimer > 0 && (isGrounded || coyoteTimer > 0)) {
       _performJump();
     }
 
     // Gravity + terminal velocity so hitches cannot tunnel the floor.
-    if (!isGrounded && state != PlayerState.vaulting) {
+    if (!isGrounded) {
       velocity.y += gravity * dt;
       if (velocity.y > _terminalVy) velocity.y = _terminalVy;
     }
@@ -182,23 +179,12 @@ class Player extends SpriteAnimationComponent
       velocity.x = velocity.x.clamp(-targetSpeed, targetSpeed);
     }
 
-    // Vaulting State Logic
-    if (state == PlayerState.vaulting) {
-      vaultTimer -= dt;
-      velocity.x = facing * 400;
-      velocity.y = -150;
-      if (vaultTimer <= 0) {
-        state = PlayerState.idle;
-      }
+    if (!isGrounded) {
+      state = velocity.y < 0 ? PlayerState.jumping : PlayerState.falling;
+    } else if (velocity.x.abs() > 30) {
+      state = isRunning ? PlayerState.running : PlayerState.walking;
     } else {
-      // Determine Animation State
-      if (!isGrounded) {
-        state = velocity.y < 0 ? PlayerState.jumping : PlayerState.falling;
-      } else if (velocity.x.abs() > 30) {
-        state = isRunning ? PlayerState.running : PlayerState.walking;
-      } else {
-        state = PlayerState.idle;
-      }
+      state = PlayerState.idle;
     }
 
     // Animation Frame Clock (procedural painter path)
@@ -376,11 +362,6 @@ class Player extends SpriteAnimationComponent
     ));
   }
 
-  void triggerParkourVault() {
-    state = PlayerState.vaulting;
-    vaultTimer = 0.35;
-  }
-
   /// Returns false if already big so the shop cannot charge for a no-op.
   bool grow(PowerUpType type) {
     if (isBig) return false;
@@ -459,10 +440,6 @@ class Player extends SpriteAnimationComponent
         isGrounded = _groundKeys.isNotEmpty;
         game.clearFallTax();
         if (other is MovingPlatform) riding = other;
-
-        if (other is CrumblingPlatform) {
-          other.stepOn();
-        }
       } else if (velocity.y < 0 &&
           playerTop <= otherBottom &&
           (playerTop - velocity.y * 0.05) >= otherBottom - 14) {
@@ -562,12 +539,6 @@ class Player extends SpriteAnimationComponent
         armShift = 10;
         legL = 6;
         legR = -6;
-        break;
-      case PlayerState.vaulting:
-        headY = 6.0;
-        armShift = -14;
-        legL = 12;
-        legR = 12;
         break;
     }
 

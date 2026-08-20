@@ -42,7 +42,7 @@ class StageBackdrop extends PositionComponent
     final tileWidth = img.width * (tileHeight / img.height);
     final src =
         ui.Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble());
-    final paint = ui.Paint()..filterQuality = ui.FilterQuality.low;
+    final paint = ui.Paint()..filterQuality = ui.FilterQuality.none;
     // Alternate tiles mirror so seams meet their own reflection instead of a
     // hard cut in the AI art.
     var flip = false;

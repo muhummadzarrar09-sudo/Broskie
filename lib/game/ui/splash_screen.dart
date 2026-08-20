@@ -15,7 +15,6 @@ class SplashScreen extends StatefulWidget {
   static const List<String> flameAssets = [
     'runtime/broskie_walk_sheet.png',
     'runtime/broskie_volt_walk_sheet.png',
-    'runtime/broskie_player.png',
     'runtime/corporate_cube.png',
     'runtime/foreman_boss.png',
     'runtime/data_broker_boss.png',

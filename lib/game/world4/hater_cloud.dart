@@ -6,7 +6,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-enum DebuffType { slow, lowJump, invertedControls, noDash }
+enum DebuffType { slow }
 
 class HaterCloud extends PositionComponent
     with HasGameReference<BroskieGame>, CollisionCallbacks {
