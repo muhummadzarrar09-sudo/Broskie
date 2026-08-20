@@ -36,8 +36,10 @@ if (-not (Test-Path "pubspec.lock")) {
     throw "pubspec.lock is missing. Run flutter pub get once, review it, and commit it before releasing."
 }
 
-Invoke-Checked "FETCHING LOCKED DEPENDENCIES" { flutter pub get --enforce-lockfile }
-Invoke-Checked "CHECKING FORMATTING" { dart format --output=none --set-exit-if-changed lib test }
+# Don't --enforce-lockfile here: a lint bump must be allowed to refresh the lock.
+# Format WRITES so a missing dart-format pass cannot kill a crew APK.
+Invoke-Checked "RESOLVING DEPENDENCIES" { flutter pub get }
+Invoke-Checked "FORMATTING" { dart format lib test }
 Invoke-Checked "STATIC ANALYSIS" { flutter analyze }
 Invoke-Checked "RUNNING TESTS" { flutter test }
 

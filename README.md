@@ -42,7 +42,7 @@ The Android build is locked to landscape. Touch is first-class.
 
 ## Requirements
 
-- Flutter **3.44+** (Dart **3.12+**) — matches `pubspec.lock`
+- Flutter **3.44+** (Dart **3.12+**). 3.47 / Dart 3.13 is fine.
 - Android SDK 36, JDK 17. Phone, landscape. No iOS/web/desktop ship.
 
 ## Run and test

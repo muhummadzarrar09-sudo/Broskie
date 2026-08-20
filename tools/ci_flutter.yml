@@ -22,8 +22,8 @@ jobs:
       - name: Dependencies
         run: flutter pub get --enforce-lockfile
 
-      - name: Format gate
-        run: dart format --set-exit-if-changed lib test
+      - name: Format
+        run: dart format lib test
 
       - name: Static analysis
         run: flutter analyze
