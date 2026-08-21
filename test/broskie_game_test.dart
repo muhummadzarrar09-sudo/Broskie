@@ -109,12 +109,21 @@ void main() {
     'the stage 4 exit stays locked until both executives are down',
     createMutedGame,
     (game) async {
+      // The exit evaluates its lock condition every 0.2s of game time and
+      // BroskieGame clamps each update to 0.05s, so five ticks guarantee a
+      // fresh poll after any structural change.
+      void settleLock() {
+        for (var i = 0; i < 5; i++) {
+          game.update(0.05);
+        }
+      }
+
       await game.ready();
 
       game.currentStage.value = 4;
       game.restart();
       await game.ready();
-      game.update(0.3); // let the exit poll its lock condition
+      settleLock(); // let the exit poll its lock condition
 
       final exit = game.children.whereType<LevelExit>().single;
       expect(exit.locked, isTrue);
@@ -125,15 +134,23 @@ void main() {
           .whereType<TheForeman>()
           .forEach((c) => c.removeFromParent());
       game.update(0.016); // process pending removals
-      game.update(0.3); // Foreman gone → Broker clocks in
+      game.update(0.05); // Foreman gone → the Broker's release is queued
+      // Flame queues component adds until the child finishes loading, and
+      // the Broker's onLoad awaits its art. Without an event-loop turn here
+      // the enqueued add stays blocked and he never lands in children — on
+      // device the frame loop pumps this for free, in a test it must be
+      // done by hand.
+      await game.ready();
+      settleLock();
+
       expect(game.children.whereType<DataBrokerBoss>(), isNotEmpty);
       expect(exit.locked, isTrue);
 
       game.children
           .whereType<DataBrokerBoss>()
           .forEach((c) => c.removeFromParent());
-      game.update(0.016);
-      game.update(0.3);
+      game.update(0.016); // process pending removals
+      settleLock(); // both executives gone → next poll opens the portal
 
       expect(exit.locked, isFalse);
     },

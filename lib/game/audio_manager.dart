@@ -42,6 +42,7 @@ class BroskieAudio {
     try {
       await FlameAudio.audioCache.loadAll(_sfxFiles);
       audioAvailable = true;
+      _applyMusicVolume();
     } catch (e) {
       debugPrint("BroskieAudio: Sound files missing or audio disabled: $e");
       audioAvailable = false;
@@ -65,6 +66,16 @@ class BroskieAudio {
 
   static void setMusicVolume(double v) {
     musicVolume = v.clamp(0.0, 1.0);
+    _applyMusicVolume();
+  }
+
+  /// Pushes the saved level onto the live player. Guarded by [audioAvailable]:
+  /// touching FlameAudio.bgm spins up an AudioPlayer, whose platform channel
+  /// does not exist in headless tests. That MissingPluginException is thrown
+  /// asynchronously, so no try/catch around this call could ever see it — it
+  /// would escape into the test zone after the test had already completed.
+  static void _applyMusicVolume() {
+    if (!audioAvailable) return;
     try {
       FlameAudio.bgm.audioPlayer.setVolume(0.35 * musicVolume);
     } catch (_) {}
@@ -101,7 +112,7 @@ class BroskieAudio {
   static void startMusic() {
     if (audioAvailable && musicOn) {
       try {
-        FlameAudio.bgm.play('neon_loop.wav', volume: 0.35);
+        FlameAudio.bgm.play('neon_loop.wav', volume: 0.35 * musicVolume);
       } catch (_) {}
     }
   }
@@ -111,24 +122,26 @@ class BroskieAudio {
     final file = stageThemes[stage];
     if (file == null || !audioAvailable || !musicOn) return;
     try {
-      FlameAudio.bgm.play(file, volume: 0.35);
+      FlameAudio.bgm.play(file, volume: 0.35 * musicVolume);
     } catch (_) {}
   }
 
   static void stopMusic() {
+    if (!audioAvailable) return;
     try {
       FlameAudio.bgm.stop();
     } catch (_) {}
   }
 
   static void pauseBgm() {
+    if (!audioAvailable) return;
     try {
       FlameAudio.bgm.pause();
     } catch (_) {}
   }
 
   static void resumeBgm() {
-    if (!musicOn || musicVolume <= 0) return;
+    if (!audioAvailable || !musicOn || musicVolume <= 0) return;
     try {
       FlameAudio.bgm.resume();
     } catch (_) {}

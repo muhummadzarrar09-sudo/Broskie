@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Test rig green: audio never pokes the platform channel before init
+  (async MissingPluginException escaped every try/catch), and the stage-4
+  lock test now pumps Flame's queued add lifecycle + the exit's 0.2s poll
+
 ## 0.4.0 — crew APK
 
 - Android-only, touch-first, Mario-shaped camera (street in the lower third)
