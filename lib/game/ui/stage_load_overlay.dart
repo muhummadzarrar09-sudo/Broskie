@@ -5,8 +5,10 @@ import 'package:broskie_game/game/broskie_game.dart';
 import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:flutter/material.dart';
 
-/// SMB "WORLD 1-1" card. The street is already built behind this;
-/// we just hold the thumbs until the title reads.
+/// SMB "WORLD 1-1" card, restyled: stage accent rules frame the smash cut,
+/// the zone name slams in the stage color, lives read as pixel hearts, and
+/// the executive leaks through on the arena card. The street is already
+/// built behind this; we just hold the thumbs until the title reads.
 class StageLoadOverlay extends StatefulWidget {
   final BroskieGame game;
 
@@ -60,75 +62,143 @@ class _StageLoadOverlayState extends State<StageLoadOverlay>
     final stage = widget.game.currentStage.value;
     final info =
         BroskieGame.stageInfo[stage] ?? ('UNKNOWN ZONE', 'SIGNAL LOST');
+    final accent = Color(BroskieGame.stageAccents[stage] ?? 0xFF00E5FF);
     final hearts = widget.game.hpMax;
 
-    return ColoredBox(
-      color: BroskieColors.night,
-      child: SafeArea(
-        child: Column(
-          children: [
-            const Spacer(flex: 2),
-            Text('WORLD 1-$stage',
-                style: broskieHeadline(
-                    size: 18, color: BroskieColors.amber, letterSpacing: 6)),
-            const SizedBox(height: 10),
-            Text(info.$1,
-                textAlign: TextAlign.center,
-                style: broskieHeadline(size: 28, letterSpacing: 4)),
-            const SizedBox(height: 6),
-            Text(info.$2,
-                style: const TextStyle(
-                    color: Color(0x99F2E6D4),
-                    fontFamily: 'monospace',
-                    letterSpacing: 2,
-                    fontSize: 11)),
-            const SizedBox(height: 28),
-            AnimatedBuilder(
-              animation: _spin,
-              builder: (context, _) => Transform.rotate(
-                angle: _spin.value * 2 * pi,
-                child: const CustomPaint(
-                    size: Size(42, 42), painter: PixelVinylPainter()),
-              ),
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const ColoredBox(color: BroskieColors.night),
+        if (stage == 4)
+          // The final card leaks management's face ahead of the arena.
+          Opacity(
+            opacity: 0.14,
+            child: Image.asset(
+              'assets/images/runtime/foreman_intro.png',
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.none,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
-            const SizedBox(height: 16),
-            Text(_steps[_step],
-                style: const TextStyle(
-                    color: BroskieColors.amber,
-                    fontFamily: 'monospace',
-                    letterSpacing: 3,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900)),
-            const SizedBox(height: 22),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ),
+        const ScanlineFill(opacity: 0.10),
+        // Accent rules top and bottom — the stage color reads the card.
+        Positioned(
+            top: 0, left: 0, right: 0, child: Container(height: 3, color: accent)),
+        Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(height: 3, color: accent)),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
               children: [
-                const Text('BROSKIE  ×  ',
-                    style: TextStyle(
-                        color: BroskieColors.bone,
-                        fontFamily: 'monospace',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900)),
-                Text('$hearts',
-                    style: broskieHeadline(
-                        size: 22, color: BroskieColors.cap)),
+                const SizedBox(height: 24),
+                Text(
+                  'WORLD 1-$stage',
+                  style: broskieHeadline(
+                      size: 16,
+                      color: BroskieColors.amber,
+                      letterSpacing: 6),
+                ),
+                const SizedBox(height: 8),
+                CustomPaint(
+                  size: const Size(140, 8),
+                  painter: _LoadBarcodePainter(accent),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  info.$1,
+                  textAlign: TextAlign.center,
+                  style: broskieHeadline(
+                      size: 40, color: accent, letterSpacing: 6),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  info.$2,
+                  style: const TextStyle(
+                      color: Color(0xB3F2E6D4),
+                      fontFamily: 'monospace',
+                      letterSpacing: 3,
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic),
+                ),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'BROSKIE  ×',
+                      style: TextStyle(
+                          color: BroskieColors.bone,
+                          fontFamily: 'monospace',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900),
+                    ),
+                    const SizedBox(width: 10),
+                    for (var i = 0; i < hearts; i++) ...[
+                      if (i > 0) const SizedBox(width: 6),
+                      const CustomPaint(
+                        size: Size(21, 16),
+                        painter: PixelHeartPainter(filled: true),
+                      ),
+                    ],
+                  ],
+                ),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedBuilder(
+                      animation: _spin,
+                      builder: (context, _) => Transform.rotate(
+                        angle: _spin.value * 2 * pi,
+                        child: const CustomPaint(
+                          size: Size(30, 30),
+                          painter: PixelVinylPainter(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      _steps[_step],
+                      style: const TextStyle(
+                          color: BroskieColors.amber,
+                          fontFamily: 'monospace',
+                          letterSpacing: 3,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
               ],
             ),
-            const Spacer(flex: 3),
-            // Fake street in the LOWER THIRD — same silhouette the game uses.
-            SizedBox(
-              height: 90,
-              width: double.infinity,
-              child: CustomPaint(painter: _LoadStreetPainter()),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
 
-/// Tiny "BROSKIE × 2" wipe after a fall, SMB lives screen.
+/// The card's stamp, printed in the stage's own accent color.
+class _LoadBarcodePainter extends CustomPainter {
+  final Color color;
+
+  const _LoadBarcodePainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawBarcode(canvas, Offset.zero & size, seed: 700, color: color);
+  }
+
+  @override
+  bool shouldRepaint(_LoadBarcodePainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// Tiny "BROSKIE × N" wipe after a fall, SMB lives screen.
 class DeathCardOverlay extends StatefulWidget {
   final BroskieGame game;
 
@@ -167,28 +237,4 @@ class _DeathCardOverlayState extends State<DeathCardOverlay> {
       ),
     );
   }
-}
-
-class _LoadStreetPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final street = Paint()..color = const Color(0xFF222533);
-    final lip = Paint()..color = BroskieColors.bone;
-    canvas.drawRect(
-        Rect.fromLTWH(0, size.height * 0.35, size.width, size.height), street);
-    canvas.drawRect(
-        Rect.fromLTWH(0, size.height * 0.35, size.width, 5), lip);
-    // A tiny Broskie blob so the load card teaches the framing.
-    final cap = Paint()..color = BroskieColors.cap;
-    final bone = Paint()..color = BroskieColors.bone;
-    final denim = Paint()..color = const Color(0xFF1F4287);
-    final x = size.width * 0.22;
-    final y = size.height * 0.35 - 28;
-    canvas.drawRect(Rect.fromLTWH(x, y, 18, 10), bone);
-    canvas.drawRect(Rect.fromLTWH(x - 2, y - 4, 22, 6), cap);
-    canvas.drawRect(Rect.fromLTWH(x + 2, y + 10, 14, 18), denim);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

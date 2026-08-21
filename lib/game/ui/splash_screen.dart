@@ -5,8 +5,10 @@ import 'package:broskie_game/game/ui/broskie_style.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 
-/// Boot load: labeled jobs, spinning vinyl, street in the lower third.
-/// Same silhouette the in-game camera will use — teaching the frame.
+/// Boot load, redesigned: the keyart IS the loader. Broskie mid-air, vinyl
+/// away — the art settles out of a push-in as assets land, the city throws
+/// chromatic interference frames, and the groove bar on the lip keeps the
+/// progress honest. Same jobs, same labels — new body.
 class SplashScreen extends StatefulWidget {
   final Widget next;
 
@@ -40,6 +42,11 @@ class _SplashScreenState extends State<SplashScreen>
   int _loadedCount = 0;
   String _label = 'WAKE UP';
 
+  /// Broadcast interference: mostly clean signal, hard tears mid-loop.
+  static const List<int> _glitchPattern = [0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 0, 0];
+  int _glitchTick = 0;
+  Timer? _glitchTimer;
+
   static const _labels = [
     'PRESSING THE VINYL',
     'CUTTING SPRITES',
@@ -56,6 +63,14 @@ class _SplashScreenState extends State<SplashScreen>
     _spin = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 900))
       ..repeat();
+    _glitchTimer =
+        Timer.periodic(const Duration(milliseconds: 160), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() => _glitchTick++);
+    });
     _startLoading();
   }
 
@@ -112,80 +127,121 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _glitchTimer?.cancel();
     _spin.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final glitch = _glitchPattern[_glitchTick % _glitchPattern.length];
+    // The art settles out of a slight push-in as the bar fills.
+    final settle = 1.07 - 0.07 * _progress;
+
     return Scaffold(
       backgroundColor: BroskieColors.night,
-      body: Column(
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          Expanded(
-            flex: 7,
-            child: SafeArea(
-              child: Column(
-                children: [
-                  const Spacer(),
-                  Text('BROSKIE',
-                      style: broskieHeadline(size: 52, letterSpacing: 8)),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'A KID. A VINYL. A BAD ATTITUDE.',
-                    style: TextStyle(
-                        color: BroskieColors.amber,
-                        fontFamily: 'monospace',
-                        letterSpacing: 2,
-                        fontSize: 11),
-                  ),
-                  const SizedBox(height: 28),
-                  AnimatedBuilder(
-                    animation: _spin,
-                    builder: (context, _) => Transform.rotate(
-                      angle: _spin.value * 2 * pi,
-                      child: const CustomPaint(
-                          size: Size(36, 36), painter: PixelVinylPainter()),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(_label,
-                      style: const TextStyle(
-                          color: BroskieColors.bone,
-                          fontFamily: 'monospace',
-                          letterSpacing: 3,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900)),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: 220,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: LinearProgressIndicator(
-                        value: _progress > 0 ? _progress : null,
-                        minHeight: 6,
-                        backgroundColor: const Color(0xFF2A261C),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                            BroskieColors.amber),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('${(_progress * 100).toInt()}%',
-                      style: const TextStyle(
-                          color: Color(0x66F2E6D4),
-                          fontFamily: 'monospace',
-                          fontSize: 11)),
-                  const Spacer(),
-                ],
+          Transform.scale(
+            scale: settle,
+            child: Image.asset(
+              'assets/images/runtime/splash_keyart.png',
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.none,
+              errorBuilder: (_, _, _) =>
+                  const ColoredBox(color: BroskieColors.night),
+            ),
+          ),
+          if (glitch > 0) ...[
+            // Chromatic tear: the city steals two frames mid-load.
+            _GlitchLayer(
+              dx: 2.0 * glitch,
+              tint: BroskieColors.cyan.withValues(alpha: 0.45),
+            ),
+            _GlitchLayer(
+              dx: -2.0 * glitch,
+              tint: BroskieColors.magenta.withValues(alpha: 0.45),
+            ),
+          ],
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Color(0xD912100C)],
+                stops: [0.55, 1.0],
               ),
             ),
           ),
-          // LOWER THIRD = the street. Same idea as the in-game camera.
-          SizedBox(
-            height: 120,
-            width: double.infinity,
-            child: CustomPaint(painter: _SplashStreetPainter(_progress)),
+          const ScanlineFill(opacity: 0.10),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+              child: Column(
+                children: [
+                  const Spacer(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _spin,
+                        builder: (context, _) => Transform.rotate(
+                          angle: _spin.value * 2 * pi,
+                          child: const CustomPaint(
+                            size: Size(30, 30),
+                            painter: PixelVinylPainter(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'BROSKIE',
+                              style: broskieHeadline(
+                                  size: 20,
+                                  color: BroskieColors.amber,
+                                  letterSpacing: 6),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _label,
+                              style: const TextStyle(
+                                  color: BroskieColors.bone,
+                                  fontFamily: 'monospace',
+                                  letterSpacing: 3,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '${(_progress * 100).toInt()}%',
+                        style: const TextStyle(
+                            color: Color(0x99F2E6D4),
+                            fontFamily: 'monospace',
+                            fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: _progress > 0 ? _progress : null,
+                      minHeight: 6,
+                      backgroundColor: const Color(0x882A261C),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          BroskieColors.amber),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -193,29 +249,25 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-class _SplashStreetPainter extends CustomPainter {
-  final double progress;
+/// One shifted, tinted ghost of the splash art for the glitch frames.
+class _GlitchLayer extends StatelessWidget {
+  final double dx;
+  final Color tint;
 
-  _SplashStreetPainter(this.progress);
+  const _GlitchLayer({required this.dx, required this.tint});
 
   @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-        Offset.zero & size, Paint()..color = const Color(0xFF222533));
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 6),
-        Paint()..color = BroskieColors.bone);
-    // Broskie walks along the lip as the bar fills — lower-middle framing.
-    final x = 24 + (size.width - 64) * progress.clamp(0.0, 1.0);
-    const y = 18.0;
-    canvas.drawRect(
-        Rect.fromLTWH(x, y, 20, 12), Paint()..color = BroskieColors.bone);
-    canvas.drawRect(
-        Rect.fromLTWH(x - 2, y - 5, 24, 7), Paint()..color = BroskieColors.cap);
-    canvas.drawRect(Rect.fromLTWH(x + 2, y + 12, 16, 22),
-        Paint()..color = const Color(0xFF1F4287));
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: Offset(dx, 0),
+      child: Image.asset(
+        'assets/images/runtime/splash_keyart.png',
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.none,
+        color: tint,
+        colorBlendMode: BlendMode.screen,
+        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(_SplashStreetPainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }

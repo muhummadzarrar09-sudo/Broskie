@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Boot flow redesign: splash keyart IS the loader (push-in settle, chromatic
+  glitch frames, groove bar), title is the rooftop keyart with a slow drift
+  and a kit control deck, load card rides the stage accent with pixel-heart
+  lives and the Foreman bleeding through on the arena card
 - Test rig green: audio never pokes the platform channel before init
   (async MissingPluginException escaped every try/catch), and the stage-4
   lock test now pumps Flame's queued add lifecycle + the exit's 0.2s poll
